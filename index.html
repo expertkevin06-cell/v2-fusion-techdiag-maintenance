@@ -1,31 +1,24 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<!-- ═══════════════════════════════════════════════════════════════════════════
-  MECADATA // INGÉNIEUR  v5.0  « CROISÉ DYNAMIQUE »
-  Projet complet — 7 fichiers à copier-coller dans cette arborescence :
+<!-- ══════════════════════════════════════════════════════════════════════════
+  MECADATA // INGÉNIEUR v5.1 — PROJET COMPLET, 4 FICHIERS, PRÊT À COPIER-COLLER
 
-    index.html
-    css/mecadata.css
-    data/base.js          ← LA BASE (marques, modèles, motorisations, pannes,
-                             TSB, plans d'entretien) — copier-coller intégral
-    js/core.js
-    js/wallpaper.js
-    js/views.js
-    js/app.js
+    index.html            ← ce fichier
+    css/mecadata.css      ← design system complet
+    data/base.js          ← LA BASE (44 marques · 132 modèles · 300 motorisations
+                             réelles · 66 pannes · 33 TSB · 49 plans d'entretien)
+    js/mecadata.js        ← noyau + moteur de fonds animés + vues + interactions
 
-  ▸ Ouvrir index.html directement (double-clic) : aucune installation, aucun
-    serveur, aucune dépendance obligatoire (polices Google avec repli système).
+  ▸ Créer les dossiers css/ data/ js/ puis coller chaque fichier. Ouvrir
+    index.html par double-clic : aucun serveur, aucune installation, aucune
+    dépendance obligatoire (polices Google avec repli système si hors-ligne).
   ▸ Mot de passe administrateur niveau 3 : Kevin83600
-  ▸ Base usine 2017→2026 : 40 marques · 130 modèles · 300+ motorisations réelles
-    (codes moteur, ch/kW, Nm) · 55 pannes connues · 32 TSB · 28 plans d'entretien,
-    le tout corrélé par familles moteur inter-marques.
-  ▸ Import/export illimité JSON & CSV, validation transactionnelle, intégrité
-    en continu, journal, annulation (undo), vues enregistrées, garage.
-  ▸ Studio : 8 fonds d'écran animés × 6 palettes, 20 réglages live, export PNG.
-  ▸ Données de synthèse ingénieur — valeurs indicatives : toujours confirmer
-    au VIN / RTA constructeur avant intervention.
-═══════════════════════════════════════════════════════════════════════════ -->
+  ▸ Modules : Poste de bord · Explorateur · Pannes & TSB · Entretien & échéances
+    · Studio fond d'écran (8 scènes × 6 palettes, 20 réglages live, export PNG)
+    · Fichiers croisés dynamiques (CRUD, import JSON/CSV, intégrité, undo).
+  ▸ Données de synthèse ingénieur, indicatives : confirmer au VIN / RTA.
+══════════════════════════════════════════════════════════════════════════ -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#04070D">
@@ -95,7 +88,7 @@
 
 <header id="top">
 <a class="logo" href="#/bord" aria-label="Poste de bord"><svg class="mk"><use href="#i-mk"/></svg><span><b>MECADATA <i>//</i> ING</b><small>CONSOLE TECHNIQUE 2017→</small></span></a>
-<span class="vch">v5.0</span>
+<span class="vch">v5.1</span>
 <div class="omni"><div class="box"><svg class="ic" style="color:var(--tx3)"><use href="#i-search"/></svg><input id="omni" type="search" placeholder="Marque, modèle, code moteur, panne, TSB…" autocomplete="off" aria-label="Recherche globale"><kbd>/</kbd></div><div class="omnires" id="omnires"></div></div>
 <button class="tb" id="msearch" data-act="msearch" aria-label="Recherche"><svg class="ic"><use href="#i-search"/></svg></button>
 <button class="chip ok" id="ichip" data-act="integrity" title="Intégrité des fichiers croisés"><span class="dot"></span><span id="itxt">INTÈGRE</span></button>
@@ -136,9 +129,6 @@
 <div id="dr"></div><div id="md"></div><div id="ts"></div>
 
 <script src="data/base.js"></script>
-<script src="js/core.js"></script>
-<script src="js/wallpaper.js"></script>
-<script src="js/views.js"></script>
-<script src="js/app.js"></script>
+<script src="js/mecadata.js"></script>
 </body>
 </html>
