@@ -1,17 +1,17 @@
 /* ══════════════════════════════════════════════════════════════════════════
    MECADATA — LA BASE  (data/base.js)
-   40 marques · 132 modèles · 300 motorisations réelles · 55 pannes connues
-   32 bulletins techniques / TSB · 28 plans d'entretien — 2017 → 2026.
-   Format compact (tuples) étendu par js/core.js. Clés de corrélation = familles
-   moteur partagées entre marques (H5Ht = Renault/Nissan/Mercedes, K9K =
-   Renault/Dacia/Nissan/Mercedes, EA288 = VW/Audi/Skoda/MAN, A25A = Toyota/
-   Lexus/Suzuki, LGEV = Hyundai/Kia/Jaguar, MEB = VW/Audi/Skoda/Cupra/Ford…).
+   44 marques · 132 modèles · 300 motorisations réelles (codes, ch/kW, Nm)
+   66 pannes connues · 33 bulletins techniques / TSB · 49 plans d'entretien.
+   Clé de corrélation = famille moteur partagée entre marques :
+   H5Ht = Renault/Nissan/Mercedes · K9K = Renault/Dacia/Nissan/Mercedes
+   EA288 = VW/Audi/Skoda/SEAT/MAN · A25A = Toyota/Lexus/Suzuki
+   LGEV = Hyundai/Kia/Jaguar · MEB = VW/Audi/Skoda/Cupra/Ford · B58 = BMW/Toyota
    Énergies : e essence · d diesel · h hybride · p hybride rechargeable
               b électrique · g GPL
    Données de synthèse ingénieur — indicatives : confirmer au VIN / RTA.
 ══════════════════════════════════════════════════════════════════════════ */
 window.MECADATA_BASE = {
-meta:{name:"MECADATA BASE",version:"5.0",build:"2026.11",range:[2017,2026]},
+meta:{name:"MECADATA BASE",version:"5.1",build:"2026.11",range:[2017,2026]},
 
 brands:[
 ["renault","Renault","France","Renault Group"],["dacia","Dacia","Roumanie","Renault Group"],
@@ -161,7 +161,6 @@ models:[
 ["sub-for","subaru","Forester / XV e-Boxer",2018,2026,"SUV compact"]
 ],
 
-/* model, code, fam, label, fuel, disp, hp, Nm, y0, y1, gb, norm */
 engines:[
 ["ren-clio4","H5Ft 432","H5Ft","1.2 TCe 120","e",1197,120,205,2017,2018,"EDC6","Euro 6"],
 ["ren-clio4","K9K 646","K9K","1.5 dCi 90","d",1461,90,220,2017,2019,"BVM5","Euro 6"],
@@ -489,7 +488,7 @@ engines:[
 ["maz-cx5","PY-VPS","PY","2.0 Skyactiv-G 165","e",1998,165,213,2017,2026,"BVM6","Euro 6"],
 ["maz-cx5","SH-VPTS","SH","2.2 Skyactiv-D 150","d",2191,150,380,2017,2022,"BVM6","Euro 6"],
 ["maz-cx5","SH-VPTS","SH","2.2 Skyactiv-D 184","d",2191,184,445,2017,2022,"BVA","Euro 6"],
-["maz-cx60","PY+élec","PY","e-Skyactiv PHEV 327","p",2488,327,500,2022,2026,"BVA","Euro 6d"],
+["maz-cx60","PY+élec","PYPHEV","e-Skyactiv PHEV 327","p",2488,327,500,2022,2026,"BVA","Euro 6d"],
 ["maz-cx60","T3-VPTS","SKD33","3.3 e-Skyactiv D 200","d",3283,200,450,2022,2026,"BVA","Euro 6d"],
 ["maz-cx60","T3-VPTS","SKD33","3.3 e-Skyactiv D 254","d",3283,254,550,2022,2026,"BVA","Euro 6d"],
 ["maz-mx5","PE-VPS","PE","2.0 Skyactiv-G 184","e",1998,184,205,2019,2026,"BVM6","Euro 6d"],
@@ -607,7 +606,6 @@ engines:[
 ["sub-for","FB20+élec","FB","2.0 e-Boxer 150","h",1995,150,194,2018,2026,"CVT","Euro 6d"]
 ],
 
-/* titre, familles(;), sévérité, fréquence, y0, y1, km0, km1, symptômes(|), cause, action, €min, €max, statut, énergie? */
 faults:[
 ["Courroie de distribution humide — désagrégation","EB2","critique","élevée",2017,2023,40000,120000,"Voyant pression huile|Crépine colmatée|Bruit côté distribution|Casse moteur","Courroie bain d’huile qui se désagrège (huile non conforme, vidanges espacées) ; les débris colmatent la crépine de pompe à huile.","Remplacement courroie dernière référence + dépose carter + nettoyage crépine/pompe + huile spécification exacte. Contrôle visuel à CHAQUE vidange.",450,900,"Campagne + extension garantie 10 ans / 175 000 km"],
 ["Consommation d’huile excessive 1.2 PureTech","EB2","majeure","moyenne",2017,2022,30000,100000,"Appoint > 0,5 L / 1 000 km|Bougies encrassées|Fumée bleue","Segmentation et décanteur d’huile sensibles ; aggravé par trajets courts.","Test de consommation normé constructeur ; remplacement segmentation si hors tolérance ; huile spec stricte.",150,1500,"Procédure constructeur"],
@@ -631,7 +629,7 @@ faults:[
 ["1.5 eTSI mHEV 48V — batterie & alterno-démarreur","EA211EVO","modérée","faible",2024,2026,10000,70000,"Voyant 48V|Roulage électrique indisponible|Redémarrages erratiques","Batterie 48V et alterno-démarreur à courroie sur eTSI/mHEV récents.","Diagnostic 48V + courroie + DC-DC ; mise à jour calculateur.",350,1500,"Surveillance"],
 ["2.0 TSI EA888 — conso huile & module eau","EA888;EA888EVO;EA888EVO4","modérée","moyenne",2017,2026,40000,120000,"Appoint huile|Fuite module eau|Suintement","Module thermopompe et consommation d’huile modérée (Gen3 fiabilisée vs Gen1/2).","Module eau révisé + contrôle conso normé ; chaîne Gen3 OK.",300,800,"Surveillance"],
 ["Refroidisseur EGR TDI — risque incendie","EA288;EA288EVO","critique","moyenne",2017,2022,30000,180000,"Odeur/fumée échappement|Voyant moteur|Fuite glycol","Fuite interne du refroidisseur EGR : glycol + suie peuvent s’enflammer (VW/Audi/Skoda/SEAT/MAN).","RAPPEL constructeur : remplacement refroidisseur EGR + contrôle admission. Vérifier éligibilité VIN.",0,0,"Rappel constructeur"],
-["DSG7 DQ200 (sec) — mécatronique & à-coups","","majeure","moyenne",2017,2026,40000,140000,"À-coups basse vitesse|Passage au point mort|Voyant boîte","Accumulateur de pression mécatronique et usure double embrayage sec.","TSB logiciel puis mécatronique/huile spec G 052 512 si persistant ; adaptation de base.",0,1800,"TSB",""],
+["DSG7 DQ200 (sec) — mécatronique & à-coups","","majeure","moyenne",2017,2026,40000,140000,"À-coups basse vitesse|Passage au point mort|Voyant boîte","Accumulateur de pression mécatronique et usure double embrayage sec.","TSB logiciel puis mécatronique/huile spec G 052 512 si persistant ; adaptation de base.",0,1800,"TSB"],
 ["DSG humide — vidange impérative 60 000 km","","info","élevée",2017,2026,55000,65000,"","DQ250/DQ381/DQ500 : huile + filtre tous les 60 000 km (boîte à bain d’huile).","Vidange DSG + filtre ; ne pas suivre « lubrification à vie ».",250,450,"Note entretien"],
 ["EDC6 Getrag — broutage double embrayage sec","","modérée","moyenne",2017,2023,30000,120000,"Broutage au démarrage|À-coups 1↔2|Hésitations","Embrayage sec + apprentissages dérivés ; mécatronique sensible.","Recalibration valise (point de léchage) puis kit embrayage si usure.",0,1400,"Surveillance"],
 ["EAT8 Aisin — vidange préventive conseillée","","info","moyenne",2017,2026,80000,120000,"","Aisin 8 rapports annoncée « à vie » ; retours terrain favorisent une vidange.","Vidange EAT8 80–100 000 km (huile AW-1 spec) + contrôle adaptatifs.",300,500,"Note entretien"],
@@ -664,9 +662,10 @@ faults:[
 ["Ingenium diesel — chaîne de distribution","AJ200D","critique","moyenne",2017,2020,60000,140000,"Cliquetis au démarrage|Casse chaîne|Décalage distribution","Allongement chaîne Ingenium 2.0D (défaut largement documenté JLR).","Kit chaîne référence révisée + tendeurs ; huile 0W-20 STJLR stricte, 16 000 km max.",1500,3000,"TSB kit révisé"],
 ["1.5 Ingenium 3 cyl. — courroie humide","AJ150P3","critique","moyenne",2020,2024,50000,130000,"Voyant pression huile|Débris dans carter|Bruit distribution","Courroie bain d’huile du 3 cylindres essence Ingenium : désagrégation et colmatage de crépine.","Courroie + crépine + huile STJLR stricte ; contrôle à chaque vidange.",600,1200,"Contrôle renforcé"],
 ["4xe — batterie HV (rappel « park outside »)","FF4XE;GME4XE","critique","faible",2021,2023,0,40000,"Odeur|Voyant HV|Charge interrompue","Cellules batterie haute tension (rappel Jeep 2023 : stationner à l’extérieur, ne pas charger).","Rappel : diagnostic pack + remplacement modules ; consignes de stationnement jusqu’à réparation.",0,0,"Rappel constructeur"],
-["Model 3 / Y — bras de suspension & phares","","modérée","élevée",2019,2024,10000,80000,"Claquement train avant|Condensation dans les phares|Jeux carrosserie","Bras supérieurs avant et étanchéité phares (défauts de jeunesse documentés).","Bras référence révisée + phares sous garantie ; contrôle géométrie.",300,900,"Surveillance"],
-["Model S / X — eMMC 8 Go (écran noir)","","majeure","moyenne",2017,2018,80000,160000,"Écran noir|MCU très lent|Fonctions perdues","Usure mémoire eMMC 8 Go du MCU1 (logs intensifs).","RAPPEL 2021 : eMMC 64 Go / upgrade MCU2 ; vérifier éligibilité VIN.",0,2500,"Rappel constructeur"],
-["PPE / STLA Medium / SPA2 — logiciel de lancement","PPE;STLAM;SPA2;MEB","modérée","moyenne",2023,2026,0,35000,"Écran figé|Fonctions indisponibles|12V à plat|Charge DC bridée","Plateformes logicielles récentes (Q6/A6 e-tron, Macan Electric, e-3008/e-5008, EX90, ID.7) : immature au lancement.","Campagnes OTA / atelier ; contrôle 12V et DC-DC ; mise à jour gestion charge et préconditionnement.",0,300,"Campagne logicielle"],
+["Model 3 / Y — bras de suspension & phares","TSLA","modérée","élevée",2019,2024,10000,80000,"Claquement train avant|Condensation dans les phares|Jeux carrosserie","Bras supérieurs avant et étanchéité phares (défauts de jeunesse documentés).","Bras référence révisée + phares sous garantie ; contrôle géométrie.",300,900,"Surveillance"],
+["Model S / X — eMMC 8 Go (écran noir)","TSLA","majeure","moyenne",2017,2018,80000,160000,"Écran noir|MCU très lent|Fonctions perdues","Usure mémoire eMMC 8 Go du MCU1 (logs intensifs).","RAPPEL 2021 : eMMC 64 Go / upgrade MCU2 ; vérifier éligibilité VIN.",0,2500,"Rappel constructeur"],
+["PPE / STLA Medium / SPA2 — logiciel de lancement","PPE;STLAM;SPA2","modérée","moyenne",2023,2026,0,35000,"Écran figé|Fonctions indisponibles|12V à plat|Charge DC bridée","Plateformes logicielles récentes (Q6/A6 e-tron, Macan Electric, e-3008/e-5008, EX90, Polestar 3/4) : immature au lancement.","Campagnes OTA / atelier ; contrôle 12V et DC-DC ; mise à jour gestion charge et préconditionnement.",0,300,"Campagne logicielle"],
+["MEB Gen2 — ID.7 / Elroq / Tavascan / Explorer","MEB","modérée","moyenne",2023,2026,0,40000,"Écran noir|Fonctions perdues|12V déchargée","Logiciel 4.x/5.x et gestion 12V sur MEB APP550.","Mise à jour OTA/atelier + batterie 12V ; contrôle chargeur DC-DC.",0,280,"Campagne logicielle"],
 ["bZ4X / RZ — rappel boulons de roue","E4TN","critique","faible",2022,2023,0,5000,"Risque de desserrage de roue|Vibration|Bruit au roulage","Défaut d’assemblage des boulons de moyeu (rappel mondial 2022, bZ4X / Solterra / RZ).","Rappel : remplacement des boulons + couple contrôlé ; vérifier éligibilité VIN.",0,0,"Rappel constructeur"],
 ["Mach-E — contacteur HV (perte de puissance)","GE1","critique","faible",2021,2022,0,40000,"Perte de puissance soudaine|Mode tortue|Message arrêt sécurisé","Contacteurs haute tension pouvant s’ouvrir sous charge (rappel Ford 2022).","Rappel : boîtier de contacteurs HV remis à niveau/remplacé + logiciel ; essai de validation.",0,0,"Rappel constructeur"],
 ["e-DCS6 hybride — à-coups & calage logiciel","EB2G3","modérée","moyenne",2023,2025,0,40000,"À-coups à basse vitesse|Calage au redémarrage|Voyant hybride","Boîte e-DCS6 et gestion hybride 48V premières séries (Gen3 Stellantis).","Mise à jour calculateur boîte/hybride + apprentissages ; contrôle actionneur d’embrayage.",0,250,"Campagne logicielle"],
@@ -676,7 +675,6 @@ faults:[
 ["GPL ECO-G — jeu aux soupapes (note)","H4Dt","mineure","faible",2017,2026,60000,150000,"","Sièges de soupapes renforcés usine sur ECO-G ; contrôle préventif recommandé.","Contrôle jeu soupapes 60 000 km ; bougies à jour ; huile RN17.",0,300,"Note entretien","g"]
 ],
 
-/* ref, marques(;), familles(;), titre, date, catégorie, gravité, synthèse, action */
 tsb:[
 ["STL-2023-EB2-014","peugeot;citroen;opel;ds","EB2","Courroie EB2 : contrôle systématique + extension garantie","2023-06","Distribution","critique","Campagne Stellantis sur 1.2 PureTech courroie humide : désagrégation, crépine colmatée, casses moteur.","Contrôle largeur/usure à chaque entrée atelier ; remplacement courroie + nettoyage crépine si dégradation ; huile 0W-20 B71 2010 (0W-30 B71 2312 selon millésime). Extension 10 ans / 175 000 km sous conditions d’entretien."],
 ["STL-2023-DV5-007","peugeot;citroen;opel;ds","DV5","Chaîne AAC 1.5 BlueHDi : passage 7 → 8 mm","2023-02","Distribution","critique","Ruptures de chaîne d’arbres à cames 7 mm sur DV5 (2017-2022).","Kit complet chaîne 8 mm + pignons + carter supérieur modifié ; ne pas remplacer la chaîne seule ; contrôle des jeux AAC avant repose."],
@@ -707,13 +705,12 @@ tsb:[
 ["HND-2021-P10A-003","honda","P10A","Courroie humide 1.0 VTEC Turbo : inspection","2021-04","Distribution","critique","Désagrégation courroie bain d’huile P10A (Civic 1.0).","Inspection courroie + crépine à chaque vidange ; huile 0W-20 spec Honda ; remplacement préventif si dégradation."],
 ["HK-2021-LGEV-001","hyundai;kia;jaguar","LGEV","Rappel batterie LG : modules + BMS","2021-01","Rappel","critique","Risque incendie cellules LG (Kona / Ioniq Electric, puis I-Pace 2023).","Diagnostic BMS + remplacement modules/pack ; limitation charge transitoire ; consignes stationnement jusqu’à réparation."],
 ["HK-2024-EGMP-006","hyundai;kia;genesis","EGMP","ICCU 800 V : rappel logiciel + remplacement","2024-03","Charge","majeure","Perte puissance / 12V non chargée sur E-GMP (Ioniq 5/6, EV6/EV9, GV60/GV70e).","Rappel logiciel ICCU ; remplacement si DTC ; contrôle batterie 12V et fusible."],
-["MZD-2019-SH-014","mazda","SH","Skyactiv-D 2.2 : jauge repère X + PCM","2019-03","Moteur","majeure","Dilution huile par régénérations FAP incomplètes.","Contrôle jauge repère X à chaque plein ; vidange 10 000 km / 1 an ; mise à jour PCM stratégie régénération."],
+["MZD-2019-SH-014","mazda","SH;SKD33","Skyactiv-D : jauge repère X + PCM","2019-03","Moteur","majeure","Dilution huile par régénérations FAP incomplètes (2.2 et 3.3 I6).","Contrôle jauge repère X à chaque plein ; vidange 10–12 000 km / 1 an ; mise à jour PCM stratégie régénération."],
 ["JLR-2020-AJ20-008","landrover;jaguar","AJ200D;AJ150P3","Ingenium : kit chaîne révisé / courroie humide","2020-09","Distribution","critique","Allongement chaîne Ingenium 2.0D et désagrégation courroie du 1.5 essence 3 cylindres.","Kit chaîne référence révisée + tendeurs (2.0D) ; inspection courroie/crépine (1.5) ; huile STJLR.03.5006 ; 16 000 km / 1 an max."],
 ["FCA-2019-MJT-012","fiat;alfa;jeep;suzuki","MJ13;MJ16;MJ23","MultiJet : courroie 120 000 km / 6 ans","2019-05","Distribution","modérée","Échéances distribution MultiJet 1.6/2.3 (1.3 à chaîne).","Courroie + galets + pompe à eau 120 000 km / 6 ans ; huile 5W-30 C2 spec 9.55535-S1 ; EGR à contrôler."],
 ["JEP-2023-4XE-002","jeep","FF4XE;GME4XE","Rappel batterie HV 4xe : stationner extérieur","2023-08","Rappel","critique","Risque incendie batterie HV Wrangler / Grand Cherokee 4xe.","Consigne : stationner à l’extérieur, ne pas charger jusqu’à réparation ; diagnostic pack + remplacement modules."]
 ],
 
-/* id, nom, familles(;), huile[spec,L,note]|null, distribution[type,km,mois,note]|null, opérations[[op,km,mois]], note, énergie? */
 maint:[
 ["PL-EB2","Stellantis 1.2 PureTech (courroie humide)","EB2",["0W-20 PSA B71 2010 (0W-30 B71 2312 avant 2018)",3.2,"Spécification IMPÉRATIVE — courroie bain d’huile"],["Courroie humide",100000,72,"Contrôle visuel à CHAQUE vidange (TSB)"],[["Vidange + filtre huile",20000,12],["Contrôle courroie (largeur/usure)",20000,12],["Filtre habitacle",20000,12],["Filtre à air",40000,48],["Bougies",60000,48],["Liquide de freins",0,24],["Liquide refroidissement",120000,60]],"Intervalle ramené de 25 000 à 20 000 km après TSB courroie."],
 ["PL-EB2G3","Stellantis 1.2 Gen3 Hybrid e-DCS6","EB2G3",["0W-20 PSA B71 2010",3.2,"Gen3 : distribution à chaîne"],["Chaîne",0,0,"Pas de courroie humide"],[["Vidange + filtre huile",20000,12],["Filtre habitacle",20000,12],["Filtre à air",40000,48],["Bougies",60000,48],["Bilan hybride 48V + e-DCS6",20000,12],["Liquide de freins",0,24]],""],
@@ -759,6 +756,8 @@ maint:[
 ["PL-EPOWER","Nissan e-Power (VC-Turbo générateur)","KR15",["0W-20 API SP",4,"VC-Turbo : spec huile impérative (bras articulé)"],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Bougies",60000,48],["Filtre à air",30000,24],["Bilan batterie + moteur générateur",15000,12],["Filtre habitacle",15000,12],["Liquide de freins",0,24]],""],
 ["PL-FRDHEV","Ford 2.5 FHEV / PHEV","DURA25",["0W-20 WSS-M2C956-A",5.4,""],["Chaîne",0,0,"e-CVT planétaire"],[["Vidange + filtre huile",15000,12],["Nettoyage filtre batterie HV",30000,24],["Bougies",100000,0],["Filtre habitacle",15000,12],["Liquide de freins",0,24]],""],
 ["PL-MG","MG / Maxus Hybrid+","MGHEV",["5W-30 ACEA C3",4,""],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Bougies",60000,48],["Filtre à air",30000,24],["Filtre habitacle",15000,12],["Bilan batterie HV",15000,12],["Liquide de freins",0,24]],""],
+["PL-PYPHEV","Mazda e-Skyactiv PHEV (CX-60 / CX-80)","PYPHEV",["0W-20 API SP Mazda",5.5,"Vidange annuelle même si moteur peu utilisé"],["Chaîne",0,0,""],[["Vidange + filtre huile",12000,12],["Bougies",60000,48],["Filtre à air",40000,48],["Bilan batterie HV + OBC",15000,12],["Filtre habitacle",15000,12],["Liquide de freins",0,24]],""],
+["PL-ROT","Mazda MX-30 R-EV (rotatif générateur)","ROT",["0W-20 API SP Mazda (rotatif)",3.6,"Contrôle niveau tous les 1 000 km"],["Engrenages",0,0,""],[["Vidange + filtre huile",10000,12],["Contrôle niveau huile rotatif",1000,1],["Bougies (rotatif)",40000,24],["Bilan batterie HV + OBC",15000,12],["Filtre habitacle",15000,12],["Liquide de freins",0,24]],""],
 ["PL-BEV","Véhicule électrique (générique)","",null,null,[["Filtre habitacle",20000,24],["Contrôle freins (corrosion)",15000,12],["Liquide de freins",0,24],["Batterie 12V (test)",30000,24],["Bilan santé batterie HV (SOH)",15000,12],["LDR batterie HV",120000,72],["Huile réducteur (selon constructeur)",150000,0],["Rotation pneus",10000,6]],"Pas de vidange moteur. Interventions HV par personnel habilité.","b"],
 ["PL-PHEV","Hybride rechargeable (générique)","",["Selon motorisation thermique",0,"Vidange annuelle impérative même si moteur peu utilisé"],["Selon motorisation",0,0,""],[["Vidange + filtre huile",15000,12],["Bougies",60000,48],["Filtre habitacle",15000,12],["Bilan batterie HV + OBC",15000,12],["Liquide de freins",0,24],["LDR",120000,72]],"","p"],
 ["PL-HEV","Hybride non rechargeable (générique)","",["0W-16 / 0W-20 selon constructeur",0,""],["Chaîne (majoritairement)",0,0,""],[["Vidange + filtre huile",15000,12],["Nettoyage filtre batterie HV",30000,24],["Bilan batterie HV",15000,12],["Bougies",100000,0],["Filtre habitacle",15000,12],["Liquide de freins",0,24]],"","h"],
