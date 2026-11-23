@@ -1,6 +1,13 @@
 /* ══════════════════════════════════════════════════════════════════════════
-   APP v7.3 — catalogue, omnibox prédictive, studio, import multi-formats,
-   autosave, UI, événements. Balisage "..." + attributs HTML '...'.
+   APP v7.4 — démarrage sain, intégrité auto-réparée, stockage multi-couches.
+   CORRECTIFS OUVERTURE :
+     • normalisation sévérités/fréquences (moderee -> modérée, elevee -> élevée)
+       appliquée à la construction ET aux données persistées/importées ;
+     • sanitize() répare ids dupliqués, références orphelines, plans vides ;
+     • stockage multi-couches : localStorage -> sessionStorage -> window.name
+       -> IndexedDB (miroir asynchrone) -> mémoire ; restauration auto ;
+     • migration automatique des bases v7.3 ; badge de version synchronisé.
+   Balisage "..." + attributs HTML '...'.
    ══════════════════════════════════════════════════════════════════════════ */
 (function () {
   "use strict";
@@ -16,7 +23,7 @@
   var modalOpenFn = window.MD_modalOpen;
   var WP = window.MD_WP, PREF = window.MD_PREF, ERRORS = window.MD_ERRORS;
 
-  var PWD = "Kevin83600", KEY = "mecadata_v73", YMAX = 2027;
+  var PWD = "Kevin83600", KEY = "mecadata_v74", OLDKEY = "mecadata_v73", YMAX = 2027;
   var SEGS = ["Citadine", "Micro-citadine", "Compacte", "SUV urbain", "SUV compact", "Berline", "Break", "Ludospace", "Utilitaire", "Coupé", "Roadster", "Sportive", "Monospace", "Pick-up"];
   var FU = {
     e: { l: "Essence", c: "#FFAF2E" }, d: { l: "Diesel", c: "#4D8DFF" },
@@ -60,8 +67,138 @@
   };
   var ATMO = /V10|V12|W12|W16|Flat-6|Boxer|Skyactiv-G|VVT|Pentastar|Nettuno/;
 
+  /* ══════════ NORMALISATION (corrige les 5 erreurs d intégrité) ══════════ */
+  function normSev(v) {
+    var k = nk(v);
+    var map = {
+      critique: "critique", critical: "critique", crit: "critique", severe: "critique",
+      majeure: "majeure", major: "majeure", majeur: "majeure", high: "majeure",
+      moderee: "modérée", modere: "modérée", moderate: "modérée", moyenne: "modérée", medium: "modérée", moyen: "modérée",
+      mineure: "mineure", minor: "mineure", mineur: "mineure", faible: "mineure", low: "mineure",
+      info: "info", information: "info", note: "info", notice: "info"
+    };
+    if (map[k]) return map[k];
+    if (SV[v]) return v;
+    return "modérée";
+  }
+  function normFreq(v) {
+    var k = nk(v);
+    var map = {
+      elevee: "élevée", eleve: "élevée", high: "élevée", frequente: "élevée", frequent: "élevée",
+      moyenne: "moyenne", medium: "moyenne", moyen: "moyenne", moderee: "moyenne",
+      faible: "faible", low: "faible", rare: "faible"
+    };
+    if (map[k]) return map[k];
+    if (FQ[v]) return v;
+    return "moyenne";
+  }
+  var FUELMAP = { e: "e", essence: "e", gasoline: "e", petrol: "e", d: "d", diesel: "d", gozole: "d", h: "h", hybride: "h", hybrid: "h", hev: "h", p: "p", phev: "p", rechargeable: "p", b: "b", ev: "b", bev: "b", electrique: "b", electric: "b", g: "g", gpl: "g", lpg: "g" };
+  function fuelNorm(v) {
+    var k = nk(v);
+    if (FUELMAP[k]) return FUELMAP[k];
+    if (FU[k]) return k;
+    if (k.indexOf("recharge") > -1) return "p";
+    if (k.indexOf("electr") > -1 || k === "ev" || k === "bev") return "b";
+    if (k.indexOf("hybr") > -1) return "h";
+    if (k.indexOf("dies") > -1) return "d";
+    if (k.indexOf("gpl") > -1) return "g";
+    return "e";
+  }
+
+  /* ══════════ STOCKAGE MULTI-COUCHES ══════════ */
+  var IDB = { db: null, ok: false };
+  function idbOpen() {
+    return new Promise(function (res) {
+      try {
+        if (!window.indexedDB) { res(false); return; }
+        var req = indexedDB.open("mecadata_kv", 1);
+        req.onupgradeneeded = function () {
+          var db = req.result;
+          if (!db.objectStoreNames.contains("kv")) db.createObjectStore("kv");
+        };
+        req.onsuccess = function () { IDB.db = req.result; IDB.ok = true; res(true); };
+        req.onerror = function () { res(false); };
+        req.onblocked = function () { res(false); };
+        setTimeout(function () { if (!IDB.ok) res(false); }, 1500);
+      } catch (e) { res(false); }
+    });
+  }
+  function idbSet(k, v) {
+    if (!IDB.ok) return;
+    try { var tx = IDB.db.transaction("kv", "readwrite"); tx.objectStore("kv").put(v, k); } catch (e) {}
+  }
+  function idbGet(k) {
+    return new Promise(function (res) {
+      if (!IDB.ok) { res(null); return; }
+      try {
+        var tx = IDB.db.transaction("kv", "readonly");
+        var r = tx.objectStore("kv").get(k);
+        r.onsuccess = function () { res(r.result || null); };
+        r.onerror = function () { res(null); };
+      } catch (e) { res(null); }
+    });
+  }
+  function idbDel(k) {
+    if (!IDB.ok) return;
+    try { var tx = IDB.db.transaction("kv", "readwrite"); tx.objectStore("kv").delete(k); } catch (e) {}
+  }
+  function nameRead(k) {
+    try {
+      var cur = window.name || "";
+      if (cur.indexOf("MDENV:") === 0) {
+        var env = JSON.parse(cur.slice(6));
+        return env[k] === undefined ? null : env[k];
+      }
+    } catch (e) {}
+    return null;
+  }
+  function nameWrite(k, v) {
+    try {
+      var env = {}, cur = window.name || "";
+      if (cur.indexOf("MDENV:") === 0) { try { env = JSON.parse(cur.slice(6)); } catch (e) { env = {}; } }
+      if (v === null) delete env[k]; else env[k] = v;
+      var s = JSON.stringify(env);
+      if (s.length < 1800000) window.name = "MDENV:" + s;
+    } catch (e) {}
+  }
+  function upgradeStore() {
+    try { localStorage.setItem("__p", "1"); localStorage.removeItem("__p"); STORE.local = true; } catch (e) { STORE.local = false; }
+    try { sessionStorage.setItem("__p", "1"); sessionStorage.removeItem("__p"); STORE.session = true; } catch (e) { STORE.session = false; }
+    var nameOK = false;
+    try { window.name = window.name || ""; nameOK = true; } catch (e) {}
+    STORE.nameOK = nameOK;
+    var baseGet = STORE.get, baseSet = STORE.set, baseDel = STORE.del;
+    STORE.get = function (k) {
+      var v = baseGet.call(STORE, k);
+      if (v == null && STORE.session) { try { v = sessionStorage.getItem(k); } catch (e) {} }
+      if (v == null && STORE.nameOK) v = nameRead(k);
+      return v;
+    };
+    STORE.set = function (k, v) {
+      baseSet.call(STORE, k, v);
+      if (STORE.session) { try { sessionStorage.setItem(k, v); } catch (e) { STORE.session = false; } }
+      if (STORE.nameOK) nameWrite(k, v);
+      idbSet(k, v);
+      return true;
+    };
+    STORE.del = function (k) {
+      baseDel.call(STORE, k);
+      try { sessionStorage.removeItem(k); } catch (e) {}
+      if (STORE.nameOK) nameWrite(k, null);
+      idbDel(k);
+    };
+    STORE.backend = function () {
+      if (STORE.local) return "localStorage";
+      if (STORE.session) return "sessionStorage";
+      if (STORE.nameOK) return "window.name";
+      return "mémoire";
+    };
+    STORE.any = function () { return !!(STORE.local || STORE.session || STORE.nameOK); };
+  }
+
+  /* ══════════ ÉTAT ══════════ */
   var SEED = null, DB = null, AUDIT = [], GARAGE = [], VIEWS = [], UNDO = null, TESTS = [];
-  var IVIC = {}, MIDX = {}, BIDX = {}, IMPORT = null, LASTSAVE = 0, DIRTY = false;
+  var IVIC = {}, MIDX = {}, BIDX = {}, IMPORT = null, LASTSAVE = 0, DIRTY = false, FIXES = 0;
   var META = { counts: {}, links: 0, corr: 0, integ: { err: [], warn: [], ok: true, pct: 100 }, size: 0, byBrand: {}, byFuel: {} };
   var S = {
     view: "bord",
@@ -78,7 +215,7 @@
 
   function saveNow() {
     safe("save", function () {
-      var payload = { v: 73, db: DB, audit: AUDIT.slice(-60), garage: GARAGE, views: VIEWS, prefs: PREF, wp: WP.P, ts: Date.now() };
+      var payload = { v: 74, db: DB, audit: AUDIT.slice(-60), garage: GARAGE, views: VIEWS, prefs: PREF, wp: WP.P, ts: Date.now() };
       STORE.set(KEY, JSON.stringify(payload));
       LASTSAVE = Date.now();
       DIRTY = false;
@@ -99,6 +236,125 @@
     toast("ok", "Action annulée", "Base restaurée.");
   }
 
+  /* ══════════ SANITIZE — réparation automatique ══════════ */
+  function sanitize(D) {
+    var fixes = 0, i;
+    FILES.forEach(function (f) { if (!Array.isArray(D[f[0]])) { D[f[0]] = []; fixes++; } });
+
+    var bseen = {}, bname = {}, nb = [];
+    for (i = 0; i < D.brands.length; i++) {
+      var b = D.brands[i];
+      if (!b || !b.n) { fixes++; continue; }
+      var bid = String(b.id || ("B-" + slug(b.n)));
+      if (bseen[bid]) { bid = uid("B"); fixes++; }
+      bseen[bid] = 1;
+      nb.push({ id: bid, n: String(b.n), pays: String(b.pays || "—"), grp: String(b.grp || "—") });
+      bname[nk(b.n)] = bid;
+    }
+    D.brands = nb;
+
+    var mseen = {}, mids = {}, nm = [];
+    for (i = 0; i < D.models.length; i++) {
+      var m = D.models[i];
+      if (!m || !m.n) { fixes++; continue; }
+      var bb = String(m.b || "");
+      if (!bseen[bb]) {
+        var byName = bname[nk(bb)];
+        if (byName) { bb = byName; fixes++; }
+        else {
+          var nid = uid("B");
+          var nlabel = bb || "Marque importée";
+          D.brands.push({ id: nid, n: nlabel, pays: "—", grp: "—" });
+          bseen[nid] = 1; bname[nk(nlabel)] = nid; bb = nid; fixes++;
+        }
+      }
+      var mid = String(m.id || ("M-" + slug(bb) + "-" + slug(m.n)));
+      if (mseen[mid]) { mid = uid("M"); fixes++; }
+      mseen[mid] = 1; mids[mid] = 1;
+      var my = Array.isArray(m.y) ? m.y : [2017, YMAX];
+      nm.push({ id: mid, b: bb, n: String(m.n), y: [Number(my[0]) || 2017, Number(my[1]) || YMAX], seg: String(m.seg || "Compacte") });
+    }
+    D.models = nm;
+
+    var eseen = {}, ne = [];
+    for (i = 0; i < D.engines.length; i++) {
+      var e = D.engines[i];
+      if (!e || !e.code) { fixes++; continue; }
+      var ms = Array.isArray(e.m) ? e.m.filter(function (x) { return mids[x]; }) : [];
+      if (!ms.length) { fixes++; continue; }
+      var eid = String(e.id || uid("E"));
+      if (eseen[eid]) { eid = uid("E"); fixes++; }
+      eseen[eid] = 1;
+      var hp = Number(e.hp) || 0;
+      if (hp <= 0) { hp = 100; fixes++; }
+      var fu = FU[e.fuel] ? e.fuel : fuelNorm(e.fuel);
+      var ey = Array.isArray(e.y) ? e.y : [2017, YMAX];
+      ne.push({
+        id: eid, m: ms, code: String(e.code), fam: String(e.fam || e.code), label: String(e.label || e.code),
+        fuel: fu, disp: Number(e.disp) || 0, hp: hp, nm: Number(e.nm) || 0,
+        kw: Number(e.kw) || Math.round(hp * 0.7355), y: [Number(ey[0]) || 2017, Number(ey[1]) || YMAX],
+        gb: String(e.gb || "BVM"), norm: String(e.norm || (fu === "b" ? "ZE" : "Euro 6")),
+        cyl: String(e.cyl || (fu === "b" ? "ÉLEC" : "L4")), asp: String(e.asp || "Turbo"),
+        inj: String(e.inj || "—"), note: String(e.note || "")
+      });
+    }
+    D.engines = ne;
+
+    var fseen = {}, nf = [];
+    for (i = 0; i < D.faults.length; i++) {
+      var f = D.faults[i];
+      if (!f || !f.t) { fixes++; continue; }
+      var fid = String(f.id || uid("F"));
+      if (fseen[fid]) { fid = uid("F"); fixes++; }
+      fseen[fid] = 1;
+      var sv = normSev(f.sev); if (sv !== f.sev) fixes++;
+      var fq = normFreq(f.freq); if (fq !== f.freq) fixes++;
+      nf.push({
+        id: fid, t: String(f.t), fam: split(f.fam), sev: sv, freq: fq,
+        y: Array.isArray(f.y) ? f.y : [2017, YMAX], km: Array.isArray(f.km) ? f.km : [0, 200000],
+        sym: split(f.sym), cause: String(f.cause || ""), fix: String(f.fix || ""),
+        cost: Array.isArray(f.cost) ? f.cost : [0, 0], status: String(f.status || "Surveillance"),
+        fuel: FU[f.fuel] ? f.fuel : "", m: split(f.m), gb: split(f.gb), e: split(f.e)
+      });
+    }
+    D.faults = nf;
+
+    var tseen = {}, nt = [];
+    for (i = 0; i < D.tsb.length; i++) {
+      var t = D.tsb[i];
+      if (!t || !t.t) { fixes++; continue; }
+      var tid = String(t.id || uid("T"));
+      if (tseen[tid]) { tid = uid("T"); fixes++; }
+      tseen[tid] = 1;
+      var tsv = normSev(t.sev); if (tsv !== t.sev) fixes++;
+      var bs = split(t.b).filter(function (x) { return bseen[x]; });
+      nt.push({
+        id: tid, ref: String(t.ref || ("TSB-" + tid)), b: bs, fam: split(t.fam), t: String(t.t),
+        date: String(t.date || "2026-01").slice(0, 7), cat: String(t.cat || "Moteur"), sev: tsv,
+        sum: String(t.sum || ""), act: String(t.act || ""), m: split(t.m), gb: split(t.gb)
+      });
+    }
+    D.tsb = nt;
+
+    var pseen = {}, np = [];
+    for (i = 0; i < D.maint.length; i++) {
+      var p = D.maint[i];
+      if (!p || !p.name) { fixes++; continue; }
+      var pid = String(p.id || uid("P"));
+      if (pseen[pid]) { pid = uid("P"); fixes++; }
+      pseen[pid] = 1;
+      var items = Array.isArray(p.items) ? p.items.filter(function (x) { return Array.isArray(x) && x[0]; }) : [];
+      if (!items.length) { items = [["Vidange + filtre huile", 15000, 12], ["Liquide de freins", 0, 24]]; fixes++; }
+      np.push({
+        id: pid, name: String(p.name), fam: split(p.fam), oil: p.oil || null, dist: p.dist || null,
+        items: items, note: String(p.note || ""), fuel: FU[p.fuel] ? p.fuel : "", extra: p.extra || null, base: [15000, 12]
+      });
+    }
+    D.maint = np;
+    return fixes;
+  }
+
+  /* ══════════ CATALOGUE ══════════ */
   function mkEngine(n, mid, code, fam, label, fuel, disp, hp, nm, y0, y1, gb) {
     var cyl = "L4";
     if (fuel === "b") cyl = "ÉLEC";
@@ -176,7 +432,8 @@
     for (i = 0; i < R.ft.length; i++) {
       var ft = R.ft[i];
       D.faults.push({
-        id: "F" + String(i + 1).padStart(3, "0"), t: ft[0], fam: split(ft[1]), sev: ft[2], freq: ft[3],
+        id: "F" + String(i + 1).padStart(3, "0"), t: ft[0], fam: split(ft[1]),
+        sev: normSev(ft[2]), freq: normFreq(ft[3]),
         y: [ft[4], ft[5]], km: [ft[6], ft[7]], sym: split(ft[8]), cause: ft[9], fix: ft[10],
         cost: [ft[11], ft[12]], status: ft[13], fuel: ft[14] || "", m: [], gb: GBF(ft[0]), e: []
       });
@@ -185,7 +442,7 @@
       var ts = R.ts[i];
       D.tsb.push({
         id: "T" + String(i + 1).padStart(3, "0"), ref: ts[0], b: split(ts[1]), fam: split(ts[2]),
-        t: ts[3], date: ts[4], cat: ts[5], sev: ts[6], sum: ts[7], act: ts[8], m: [], gb: GBF(ts[3])
+        t: ts[3], date: ts[4], cat: ts[5], sev: normSev(ts[6]), sum: ts[7], act: ts[8], m: [], gb: GBF(ts[3])
       });
     }
     for (i = 0; i < R.mt.length; i++) {
@@ -351,7 +608,8 @@
     var k = META.size || 0, b = $("#sbar"), t = $("#stxt");
     if (b) b.style.width = clamp(k / 8192 * 100, 2, 100) + "%";
     var stamp = LASTSAVE ? new Date(LASTSAVE).toLocaleTimeString("fr-FR") : "—";
-    if (t) t.textContent = k + " Ko · " + (STORE.local ? "local" : "mémoire") + " · auto " + stamp;
+    var backend = STORE.backend ? STORE.backend() : (STORE.local ? "local" : "mémoire");
+    if (t) t.textContent = k + " Ko · " + backend + " · auto " + stamp;
   }
   function prune() {
     reindex();
@@ -360,10 +618,12 @@
     if (S.drawer && S.drawer.type === "engine" && !DB.engines.some(function (e) { return e.id === S.drawer.id; })) closeDrawer();
   }
   function mutate(t, m) {
+    FIXES += sanitize(DB);
     recompute(); prune(); audit(t, m); markDirty(); updateMeta(); render();
     if (S.drawer) renderDrawer();
   }
 
+  /* ══════════ FRAGMENTS ══════════ */
   var sevTag = function (s) {
     var cls = (s === "modérée") ? "mode" : esc(s);
     return "<span class='sev " + cls + "'>" + esc(s) + "</span>";
@@ -391,7 +651,6 @@
       "<div style='min-width:0'><b>" + esc(title) + "</b><small>" + esc(x.label) + " · " + esc(x.code) + " · " + x.y[0] + "-" + x.y[1] + "</small></div>" +
       "<span class='hp'>" + x.hp + "<small style='font-size:9px'> ch</small></span></button>";
   }
-
   function faultCard(f, hist, full) {
     var c = (SV[f.sev] || { c: "#FFAF2E" }).c, h = "", i;
     h += "<div class='fcard' style='--sc:" + c + ";" + (hist ? "opacity:.62" : "") + "'>";
@@ -452,7 +711,6 @@
     if (p.note) h += "<p style='font-size:11.5px;color:#FFAF2E;margin-top:9px'>" + ic("info", "width:13px;height:13px") + " " + esc(p.note) + "</p>";
     return h;
   }
-
   function mountAnim(sc) {
     $$("[data-count]", sc).forEach(function (el) {
       var tg = +el.dataset.count || 0, t0 = performance.now();
@@ -475,6 +733,7 @@
     });
   }
 
+  /* ══════════ DRAWER ══════════ */
   function openDrawer(type, id, push) {
     if (S.drawer && push) S.drawer.hist.push({ type: S.drawer.type, id: S.drawer.id, tab: S.drawer.tab });
     else if (!S.drawer) S.drawer = { hist: [] };
@@ -571,7 +830,7 @@
     mountAnim($("#dr"));
   }
 
-  /* ══════════ RECHERCHE PRÉDICTIVE (omnibox) ══════════ */
+  /* ══════════ RECHERCHE PRÉDICTIVE ══════════ */
   var SYN = {
     puretech: ["eb2", "eb2adts", "eb2adtx"], hdi: ["dv5", "dv5ruc", "dv5rucd", "dw10"],
     bluehdi: ["dv5", "dv5ruc", "dv5rucd", "dw10"], tsi: ["ea211", "ea211evo", "ea888"],
@@ -591,10 +850,7 @@
   }
   function subseq(needle, hay) {
     var i = 0, j = 0;
-    while (i < needle.length && j < hay.length) {
-      if (needle[i] === hay[j]) i++;
-      j++;
-    }
+    while (i < needle.length && j < hay.length) { if (needle[i] === hay[j]) i++; j++; }
     return i === needle.length;
   }
   function textScore(qn, hay) {
@@ -608,25 +864,17 @@
   }
   function expandSyn(raw) {
     var out = [];
-    for (var i = 0; i < raw.length; i++) {
-      var k = nk(raw[i]);
-      if (SYN[k]) out = out.concat(SYN[k]);
-    }
+    for (var i = 0; i < raw.length; i++) { var k = nk(raw[i]); if (SYN[k]) out = out.concat(SYN[k]); }
     return out;
   }
   function omniSearch(q) {
-    var T = tokens(q);
-    var syn = expandSyn(T.raw);
-    var hits = [];
-    var i, j;
+    var T = tokens(q), syn = expandSyn(T.raw), hits = [], i, j;
     var wantRecall = T.n.indexOf("rappel") > -1 || T.n.indexOf("campagne") > -1;
     var wantTsb = T.n.indexOf("tsb") > -1 || T.n.indexOf("bulletin") > -1;
     var wantFault = T.n.indexOf("panne") > -1 || T.n.indexOf("defaut") > -1 || T.n.indexOf("probleme") > -1;
-
     var matchedEng = [];
     for (i = 0; i < DB.engines.length; i++) {
-      var e = DB.engines[i];
-      var b = engBrand(e), ms = engModels(e);
+      var e = DB.engines[i], b = engBrand(e), ms = engModels(e);
       var hay = [(b ? b.n : "")].concat(ms.map(function (m) { return m.n; })).concat([e.code, e.fam, e.label]).join(" ");
       var sc = textScore(T.n, hay);
       if (!sc && syn.length) {
@@ -646,51 +894,32 @@
       var bb = engBrand(matchedEng[i]);
       if (bb) brandSet[bb.id] = 1;
     }
-
     for (i = 0; i < DB.faults.length; i++) {
       var f = DB.faults[i];
       var hay2 = f.t + " " + (f.fam || []).join(" ") + " " + f.cause + " " + (f.sym || []).join(" ");
       var sc2 = textScore(T.n, hay2);
-      if (!sc2) {
-        for (j = 0; j < (f.fam || []).length; j++) if (famSet[f.fam[j]]) { sc2 = 66; break; }
-      }
-      if (!sc2 && syn.length) {
-        for (j = 0; j < syn.length; j++) if (nk(hay2).indexOf(nk(syn[j])) > -1) { sc2 = 58; break; }
-      }
-      if (!sc2 && (f.gb || []).length) {
-        for (j = 0; j < f.gb.length; j++) if (gbSet[f.gb[j]]) { sc2 = 54; break; }
-      }
+      if (!sc2) for (j = 0; j < (f.fam || []).length; j++) if (famSet[f.fam[j]]) { sc2 = 66; break; }
+      if (!sc2 && syn.length) for (j = 0; j < syn.length; j++) if (nk(hay2).indexOf(nk(syn[j])) > -1) { sc2 = 58; break; }
+      if (!sc2 && (f.gb || []).length) for (j = 0; j < f.gb.length; j++) if (gbSet[f.gb[j]]) { sc2 = 54; break; }
       if (sc2 > 0) {
-        var boost = wantFault ? 26 : 0;
-        var sevW = (SV[f.sev] || { w: 0 }).w;
-        hits.push({ kind: "fault", id: f.id, score: sc2 + boost + sevW * 0.6, title: f.t, sub: f.sev + " · " + f.y[0] + "-" + f.y[1] + " · " + fmt(f.km[0]) + "-" + fmt(f.km[1]) + " km", color: (SV[f.sev] || {}).c || "#FFAF2E", badge: "PANNE" });
+        hits.push({ kind: "fault", id: f.id, score: sc2 + (wantFault ? 26 : 0) + (SV[f.sev] || { w: 0 }).w * 0.6, title: f.t, sub: f.sev + " · " + f.y[0] + "-" + f.y[1] + " · " + fmt(f.km[0]) + "-" + fmt(f.km[1]) + " km", color: (SV[f.sev] || {}).c || "#FFAF2E", badge: "PANNE" });
       }
     }
-
     for (i = 0; i < DB.tsb.length; i++) {
-      var t = DB.tsb[i];
-      var rc = isRecall(t);
+      var t = DB.tsb[i], rc = isRecall(t);
       var hay3 = t.t + " " + t.ref + " " + (t.fam || []).join(" ") + " " + t.sum + " " + t.cat;
       var sc3 = textScore(T.n, hay3);
-      if (!sc3) {
-        for (j = 0; j < (t.fam || []).length; j++) if (famSet[t.fam[j]]) { sc3 = 64; break; }
-      }
-      if (!sc3) {
-        for (j = 0; j < (t.b || []).length; j++) if (brandSet[t.b[j]]) { sc3 = 50; break; }
-      }
-      if (!sc3 && syn.length) {
-        for (j = 0; j < syn.length; j++) if (nk(hay3).indexOf(nk(syn[j])) > -1) { sc3 = 56; break; }
-      }
+      if (!sc3) for (j = 0; j < (t.fam || []).length; j++) if (famSet[t.fam[j]]) { sc3 = 64; break; }
+      if (!sc3) for (j = 0; j < (t.b || []).length; j++) if (brandSet[t.b[j]]) { sc3 = 50; break; }
+      if (!sc3 && syn.length) for (j = 0; j < syn.length; j++) if (nk(hay3).indexOf(nk(syn[j])) > -1) { sc3 = 56; break; }
       if (sc3 > 0) {
         var boost3 = (wantRecall && rc) ? 34 : (wantTsb && !rc ? 30 : 0);
         if (rc) boost3 += 12;
         hits.push({ kind: "tsb", id: t.id, score: sc3 + boost3 + (SV[t.sev] || { w: 0 }).w * 0.5, title: t.t, sub: t.ref + " · " + t.date + " · " + t.cat, color: rc ? "#FFAF2E" : "#4D8DFF", badge: rc ? "RAPPEL" : "TSB" });
       }
     }
-
     for (i = 0; i < DB.models.length; i++) {
-      var m = DB.models[i];
-      var mb = brandById(m.b);
+      var m = DB.models[i], mb = brandById(m.b);
       var sc4 = textScore(T.n, (mb ? mb.n + " " : "") + m.n);
       if (sc4 > 0) hits.push({ kind: "model", id: m.id, score: sc4 + 4, title: (mb ? mb.n + " " : "") + m.n, sub: m.seg + " · " + m.y[0] + "-" + m.y[1], color: "#4D8DFF", badge: "MODÈLE" });
     }
@@ -699,14 +928,12 @@
       var sc5 = textScore(T.n, br.n + " " + br.pays);
       if (sc5 > 0) hits.push({ kind: "brand", id: br.id, score: sc5, title: br.n, sub: br.pays + " · " + br.grp, color: "#25D4EE", badge: "MARQUE" });
     }
-
     hits.sort(function (a, b) { return b.score - a.score; });
     var seen = {}, out = [];
     for (i = 0; i < hits.length && out.length < 14; i++) {
       var k = hits[i].kind + ":" + hits[i].id;
       if (seen[k]) continue;
-      seen[k] = 1;
-      out.push(hits[i]);
+      seen[k] = 1; out.push(hits[i]);
     }
     return out;
   }
@@ -718,16 +945,14 @@
     return esc(String(text).slice(0, idx)) + "<mark>" + esc(String(text).slice(idx, idx + n.length)) + "</mark>" + esc(String(text).slice(idx + n.length));
   }
   function omniRender() {
-    var box = $("#omnires");
-    if (!box) return;
+    var box = $("#omnires"); if (!box) return;
     var q = S.omni.q;
     if (!q || q.trim().length < 2) {
       var seeds = ["3008 courroie", "3008 rappel", "1.5 BlueHDi chaine", "AdBlue SCR", "EGR FAP", "EAT8 a-coups", "pompe a vide freinage"];
       var h = "<div class='grp'>RECHERCHE PRÉDICTIVE — PANNES · RAPPELS · TSB</div><div class='hint'>";
       for (var i = 0; i < seeds.length; i++) h += "<button data-act='omniSeed' data-q='" + esc(seeds[i]) + "'>" + esc(seeds[i]) + "</button>";
       h += "</div>";
-      box.innerHTML = h;
-      box.classList.add("on");
+      box.innerHTML = h; box.classList.add("on");
       return;
     }
     var hits = omniSearch(q);
@@ -747,8 +972,7 @@
       if (!group.length) continue;
       html += "<div class='grp'>" + labels[kind] + " · " + group.length + "</div>";
       for (var j = 0; j < group.length; j++) {
-        var it = group[j];
-        var gi = hits.indexOf(it);
+        var it = group[j], gi = hits.indexOf(it);
         html += "<button class='hit" + (gi === S.omni.idx ? " sel" : "") + "' data-act='omniHit' data-kind='" + it.kind + "' data-id='" + esc(it.id) + "' data-i='" + gi + "'>";
         html += "<span class='k' style='color:" + it.color + "'>" + it.badge + "</span>";
         html += "<span class='txt'><span>" + hl(it.title, q) + "</span><span class='sub2'>" + esc(it.sub) + "</span></span>";
@@ -759,16 +983,11 @@
     box.innerHTML = html;
     box.classList.add("on");
   }
-  function omniClose() {
-    var box = $("#omnires");
-    if (box) box.classList.remove("on");
-    S.omni.idx = -1;
-  }
+  function omniClose() { var box = $("#omnires"); if (box) box.classList.remove("on"); S.omni.idx = -1; }
   function omniActivate(hit) {
     if (!hit) return;
     omniClose();
-    var inp = $("#omni");
-    if (inp) inp.blur();
+    var inp = $("#omni"); if (inp) inp.blur();
     if (hit.kind === "engine") openDrawer("engine", hit.id, !!S.drawer);
     else if (hit.kind === "fault") openDrawer("fault", hit.id, !!S.drawer);
     else if (hit.kind === "tsb") openDrawer("tsb", hit.id, !!S.drawer);
@@ -844,7 +1063,6 @@
     h += "</article>";
     return h;
   }
-
   function vBord() {
     var c = META.counts, i;
     var fc = Object.keys(FU).map(function (f) { return { f: f, n: DB.engines.filter(function (e) { return e.fuel === f; }).length }; }).filter(function (x) { return x.n > 0; });
@@ -860,11 +1078,10 @@
       .sort(function (a, b) { return b.v - a.v; }).slice(0, 8);
     var rc = DB.tsb.filter(isRecall).sort(function (a, b) { return b.date.localeCompare(a.date); }).slice(0, 5);
     var al = DB.faults.filter(function (f) { return f.sev === "critique"; }).slice(0, 4);
-
     var h = "";
     h += "<div class='hero rv'><span class='kick'>MODULE 01 — POSTE DE BORD</span>";
     h += "<h2>BASE EXPERT <i>2017 - 2027</i><br>" + fmt(c.b) + " marques · " + fmt(c.m) + " modèles · " + fmt(c.e) + " motorisations</h2>";
-    h += "<p>" + fmt(c.f) + " pannes connues, " + fmt(c.t) + " bulletins dont <b style='color:#FFAF2E'>" + fmt(c.rc) + " campagnes de rappel</b>, " + fmt(c.p) + " plans d entretien. Recherche prédictive en haut : tapez un modèle, un code moteur ou un symptôme.</p>";
+    h += "<p>" + fmt(c.f) + " pannes connues, " + fmt(c.t) + " bulletins dont <b style='color:#FFAF2E'>" + fmt(c.rc) + " campagnes de rappel</b>, " + fmt(c.p) + " plans d entretien. Recherche prédictive en haut : modèle, code moteur ou symptôme.</p>";
     h += "<div class='seedrow'>";
     var seeds = ["3008 courroie", "3008 rappel", "1.5 BlueHDi chaine", "AdBlue SCR", "EGR FAP", "EAT8 a-coups", "pompe a vide freinage"];
     for (i = 0; i < seeds.length; i++) h += "<button data-act='omniSeed' data-q='" + esc(seeds[i]) + "'>" + ic("search", "width:10px;height:10px") + esc(seeds[i]) + "</button>";
@@ -873,12 +1090,10 @@
     h += "<button class='btn grn' data-act='runTests'>" + ic("stetho") + "Autovérification</button>";
     h += "<button class='btn amb' data-act='goImport'>" + ic("ul") + "Importer</button>";
     h += "<a class='btn mag' href='#/studio'>" + ic("spark") + "Studio fond</a></div></div>";
-
     var kpis = [["db", "MARQUES", c.b, "#25D4EE"], ["car", "MODÈLES", c.m, "#4D8DFF"], ["piston", "MOTORISATIONS", c.e, "#E45CFF"], ["alert", "PANNES", c.f, "#FF4D5E"], ["bell", "RAPPELS", c.rc, "#FFAF2E"], ["wrench", "PLANS", c.p, "#43E08B"]];
     h += "<div class='kpis'>";
     for (i = 0; i < kpis.length; i++) h += "<div class='card kpi rv' style='--d:" + (i + 1) + ";--kc:" + kpis[i][3] + "'>" + ic(kpis[i][0]) + "<b data-count='" + kpis[i][2] + "'>0</b><span>" + kpis[i][1] + "</span></div>";
     h += "</div>";
-
     h += "<div class='g2'><div class='card panel rv' style='--d:7'><h3>" + ic("bolt") + "Énergies<span class='chip'>" + fmt(tot) + "</span></h3>";
     h += "<div class='dwrap'><svg class='donut' viewBox='0 0 150 150'><g transform='rotate(-90 75 75)'>";
     for (i = 0; i < segs.length; i++) h += "<circle cx='75' cy='75' r='" + R + "' stroke='" + FU[segs[i].f].c + "' stroke-dasharray='0 " + C + "' data-seg='" + segs[i].len + " " + (C - segs[i].len) + "' stroke-dashoffset='" + segs[i].off + "'/>";
@@ -886,29 +1101,23 @@
     h += "<div class='leg'>";
     for (i = 0; i < segs.length; i++) h += "<div class='li'><i style='background:" + FU[segs[i].f].c + "'></i>" + FU[segs[i].f].l + "<b>" + segs[i].n + "</b><small>" + Math.round(segs[i].n / tot * 100) + "%</small></div>";
     h += "</div></div></div>";
-
     h += "<div class='card panel rv' style='--d:8'><h3>" + ic("alert") + "Sévérité des pannes</h3><div class='bars'>";
     for (i = 0; i < sc.length; i++) h += "<div class='brow'><span class='bl'>" + sc[i].s.toUpperCase() + "</span><div class='bt'><i data-w='" + Math.round(sc[i].n / sm * 100) + "%' style='--bc:" + SV[sc[i].s].c + "'></i></div><b>" + sc[i].n + "</b></div>";
     h += "</div></div></div>";
-
     h += "<div class='g2'><div class='card panel rv' style='--d:9'><h3>" + ic("alert", "color:#FF4D5E") + "Alertes prioritaires</h3><div class='feed'>";
     for (i = 0; i < al.length; i++) h += "<button class='fi' data-act='openFault' data-id='" + al[i].id + "'><span class='fx'>" + ic("alert", "width:15px;height:15px") + "</span><span style='flex:1;min-width:0'><b>" + esc(al[i].t) + "</b><small>" + esc((al[i].fam || []).slice(0, 3).join(" · ")) + "</small></span>" + ic("chev", "width:14px;height:14px;color:#61748C") + "</button>";
     h += "</div></div>";
-
     h += "<div class='card panel rv' style='--d:10'><h3>" + ic("bell", "color:#FFAF2E") + "Campagnes de rappel</h3><div class='feed'>";
     for (i = 0; i < rc.length; i++) h += "<button class='fi r' data-act='openTsb' data-id='" + rc[i].id + "'><span class='fx'>" + ic("bell", "width:15px;height:15px") + "</span><span style='flex:1;min-width:0'><b>" + esc(rc[i].t) + "</b><small>" + esc(rc[i].ref) + " · " + esc(rc[i].date) + "</small></span>" + ic("chev", "width:14px;height:14px;color:#61748C") + "</button>";
     h += "</div></div></div>";
-
     h += "<div class='card panel rv' style='--d:11'><h3>" + ic("gauge") + "Familles sous vigilance<span class='chip'>TOP 8</span></h3><div class='bars'>";
     for (i = 0; i < top.length; i++) {
       var col = IVL(top[i].v)[1];
       h += "<div class='brow'><span class='bl'>" + esc(top[i].f) + " <span class='dim'>x" + top[i].n + "</span></span><div class='bt'><i data-w='" + top[i].v + "%' style='--bc:" + col + "'></i></div><b style='color:" + col + "'>" + top[i].v + "</b></div>";
     }
-    h += "</div>";
-    h += "<div class='savechip'><i></i>SAUVEGARDE AUTO ACTIVE</div></div>";
+    h += "</div><div class='savechip'><i></i>SAUVEGARDE AUTO · " + (STORE.backend ? STORE.backend() : "mémoire") + "</div></div>";
     return h;
   }
-
   function vExplorer() {
     var f = S.f, h = "", i;
     h += "<div class='vh rv'><div><span class='kick'>MODULE 02 — EXPLORATEUR</span><h1>PARC <i>2017 - 2027</i></h1></div></div>";
@@ -941,7 +1150,6 @@
     $("#resMore").innerHTML = l.length > S.shown ? "<button class='btn ghost' data-act='more'>" + ic("dn") + "Plus (" + fmt(l.length - S.shown) + ")</button>" : "";
     mountAnim(g);
   }
-
   function vTech() {
     var L = S.tech, nr = DB.tsb.filter(isRecall).length, h = "";
     h += "<div class='vh rv'><div><span class='kick'>MODULE 03 — BIBLIOTHÈQUE TECHNIQUE</span><h1>PANNES · TSB · <i>RAPPELS</i></h1></div></div>";
@@ -979,7 +1187,6 @@
     $("#techCount").textContent = n + " fiche(s)";
     mountAnim(g);
   }
-
   function planItems(q) {
     q = (q || "").toLowerCase();
     var h = "";
@@ -1050,15 +1257,13 @@
     h += "</div><div class='due' id='dueList'></div></div></div></div>";
     return h;
   }
-
   function vStudio() {
     var P = WP.P, i;
     var h = "";
-    h += "<div class='vh rv'><div><span class='kick'>MODULE 05 — STUDIO FOND D ÉCRAN</span><h1>FONDS <i>DYNAMIQUES</i></h1><div class='sub'>10 scènes animées, palette pilotable, vitesse et sens de défilement réglables. Aperçu live et export PNG.</div></div>";
+    h += "<div class='vh rv'><div><span class='kick'>MODULE 05 — STUDIO FOND D ÉCRAN</span><h1>FONDS <i>DYNAMIQUES</i></h1><div class='sub'>10 scènes animées, palette pilotable, vitesse et sens réglables. Aperçu live et export PNG.</div></div>";
     h += "<div style='display:flex;gap:8px;flex-wrap:wrap'><button class='btn sm ghost' data-act='stRandom'>" + ic("dice") + "Aléatoire</button>";
     h += "<button class='btn sm ghost' data-act='stReset'>" + ic("reset") + "Réinitialiser</button>";
     h += "<button class='btn sm pri' data-act='stPng'>" + ic("cam") + "Export PNG</button></div></div>";
-
     h += "<div class='stwrap'><div class='card stage rv'><div class='screen' id='screen'><canvas id='pv'></canvas><div class='fx'><div class='v'></div><div class='g'></div></div><div class='hud' id='hud'></div></div>";
     h += "<div class='stagebar'><button class='btn sm " + (P.run ? "amb" : "ghost") + "' data-act='stRun'>" + ic(P.run ? "pause" : "play") + (P.run ? "Pause" : "Lecture") + "</button>";
     h += "<button class='btn sm ghost' data-act='stDir'>" + ic("reset") + (P.dir > 0 ? "Sens : avant" : "Sens : arrière") + "</button>";
@@ -1067,7 +1272,6 @@
     var pk = Object.keys(WP.PRESETS);
     for (i = 0; i < pk.length; i++) h += "<button data-act='stPreset' data-n='" + esc(pk[i]) + "'>" + esc(pk[i]) + "</button>";
     h += "</div></div>";
-
     h += "<div class='card ctrl rv'><h3>" + ic("spark") + "RÉGLAGES LIVE</h3>";
     h += "<div class='csec'><label class='lb'>Scène animée</label><div class='mgrid'>";
     for (i = 0; i < WP.MODES.length; i++) {
@@ -1075,7 +1279,6 @@
       h += "<button class='mb " + (P.mode === m[0] ? "on" : "") + "' data-act='stMode' data-m='" + m[0] + "'><i style='background:linear-gradient(135deg," + WP.pal().a + "," + WP.pal().b + ")'></i>" + m[1] + "</button>";
     }
     h += "</div></div>";
-
     h += "<div class='csec'><label class='lb'>Palette prédéfinie</label><div class='pgrid'>";
     var tk = Object.keys(WP.TH);
     for (i = 0; i < tk.length; i++) {
@@ -1088,7 +1291,6 @@
     var cks = [["bg", "Fond"], ["a", "Dominante"], ["b", "Accent 1"], ["c", "Accent 2"], ["d", "Accent 3"]];
     for (i = 0; i < cks.length; i++) h += "<div><label>" + cks[i][1] + "</label><input type='color' data-c='" + cks[i][0] + "' value='" + P.custom[cks[i][0]] + "'></div>";
     h += "</div></div>";
-
     var sliders = [
       ["speed", "Vitesse de défilement", 0, 200, 5],
       ["density", "Densité", 0, 100, 1],
@@ -1107,12 +1309,10 @@
       h += "<input type='range' data-p='" + s[0] + "' min='" + s[2] + "' max='" + s[3] + "' step='" + s[4] + "' value='" + P[s[0]] + "'></div>";
     }
     h += "</div>";
-
     h += "<div class='csec'><div class='fr f2'>";
     h += "<div><label class='lb'>Sens</label><select class='sel' data-p='dir'><option value='1' " + (P.dir > 0 ? "selected" : "") + ">Avant</option><option value='-1' " + (P.dir < 0 ? "selected" : "") + ">Arrière</option></select></div>";
     h += "<div><label class='lb'>Qualité</label><select class='sel' data-p='quality'><option value='eco' " + (P.quality === "eco" ? "selected" : "") + ">Éco 1x</option><option value='std' " + (P.quality === "std" ? "selected" : "") + ">Standard 1.5x</option><option value='ultra' " + (P.quality === "ultra" ? "selected" : "") + ">Ultra 2x</option></select></div>";
     h += "</div><div style='margin-top:9px'><label class='lb'>Format export</label><select class='sel' data-p='format'><option value='free' " + (P.format === "free" ? "selected" : "") + ">1600x900</option><option value='mobile' " + (P.format === "mobile" ? "selected" : "") + ">1170x2532</option><option value='tablet' " + (P.format === "tablet" ? "selected" : "") + ">1668x2224</option><option value='desktop' " + (P.format === "desktop" ? "selected" : "") + ">1920x1080</option></select></div></div>";
-
     h += "<div class='csec'>";
     var toggles = [["grid", "Grille & repères"], ["grain", "Grain"], ["scan", "Balayage"], ["vig", "Vignettage"], ["run", "Animation"], ["bg", "Fond global"]];
     for (i = 0; i < toggles.length; i++) h += "<div class='srow'><span>" + toggles[i][1] + "</span><label class='sw'><input type='checkbox' data-p='" + toggles[i][0] + "' " + (P[toggles[i][0]] ? "checked" : "") + "><i></i></label></div>";
@@ -1125,7 +1325,6 @@
     s.style.maxWidth = F[0]; s.style.height = F[1] + "px";
     setTimeout(function () { WP.resize(); }, 80);
   }
-
   function vDonnees() {
     var h = "", i;
     if (!isAdm()) {
@@ -1134,10 +1333,10 @@
       h += "<p>Import et administration réservés à la session <b class='mono' style='color:#FFAF2E'>NIVEAU 3</b>.</p>";
       h += "<form data-form='unlock'><input class='inp' type='password' name='pwd' placeholder='MOT DE PASSE' autocomplete='current-password'>";
       h += "<button class='btn amb' type='submit' id='unlockBtn'>" + ic("unlock") + "DÉVERROUILLER</button></form>";
-      h += "<p class='dim mono' style='font-size:9.5px;margin-top:14px' id='lockMsg'>STOCKAGE : " + (STORE.local ? "localStorage actif" : "mode mémoire") + "</p></div>";
+      h += "<p class='dim mono' style='font-size:9.5px;margin-top:14px' id='lockMsg'>STOCKAGE : " + (STORE.backend ? STORE.backend() : "mémoire") + "</p></div>";
       return h;
     }
-    h += "<div class='vh rv'><div><span class='kick'>MODULE 06 — ADMINISTRATION ING-3</span><h1>FICHIERS <i>CROISÉS</i></h1><div class='sub'>Import multi-formats (JSON, CSV, TSV, XML, YAML, XLSX, ODS, HTML, JS) — fusion sans doublon, sauvegarde automatique.</div></div>";
+    h += "<div class='vh rv'><div><span class='kick'>MODULE 06 — ADMINISTRATION ING-3</span><h1>FICHIERS <i>CROISÉS</i></h1><div class='sub'>Import multi-formats — fusion sans doublon, sauvegarde automatique.</div></div>";
     h += "<div style='display:flex;gap:8px'><span class='chip warn'>" + ic("shield", "width:12px;height:12px") + "ING-3</span><button class='btn sm ghost' data-act='logout'>" + ic("lock") + "Verrouiller</button></div></div>";
     h += "<div class='fgrid2'>";
     for (i = 0; i < FILES.length; i++) {
@@ -1150,7 +1349,7 @@
     h += "</div>";
     h += "<div class='tools'><button class='btn pri sm' data-act='goImport'>" + ic("ul") + "Import universel</button>";
     h += "<button class='btn ghost sm' data-act='expAll'>" + ic("dl") + "Exporter tout</button>";
-    h += "<button class='btn ghost sm' data-act='saveNow'>" + ic("save") + "Sauvegarder maintenant</button>";
+    h += "<button class='btn ghost sm' data-act='saveNow'>" + ic("save") + "Sauvegarder</button>";
     h += "<button class='btn ghost sm' data-act='integrity'>" + ic("check") + "Intégrité</button>";
     h += "<button class='btn dgr sm' data-act='askReset'>" + ic("reset") + "Base usine</button></div>";
     h += "<div class='card panel'><h3>" + ic("clock") + "Journal</h3><div class='journal'>";
@@ -1162,7 +1361,6 @@
     h += "</div></div>";
     return h;
   }
-
   function vDiag() {
     var fl = TESTS.filter(function (t) { return !t.ok && !t.soft; }).length;
     var wn = TESTS.filter(function (t) { return !t.ok && t.soft; }).length;
@@ -1172,8 +1370,9 @@
     h += "<div style='display:flex;gap:8px'><button class='btn sm grn' data-act='runTests'>" + ic("reset") + "Relancer</button>";
     h += "<button class='btn sm amb' data-act='autoFix'>" + ic("tool") + "Auto-réparation</button></div></div>";
     h += "<div class='card panel rv' style='margin-bottom:14px;border-left:3px solid " + col + "'><h3>" + ic("stetho", "color:" + col) + "Résultat<span class='chip' style='color:" + col + ";border-color:" + col + "'>" + (TESTS.length - fl) + "/" + TESTS.length + " OK</span></h3>";
-    h += "<p class='muted'>" + (fl ? "<b style='color:#FF4D5E'>" + fl + " test(s) bloquant(s).</b>" : "<b style='color:#43E08B'>Système opérationnel.</b>");
+    h += "<p class='muted'>" + (fl ? "<b style='color:#FF4D5E'>" + fl + " test(s) bloquant(s).</b>" : "<b style='color:#43E08B'>Système opérationnel — aucune erreur au démarrage.</b>");
     if (wn) h += " " + wn + " avertissement(s) non bloquant(s).";
+    if (FIXES) h += " <span class='mono' style='color:#43E08B'>" + FIXES + " réparation(s) automatique(s) appliquée(s).</span>";
     h += "</p></div>";
     h += "<div class='card panel rv'><h3>" + ic("check") + "Détail</h3><div class='tests'>";
     for (var i = 0; i < TESTS.length; i++) {
@@ -1184,7 +1383,6 @@
     h += "</div></div>";
     return h;
   }
-
   function render() {
     var v = S.view, m = $("#view");
     if (v !== "studio") WP.detach();
@@ -1208,12 +1406,8 @@
     if (v === "explorer") refreshResults();
     if (v === "tech") refreshTech();
     if (v === "entretien") refreshCalc();
-    if (v === "studio") {
-      var cv = $("#pv");
-      if (cv) { WP.attach(cv); applyFormat(); WP.fx(); WP.sync(); }
-    }
+    if (v === "studio") { var cv = $("#pv"); if (cv) { WP.attach(cv); applyFormat(); WP.fx(); WP.sync(); } }
   }
-
   function updateMeta() {
     var c = META.counts;
     $("#nEng").textContent = fmt(c.e);
@@ -1235,43 +1429,19 @@
     $("#rtxt").textContent = a ? "Session ING-3 active — import déverrouillé." : "Session invité — lecture et recherche.";
     $("#sndb").innerHTML = ic(PREF.sound ? "snd" : "mute");
     $("#sndb").classList.toggle("on", PREF.sound);
+    var vc = document.querySelector(".vch"); if (vc) vc.textContent = "v7.4";
+    var se = document.querySelector("[data-v='studio'] em"); if (se) se.textContent = WP.MODES.length;
     updStor();
   }
 
-  /* ══════════ IMPORT MULTI-FORMATS (admin) ══════════ */
+  /* ══════════ IMPORT ══════════ */
   function pick(rec, names) {
     var i;
-    for (i = 0; i < names.length; i++) {
-      var v = rec[names[i]];
-      if (v !== undefined && v !== null && v !== "") return v;
-    }
+    for (i = 0; i < names.length; i++) { var v = rec[names[i]]; if (v !== undefined && v !== null && v !== "") return v; }
     var map = {}, ks = Object.keys(rec);
     for (i = 0; i < ks.length; i++) map[nk(ks[i])] = rec[ks[i]];
-    for (i = 0; i < names.length; i++) {
-      var w = nk(names[i]);
-      if (map[w] !== undefined && map[w] !== null && map[w] !== "") return map[w];
-    }
+    for (i = 0; i < names.length; i++) { var w = nk(names[i]); if (map[w] !== undefined && map[w] !== null && map[w] !== "") return map[w]; }
     return undefined;
-  }
-  var FUELMAP = { e: "e", essence: "e", gasoline: "e", petrol: "e", d: "d", diesel: "d", gozole: "d", h: "h", hybride: "h", hybrid: "h", hev: "h", p: "p", phev: "p", rechargeable: "p", b: "b", ev: "b", bev: "b", electrique: "b", electric: "b", g: "g", gpl: "g", lpg: "g" };
-  function fuelNorm(v) {
-    var k = nk(v);
-    if (FUELMAP[k]) return FUELMAP[k];
-    if (FU[k]) return k;
-    if (k.indexOf("recharge") > -1) return "p";
-    if (k.indexOf("electr") > -1 || k === "ev" || k === "bev") return "b";
-    if (k.indexOf("hybr") > -1) return "h";
-    if (k.indexOf("dies") > -1) return "d";
-    if (k.indexOf("gpl") > -1) return "g";
-    return "e";
-  }
-  var SEVMAP = { critique: "critique", critical: "critique", majeure: "majeure", major: "majeure", moderee: "modérée", moderate: "modérée", moyenne: "modérée", mineure: "mineure", minor: "mineure", info: "info", note: "info", faible: "mineure" };
-  function sevNorm(v) {
-    var k = nk(v);
-    if (SEVMAP[k]) return SEVMAP[k];
-    if (SV[v]) return v;
-    if (SV[k]) return k;
-    return "modérée";
   }
   var COLL = {};
   [["brands", ["brands", "marques", "constructeurs", "makers", "manufacturers"]],
@@ -1282,7 +1452,6 @@
    ["maint", ["maint", "maintenance", "plans", "entretien", "revisions", "services"]]]
     .forEach(function (p) { p[1].forEach(function (k) { COLL[nk(k)] = p[0]; }); });
   var IGNOREKEYS = { counts: 1, domains: 1, domaines: 1, categories: 1, meta: 1, metadata: 1, app: 1, exportversion: 1, exportedat: 1, version: 1 };
-
   function detectKind(r) {
     if (!r || typeof r !== "object") return null;
     if (pick(r, ["hp", "power", "puissance", "ch", "puissance_ch", "kw"]) !== undefined) return "engines";
@@ -1318,7 +1487,6 @@
     scan(data);
     return { groups: groups, ignored: ignored };
   }
-
   function mapRecord(rec, kind) {
     if (kind === "brands") {
       var n = pick(rec, ["n", "name", "nom", "label", "marque", "brand", "make"]);
@@ -1358,14 +1526,14 @@
       if (!t) throw "titre manquant";
       var c0 = Number(pick(rec, ["cost0", "cout_min", "cost_min"]) || 0);
       var c1 = Number(pick(rec, ["cost1", "cout_max", "cost_max"]) || c0);
-      return { id: "", t: String(t).trim(), fam: split(pick(rec, ["fam", "families", "familles", "moteurs"])), sev: sevNorm(pick(rec, ["sev", "severity", "severite", "gravite", "criticite"])), freq: (FQ[pick(rec, ["freq", "frequence"])] ? pick(rec, ["freq", "frequence"]) : "moyenne"), y: [2017, YMAX], km: [Number(pick(rec, ["km0", "km_min"]) || 0), Number(pick(rec, ["km1", "km_max"]) || 0)], sym: split(String(pick(rec, ["sym", "symptoms", "symptomes"]) || "").replace(/\n/g, "|")), cause: String(pick(rec, ["cause", "origine"]) || ""), fix: String(pick(rec, ["fix", "solution", "action", "reparation"]) || ""), cost: [c0, Math.max(c0, c1)], m: [], gb: [], e: [], fuel: "", status: String(pick(rec, ["status", "statut"]) || "Surveillance") };
+      return { id: "", t: String(t).trim(), fam: split(pick(rec, ["fam", "families", "familles", "moteurs"])), sev: normSev(pick(rec, ["sev", "severity", "severite", "gravite", "criticite"])), freq: normFreq(pick(rec, ["freq", "frequence", "frequency"])), y: [2017, YMAX], km: [Number(pick(rec, ["km0", "km_min"]) || 0), Number(pick(rec, ["km1", "km_max"]) || 0)], sym: split(String(pick(rec, ["sym", "symptoms", "symptomes"]) || "").replace(/\n/g, "|")), cause: String(pick(rec, ["cause", "origine"]) || ""), fix: String(pick(rec, ["fix", "solution", "action", "reparation"]) || ""), cost: [c0, Math.max(c0, c1)], m: [], gb: [], e: [], fuel: "", status: String(pick(rec, ["status", "statut"]) || "Surveillance") };
     }
     if (kind === "tsb") {
       var tr = pick(rec, ["ref", "reference", "numero"]);
       if (!tr) throw "référence manquante";
       var tt = pick(rec, ["t", "title", "titre", "nom", "objet"]);
       if (!tt) throw "titre manquant";
-      return { id: "", ref: String(tr).trim(), b: split(pick(rec, ["b", "brands", "marques"])), bRaw: split(pick(rec, ["b", "brands", "marques"])), fam: split(pick(rec, ["fam", "families", "familles"])), t: String(tt).trim(), date: String(pick(rec, ["date", "published"]) || "2026-01").slice(0, 7), cat: String(pick(rec, ["cat", "category", "categorie"]) || "Moteur"), sev: sevNorm(pick(rec, ["sev", "severity", "severite"])), sum: String(pick(rec, ["sum", "summary", "resume", "description"]) || ""), act: String(pick(rec, ["act", "action", "procedure"]) || ""), m: [], gb: [] };
+      return { id: "", ref: String(tr).trim(), b: split(pick(rec, ["b", "brands", "marques"])), bRaw: split(pick(rec, ["b", "brands", "marques"])), fam: split(pick(rec, ["fam", "families", "familles"])), t: String(tt).trim(), date: String(pick(rec, ["date", "published"]) || "2026-01").slice(0, 7), cat: String(pick(rec, ["cat", "category", "categorie"]) || "Moteur"), sev: normSev(pick(rec, ["sev", "severity", "severite"])), sum: String(pick(rec, ["sum", "summary", "resume", "description"]) || ""), act: String(pick(rec, ["act", "action", "procedure"]) || ""), m: [], gb: [] };
     }
     if (kind === "maint") {
       var pn = pick(rec, ["name", "nom", "titre", "plan"]);
@@ -1385,7 +1553,6 @@
     }
     throw "type inconnu";
   }
-
   function resolveAll(groups) {
     var warn = [], drop = [], newB = [], newM = [];
     var bIdx = {}, bName = {}, mIdx = {}, mName = {}, seen = {};
@@ -1464,7 +1631,6 @@
     out.models = newM.concat(out.models);
     return { out: out, warn: warn, drop: drop };
   }
-
   var KEYFN = {
     brands: function (x) { return nk(x.n); },
     models: function (x) { return nk(x.b + "|" + x.n); },
@@ -1485,17 +1651,12 @@
   function upsert(kind, rec) {
     var arr = DB[kind], ex = null, i;
     if (rec.id) for (i = 0; i < arr.length; i++) if (arr[i].id === rec.id) ex = arr[i];
-    if (!ex) {
-      var k = KEYFN[kind](rec);
-      for (i = 0; i < arr.length; i++) if (KEYFN[kind](arr[i]) === k) ex = arr[i];
-    }
+    if (!ex) { var k = KEYFN[kind](rec); for (i = 0; i < arr.length; i++) if (KEYFN[kind](arr[i]) === k) ex = arr[i]; }
     if (ex) { mergeInto(ex, rec); return "upd"; }
     if (!rec.id || arr.some(function (x) { return x.id === rec.id; })) rec.id = uid(kind.charAt(0).toUpperCase());
     arr.push(rec);
     return "add";
   }
-
-  /* ── parseurs de formats ── */
   function parseDelimited(text) {
     var first = text.split(/\r?\n/)[0] || "";
     var counts = [[",", 0], [";", 0], ["\t", 0], ["|", 0]];
@@ -1531,8 +1692,7 @@
     });
   }
   function parseJSONL(text) {
-    var out = [];
-    var lines = text.split(/\r?\n/);
+    var out = [], lines = text.split(/\r?\n/);
     for (var i = 0; i < lines.length; i++) {
       var l = lines[i].trim();
       if (!l) continue;
@@ -1543,8 +1703,7 @@
   function parseXMLRecords(text) {
     var doc = new DOMParser().parseFromString(text, "application/xml");
     if (doc.getElementsByTagName("parsererror").length) throw "XML invalide";
-    var root = doc.documentElement;
-    var kids = [].slice.call(root.children);
+    var root = doc.documentElement, kids = [].slice.call(root.children);
     if (!kids.length) throw "XML vide";
     var tagCount = {};
     kids.forEach(function (k) { tagCount[k.tagName] = (tagCount[k.tagName] || 0) + 1; });
@@ -1562,8 +1721,7 @@
     return out;
   }
   function parseYAML(text) {
-    var lines = text.split(/\r?\n/);
-    var out = [], cur = null;
+    var lines = text.split(/\r?\n/), out = [], cur = null;
     for (var i = 0; i < lines.length; i++) {
       var l = lines[i];
       if (!l.trim() || /^\s*#/.test(l)) continue;
@@ -1571,15 +1729,14 @@
       if (m) {
         if (cur) out.push(cur);
         cur = {};
-        var rest = m[1];
-        var kv = rest.match(/^([^:]+):\s*(.*)$/);
+        var kv = m[1].match(/^([^:]+):\s*(.*)$/);
         if (kv) cur[kv[1].trim()] = kv[2].trim();
         continue;
       }
       var kv2 = l.match(/^\s+([^:]+):\s*(.*)$/);
       if (kv2 && cur) { cur[kv2[1].trim()] = kv2[2].trim(); continue; }
       var kv3 = l.match(/^([^:]+):\s*(.*)$/);
-      if (kv3 && cur) { cur[kv3[1].trim()] = kv3[2].trim(); }
+      if (kv3 && cur) cur[kv3[1].trim()] = kv3[2].trim();
     }
     if (cur) out.push(cur);
     return out;
@@ -1594,8 +1751,7 @@
       if (trs.length < 2) continue;
       var head = [].slice.call(trs[0].children).map(function (c) { return c.textContent.trim(); });
       for (var r = 1; r < trs.length; r++) {
-        var cells = [].slice.call(trs[r].children);
-        var o = {};
+        var cells = [].slice.call(trs[r].children), o = {};
         head.forEach(function (k, i) { o[k] = cells[i] ? cells[i].textContent.trim() : ""; });
         out.push(o);
       }
@@ -1603,21 +1759,14 @@
     return out;
   }
   function inflateRaw(src) {
-    var out = [];
-    var pos = 0, bb = 0, bc = 0;
-    function bits(n) {
-      while (bc < n) { bb |= src[pos++] << bc; bc += 8; }
-      var v = bb & ((1 << n) - 1);
-      bb >>>= n; bc -= n;
-      return v;
-    }
+    var out = [], pos = 0, bb = 0, bc = 0;
+    function bits(n) { while (bc < n) { bb |= src[pos++] << bc; bc += 8; } var v = bb & ((1 << n) - 1); bb >>>= n; bc -= n; return v; }
     function build(len) {
       var counts = [], sym = [], i;
       for (i = 0; i < 16; i++) counts[i] = 0;
       for (i = 0; i < len.length; i++) counts[len[i]]++;
       counts[0] = 0;
-      var offs = [];
-      offs[1] = 0;
+      var offs = []; offs[1] = 0;
       for (i = 1; i < 15; i++) offs[i + 1] = offs[i] + counts[i];
       for (i = 0; i < len.length; i++) if (len[i]) sym[offs[len[i]]++] = i;
       return { c: counts, s: sym };
@@ -1628,8 +1777,7 @@
         code |= bits(1);
         var count = h.c[l];
         if (code - first < count) return h.s[index + (code - first)];
-        index += count; first += count;
-        first <<= 1; code <<= 1; l++;
+        index += count; first += count; first <<= 1; code <<= 1; l++;
       }
       return -1;
     }
@@ -1653,8 +1801,7 @@
     var last = 0;
     while (!last) {
       last = bits(1);
-      var type = bits(2);
-      var lh, dh;
+      var type = bits(2), lh, dh;
       if (type === 0) {
         bb = 0; bc = 0;
         var len = src[pos] | (src[pos + 1] << 8);
@@ -1669,22 +1816,13 @@
         var cl = [];
         for (var i3 = 0; i3 < 19; i3++) cl[i3] = 0;
         for (i3 = 0; i3 < hclen; i3++) cl[order[i3]] = bits(3);
-        var ch = build(cl);
-        var lens = [], total = hlit + hdist;
+        var ch = build(cl), lens = [], total = hlit + hdist;
         while (lens.length < total) {
           var sym = decode(ch);
           if (sym < 16) lens.push(sym);
-          else if (sym === 16) {
-            var prev = lens[lens.length - 1];
-            var rep = 3 + bits(2);
-            for (var r2 = 0; r2 < rep; r2++) lens.push(prev);
-          } else if (sym === 17) {
-            var rep3 = 3 + bits(3);
-            for (var r3 = 0; r3 < rep3; r3++) lens.push(0);
-          } else {
-            var rep11 = 11 + bits(7);
-            for (var r11 = 0; r11 < rep11; r11++) lens.push(0);
-          }
+          else if (sym === 16) { var prev = lens[lens.length - 1], rep = 3 + bits(2); for (var r2 = 0; r2 < rep; r2++) lens.push(prev); }
+          else if (sym === 17) { var rep3 = 3 + bits(3); for (var r3 = 0; r3 < rep3; r3++) lens.push(0); }
+          else { var rep11 = 11 + bits(7); for (var r11 = 0; r11 < rep11; r11++) lens.push(0); }
         }
         lh = build(lens.slice(0, hlit));
         dh = build(lens.slice(hlit, total));
@@ -1709,31 +1847,20 @@
     return new Uint8Array(out);
   }
   function zipEntries(buf) {
-    var u8 = new Uint8Array(buf);
-    var dv = new DataView(buf);
-    var eocd = -1;
-    for (var i = u8.length - 22; i >= 0 && i > u8.length - 66000; i--) {
-      if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
-    }
+    var u8 = new Uint8Array(buf), dv = new DataView(buf), eocd = -1;
+    for (var i = u8.length - 22; i >= 0 && i > u8.length - 66000; i--) { if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; } }
     if (eocd < 0) throw "ZIP : EOCD introuvable";
-    var n = dv.getUint16(eocd + 10, true);
-    var off = dv.getUint32(eocd + 16, true);
-    var entries = {};
-    var dec = new TextDecoder("utf-8");
+    var n = dv.getUint16(eocd + 10, true), off = dv.getUint32(eocd + 16, true);
+    var entries = {}, dec = new TextDecoder("utf-8");
     for (var e = 0; e < n; e++) {
       if (dv.getUint32(off, true) !== 0x02014b50) break;
-      var method = dv.getUint16(off + 10, true);
-      var csize = dv.getUint32(off + 20, true);
-      var nameLen = dv.getUint16(off + 28, true);
-      var extraLen = dv.getUint16(off + 30, true);
-      var commentLen = dv.getUint16(off + 32, true);
+      var method = dv.getUint16(off + 10, true), csize = dv.getUint32(off + 20, true);
+      var nameLen = dv.getUint16(off + 28, true), extraLen = dv.getUint16(off + 30, true), commentLen = dv.getUint16(off + 32, true);
       var lho = dv.getUint32(off + 42, true);
       var name = dec.decode(u8.subarray(off + 46, off + 46 + nameLen));
-      var lnl = dv.getUint16(lho + 26, true);
-      var lel = dv.getUint16(lho + 28, true);
+      var lnl = dv.getUint16(lho + 26, true), lel = dv.getUint16(lho + 28, true);
       var dataStart = lho + 30 + lnl + lel;
-      var comp = u8.subarray(dataStart, dataStart + csize);
-      var data;
+      var comp = u8.subarray(dataStart, dataStart + csize), data;
       if (method === 0) data = comp;
       else if (method === 8) data = inflateRaw(comp);
       else throw "ZIP : compression " + method + " non supportée";
@@ -1750,16 +1877,13 @@
     return n - 1;
   }
   function parseXLSX(buf) {
-    var entries = zipEntries(buf);
-    var dec = new TextDecoder("utf-8");
-    var shared = [];
+    var entries = zipEntries(buf), dec = new TextDecoder("utf-8"), shared = [];
     var ssKey = Object.keys(entries).filter(function (k) { return /sharedStrings\.xml$/.test(k); })[0];
     if (ssKey) {
       var ssDoc = new DOMParser().parseFromString(dec.decode(entries[ssKey]), "application/xml");
       var sis = ssDoc.getElementsByTagName("si");
       for (var i = 0; i < sis.length; i++) {
-        var ts = sis[i].getElementsByTagName("t");
-        var s = "";
+        var ts = sis[i].getElementsByTagName("t"), s = "";
         for (var j = 0; j < ts.length; j++) s += ts[j].textContent;
         shared.push(s);
       }
@@ -1768,31 +1892,19 @@
     if (!sheetKey) sheetKey = Object.keys(entries).filter(function (k) { return /xl\/worksheets\/.*\.xml$/.test(k); })[0];
     if (!sheetKey) throw "XLSX : feuille introuvable";
     var doc = new DOMParser().parseFromString(dec.decode(entries[sheetKey]), "application/xml");
-    var rows = doc.getElementsByTagName("row");
-    var grid = [];
+    var rows = doc.getElementsByTagName("row"), grid = [];
     for (var r = 0; r < rows.length; r++) {
-      var cells = rows[r].getElementsByTagName("c");
-      var arr = [];
+      var cells = rows[r].getElementsByTagName("c"), arr = [];
       for (var c = 0; c < cells.length; c++) {
-        var cell = cells[c];
-        var idx = colIndex(cell.getAttribute("r"));
-        var type = cell.getAttribute("t");
-        var val = "";
-        if (type === "inlineStr") {
-          var isT = cell.getElementsByTagName("t");
-          for (var k = 0; k < isT.length; k++) val += isT[k].textContent;
-        } else {
-          var vEl = cell.getElementsByTagName("v")[0];
-          var raw = vEl ? vEl.textContent : "";
-          val = (type === "s") ? (shared[Number(raw)] || "") : raw;
-        }
+        var cell = cells[c], idx = colIndex(cell.getAttribute("r")), type = cell.getAttribute("t"), val = "";
+        if (type === "inlineStr") { var isT = cell.getElementsByTagName("t"); for (var k = 0; k < isT.length; k++) val += isT[k].textContent; }
+        else { var vEl = cell.getElementsByTagName("v")[0], raw = vEl ? vEl.textContent : ""; val = (type === "s") ? (shared[Number(raw)] || "") : raw; }
         arr[idx] = val;
       }
       grid.push(arr);
     }
     if (grid.length < 2) return [];
-    var head = grid[0].map(function (x) { return String(x || "").trim(); });
-    var out = [];
+    var head = grid[0].map(function (x) { return String(x || "").trim(); }), out = [];
     for (var r2 = 1; r2 < grid.length; r2++) {
       var o = {}, empty = true;
       for (var c2 = 0; c2 < head.length; c2++) {
@@ -1805,21 +1917,17 @@
     return out;
   }
   function parseODS(buf) {
-    var entries = zipEntries(buf);
-    var dec = new TextDecoder("utf-8");
+    var entries = zipEntries(buf), dec = new TextDecoder("utf-8");
     var key = Object.keys(entries).filter(function (k) { return k === "content.xml"; })[0];
     if (!key) throw "ODS : content.xml introuvable";
     var doc = new DOMParser().parseFromString(dec.decode(entries[key]), "application/xml");
     var tables = doc.getElementsByTagName("table:table");
     if (!tables.length) throw "ODS : tableau introuvable";
-    var rows = tables[0].getElementsByTagName("table:table-row");
-    var grid = [];
+    var rows = tables[0].getElementsByTagName("table:table-row"), grid = [];
     for (var r = 0; r < rows.length; r++) {
-      var cells = rows[r].getElementsByTagName("table:table-cell");
-      var arr = [];
+      var cells = rows[r].getElementsByTagName("table:table-cell"), arr = [];
       for (var c = 0; c < cells.length; c++) {
-        var ps = cells[c].getElementsByTagName("text:p");
-        var s = "";
+        var ps = cells[c].getElementsByTagName("text:p"), s = "";
         for (var p = 0; p < ps.length; p++) s += ps[p].textContent;
         var rep = Number(cells[c].getAttribute("table:number-columns-repeated") || 1);
         for (var q = 0; q < Math.min(rep, 64); q++) arr.push(s);
@@ -1827,8 +1935,7 @@
       grid.push(arr);
     }
     if (grid.length < 2) return [];
-    var head = grid[0].map(function (x) { return String(x || "").trim(); });
-    var out = [];
+    var head = grid[0].map(function (x) { return String(x || "").trim(); }), out = [];
     for (var r2 = 1; r2 < grid.length; r2++) {
       var o = {}, empty = true;
       for (var c2 = 0; c2 < head.length; c2++) {
@@ -1840,21 +1947,17 @@
     }
     return out;
   }
-
+  function entriesHas(buf, name) { try { return Object.keys(zipEntries(buf)).indexOf(name) > -1; } catch (x) { return false; } }
   function sniffAndParse(name, text, buf) {
-    var lower = String(name || "").toLowerCase();
-    var ext = lower.split(".").pop();
+    var lower = String(name || "").toLowerCase(), ext = lower.split(".").pop();
     var trimmed = String(text || "").trim();
     var u8 = buf ? new Uint8Array(buf) : null;
     var isZip = u8 && u8.length > 4 && u8[0] === 0x50 && u8[1] === 0x4b;
-
     if (isZip) {
-      if (ext === "ods" || (entriesHas(buf, "content.xml"))) return { fmt: "ODS", records: parseODS(buf) };
+      if (ext === "ods" || entriesHas(buf, "content.xml")) return { fmt: "ODS", records: parseODS(buf) };
       return { fmt: "XLSX", records: parseXLSX(buf) };
     }
-    if (ext === "json" || trimmed.charAt(0) === "{" || trimmed.charAt(0) === "[") {
-      try { return { fmt: "JSON", data: JSON.parse(trimmed) }; } catch (e) {}
-    }
+    if (ext === "json" || trimmed.charAt(0) === "{" || trimmed.charAt(0) === "[") { try { return { fmt: "JSON", data: JSON.parse(trimmed) }; } catch (e) {} }
     if (ext === "jsonl" || ext === "ndjson") return { fmt: "JSONL", records: parseJSONL(trimmed) };
     if (ext === "xml" || /^<\?xml/.test(trimmed) || /^<[a-zA-Z]/.test(trimmed)) {
       if (/<table[\s>]/i.test(trimmed)) return { fmt: "HTML", records: parseHTMLTables(trimmed) };
@@ -1867,20 +1970,11 @@
       try { return { fmt: "JS/JSON", data: JSON.parse(t) }; } catch (e) {}
       try { return { fmt: "JS", data: (new Function("return " + t))() }; } catch (e2) {}
     }
-    if (ext === "csv" || ext === "tsv" || ext === "txt" || /[;,\t|]/.test(trimmed.split(/\r?\n/)[0] || "")) {
-      return { fmt: (ext === "tsv" ? "TSV" : "CSV"), records: parseDelimited(trimmed) };
-    }
+    if (ext === "csv" || ext === "tsv" || ext === "txt" || /[;,\t|]/.test(trimmed.split(/\r?\n/)[0] || "")) return { fmt: (ext === "tsv" ? "TSV" : "CSV"), records: parseDelimited(trimmed) };
     var jl = parseJSONL(trimmed);
     if (jl.length) return { fmt: "JSONL", records: jl };
     throw "format non reconnu";
   }
-  function entriesHas(buf, name) {
-    try {
-      var e = zipEntries(buf);
-      return Object.keys(e).indexOf(name) > -1;
-    } catch (x) { return false; }
-  }
-
   function openImport() {
     if (!isAdm()) { toast("warn", "Niveau 3 requis", "Déverrouillez la session administrateur."); location.hash = "#/donnees"; return; }
     IMPORT = null;
@@ -1888,7 +1982,7 @@
     h += "<div class='mh'>" + ic("ul") + "<h3>Import universel — fusion à la base</h3><button class='tb' data-act='mclose'>" + ic("x") + "</button></div>";
     h += "<div class='mb2'>";
     h += "<div class='dz2' id='dz' data-act='dzPick'>" + ic("ul") + "<div><b>Déposer un fichier</b> ou cliquer</div>";
-    h += "<div class='dim mono' style='font-size:10px;margin-top:4px'>TOUS FORMATS · FUSION SANS DOUBLON · SAUVEGARDE AUTO APRÈS IMPORT</div></div>";
+    h += "<div class='dim mono' style='font-size:10px;margin-top:4px'>TOUS FORMATS · FUSION SANS DOUBLON · SAUVEGARDE AUTO</div></div>";
     h += "<div class='fmtrow'><span>JSON</span><span>JSONL</span><span>CSV</span><span>TSV</span><span>XML</span><span>YAML</span><span>XLSX</span><span>ODS</span><span>HTML</span><span>JS</span><span>TXT</span></div>";
     h += "<input type='file' id='impFile' style='display:none'>";
     h += "<div style='margin-top:12px'><label class='lb'>…ou coller les données</label><textarea class='inp mono' id='impText' rows='6'></textarea></div>";
@@ -1898,111 +1992,73 @@
     h += "<button class='btn pri' id='impApply' data-act='impApply' disabled>" + ic("ul") + "Fusionner + sauvegarder</button></div>";
     openModal(h, "wide");
   }
-
   function analyzeImportPayload(parsed, label) {
-    var rep = $("#impReport");
-    var groups = {}, rejected = [], ignored = [];
+    var rep = $("#impReport"), groups = {}, rejected = [], ignored = [];
     if (parsed.data !== undefined) {
       var data = parsed.data;
-      if (Array.isArray(data)) {
-        var k0 = detectKind(data[0] || {});
-        if (k0) groups[k0] = data;
-      } else if (data && typeof data === "object") {
-        var cl = classifyBundle(data);
-        groups = cl.groups; ignored = cl.ignored;
-      }
+      if (Array.isArray(data)) { var k0 = detectKind(data[0] || {}); if (k0) groups[k0] = data; }
+      else if (data && typeof data === "object") { var cl = classifyBundle(data); groups = cl.groups; ignored = cl.ignored; }
     } else if (parsed.records) {
-      var recs = parsed.records;
-      var k1 = detectKind(recs[0] || {});
-      if (k1) groups[k1] = recs;
+      var k1 = detectKind(parsed.records[0] || {});
+      if (k1) groups[k1] = parsed.records;
     }
     if (!Object.keys(groups).length) {
-      rep.innerHTML = "<div class='rep rj'>Aucune collection reconnue. Formats attendus : marques, modeles, motorisations, fiches/pannes, tsb/rappels, revisions/plans.</div>";
-      beep("err");
-      return;
+      rep.innerHTML = "<div class='rep rj'>Aucune collection reconnue. Attendu : marques, modeles, motorisations, fiches/pannes, tsb/rappels, revisions/plans.</div>";
+      beep("err"); return;
     }
     var mapped = {};
     Object.keys(groups).forEach(function (k) {
       mapped[k] = [];
       groups[k].forEach(function (rec, idx) {
-        try { mapped[k].push(mapRecord(rec, k)); }
-        catch (err) { rejected.push(k + "[" + idx + "] : " + err); }
+        try { mapped[k].push(mapRecord(rec, k)); } catch (err) { rejected.push(k + "[" + idx + "] : " + err); }
       });
     });
-    var R = resolveAll(mapped);
-    var ok = 0;
+    var R = resolveAll(mapped), ok = 0;
     Object.keys(R.out).forEach(function (k) { ok += R.out[k].length; });
     IMPORT = { R: R };
     var h = "<div class='rep'><b class='ok'>" + ok + " enregistrement(s) prêt(s)</b> · <b class='rj'>" + (rejected.length + R.drop.length) + " rejeté(s)</b> · <b class='wn'>" + R.warn.length + " auto-création(s)</b>";
     h += "<div class='mono' style='font-size:10.5px;margin-top:6px;color:#25D4EE'>Format détecté : " + esc(parsed.fmt) + (label ? " · " + esc(label) : "") + "</div>";
-    Object.keys(R.out).forEach(function (k) {
-      if (R.out[k].length) h += "<div class='mono' style='font-size:10.5px;margin-top:4px;color:#25D4EE'>" + k + " ← " + R.out[k].length + "</div>";
-    });
+    Object.keys(R.out).forEach(function (k) { if (R.out[k].length) h += "<div class='mono' style='font-size:10.5px;margin-top:4px;color:#25D4EE'>" + k + " ← " + R.out[k].length + "</div>"; });
     if (ignored.length) h += "<p class='wn' style='margin-top:8px'>Métadonnées ignorées : " + esc(ignored.slice(0, 6).join(", ")) + "</p>";
-    if (rejected.length) {
-      h += "<ul>";
-      rejected.slice(0, 8).forEach(function (r) { h += "<li class='rj'>" + esc(r) + "</li>"; });
-      h += "</ul>";
-    }
-    if (R.warn.length) {
-      h += "<ul>";
-      R.warn.slice(0, 8).forEach(function (r) { h += "<li class='wn'>" + esc(r) + "</li>"; });
-      h += "</ul>";
-    }
+    if (rejected.length) { h += "<ul>"; rejected.slice(0, 8).forEach(function (r) { h += "<li class='rj'>" + esc(r) + "</li>"; }); h += "</ul>"; }
+    if (R.warn.length) { h += "<ul>"; R.warn.slice(0, 8).forEach(function (r) { h += "<li class='wn'>" + esc(r) + "</li>"; }); h += "</ul>"; }
     h += "</div>";
     rep.innerHTML = h;
     $("#impApply").disabled = (ok === 0);
     beep(ok ? "ok" : "err");
   }
-
   function analyzeImport() {
-    var ta = $("#impText");
-    var text = ta ? ta.value.trim() : "";
-    var rep = $("#impReport");
+    var ta = $("#impText"), text = ta ? ta.value.trim() : "", rep = $("#impReport");
     if (!text) { rep.innerHTML = "<div class='rep rj'>Aucune donnée. Déposez un fichier ou collez du contenu.</div>"; beep("err"); return; }
-    try {
-      var parsed = sniffAndParse("paste.txt", text, null);
-      analyzeImportPayload(parsed, "collage");
-    } catch (e) {
-      rep.innerHTML = "<div class='rep rj'>Analyse impossible : " + esc(String(e)) + "</div>";
-      beep("err");
-    }
+    try { analyzeImportPayload(sniffAndParse("paste.txt", text, null), "collage"); }
+    catch (e) { rep.innerHTML = "<div class='rep rj'>Analyse impossible : " + esc(String(e)) + "</div>"; beep("err"); }
   }
-
   function handleImportFile(file) {
     if (!file) return;
-    var rep = $("#impReport");
-    var lower = file.name.toLowerCase();
+    var rep = $("#impReport"), lower = file.name.toLowerCase();
     var isBinary = /\.(xlsx|xls|ods|zip)$/.test(lower);
     var rd = new FileReader();
     rd.onload = function () {
       try {
-        if (isBinary) {
-          var parsed = sniffAndParse(file.name, null, rd.result);
-          analyzeImportPayload(parsed, file.name);
-        } else {
-          var text = String(rd.result || "");
-          var ta = $("#impText");
+        if (isBinary) analyzeImportPayload(sniffAndParse(file.name, null, rd.result), file.name);
+        else {
+          var text = String(rd.result || ""), ta = $("#impText");
           if (ta) ta.value = text.length > 200000 ? text.slice(0, 200000) : text;
-          var parsed2 = sniffAndParse(file.name, text, null);
-          analyzeImportPayload(parsed2, file.name);
+          analyzeImportPayload(sniffAndParse(file.name, text, null), file.name);
         }
       } catch (e) {
         if (rep) rep.innerHTML = "<div class='rep rj'>Fichier non exploitable : " + esc(String(e)) + "<br>Astuce : exportez la feuille en CSV ou JSON.</div>";
         beep("err");
       }
     };
-    if (isBinary) rd.readAsArrayBuffer(file);
-    else rd.readAsText(file);
+    if (isBinary) rd.readAsArrayBuffer(file); else rd.readAsText(file);
   }
-
   function applyImport() {
     if (!IMPORT || !IMPORT.R) return;
     snapshot("import fusion");
     var ins = 0, upd = 0;
     ["brands", "models", "engines", "faults", "tsb", "maint"].forEach(function (k) {
-      var list = IMPORT.R.out[k] || [];
-      list.forEach(function (rec) { if (upsert(k, rec) === "add") ins++; else upd++; });
+      (IMPORT.R.out[k] || []).forEach(function (rec) { if (upsert(k, rec) === "add") ins++; else upd++; });
     });
     var n = ins + upd;
     IMPORT = null;
@@ -2012,20 +2068,18 @@
     toast("ok", "Fusion appliquée et sauvegardée", n + " enregistrement(s) · base : " + fmt(META.counts.e) + " motorisations · " + fmt(META.counts.f) + " pannes · " + fmt(META.counts.rc) + " rappels.", true);
     beep("imp");
   }
-
   function openIntegrity() {
     var g = META.integ;
     var h = "<div class='mh'>" + ic("check") + "<h3>Intégrité des fichiers croisés</h3><button class='tb' data-act='mclose'>" + ic("x") + "</button></div>";
     h += "<div class='mb2'><div class='rep' style='max-height:none'><b class='" + (g.ok ? "ok" : "rj") + "'>" + (g.ok ? "BASE INTÈGRE" : "ERREURS") + "</b> — score " + g.pct + "% · " + fmt(META.links) + " liaisons";
-    if (g.err.length) {
-      h += "<ul>";
-      g.err.slice(0, 30).forEach(function (e) { h += "<li class='rj'>" + esc(e) + "</li>"; });
-      h += "</ul>";
-    } else h += "<p class='ok' style='margin-top:8px'>Aucune référence orpheline, aucun id dupliqué.</p>";
+    if (g.err.length) { h += "<ul>"; g.err.slice(0, 30).forEach(function (e) { h += "<li class='rj'>" + esc(e) + "</li>"; }); h += "</ul>"; }
+    else h += "<p class='ok' style='margin-top:8px'>Aucune référence orpheline, aucun id dupliqué, sévérités normalisées.</p>";
+    if (FIXES) h += "<p class='wn' style='margin-top:8px'>" + FIXES + " réparation(s) automatique(s) appliquée(s) au chargement.</p>";
     h += "</div></div><div class='mf'><button class='btn ghost' data-act='autoFix'>" + ic("tool") + "Auto-réparation</button><button class='btn pri' data-act='mclose'>Fermer</button></div>";
     openModal(h);
   }
 
+  /* ══════════ TESTS ══════════ */
   function runTests() {
     var T = [];
     var add = function (n, ok, i, s) { T.push({ n: n, ok: !!ok, info: i || "", soft: !!s }); };
@@ -2038,6 +2092,10 @@
     var orph = 0;
     DB.engines.forEach(function (e) { e.m.forEach(function (i) { if (!modelById(i)) orph++; }); });
     add("Références moteur-modèle", orph === 0, orph + " orphelin(s)");
+    var badSev = DB.faults.filter(function (f) { return !SV[f.sev]; }).length;
+    add("Sévérités normalisées", badSev === 0, badSev ? badSev + " invalide(s)" : "toutes valides");
+    var badFreq = DB.faults.filter(function (f) { return !FQ[f.freq]; }).length;
+    add("Fréquences normalisées", badFreq === 0, badFreq ? badFreq + " invalide(s)" : "toutes valides");
     var p3008 = DB.models.filter(function (m) { return m.n.indexOf("3008 II Phase 2") > -1; }).length;
     add("Pack 3008 II Phase 2", p3008 > 0, p3008 + " modèle(s)");
     var e3008 = DB.engines.filter(function (e) { return /EB2ADTS|EB2ADTX|DV5RUC/.test(e.code); }).length;
@@ -2055,7 +2113,8 @@
     add("Contexte canvas 2D", !!cx, cx ? "OK" : "indisponible", true);
     add("Scènes studio", WP.MODES.length >= 10, WP.MODES.length + " scènes");
     add("requestAnimationFrame", typeof requestAnimationFrame === "function", "OK");
-    add("Stockage", STORE.local, STORE.local ? "localStorage" : "mémoire", true);
+    var anyStore = STORE.any ? STORE.any() : STORE.local;
+    add("Stockage", anyStore, STORE.backend ? STORE.backend() : (STORE.local ? "localStorage" : "mémoire"), !anyStore);
     add("Session", STORE.session, STORE.session ? "sessionStorage" : "mémoire", true);
     var vb = [];
     var vw = [["bord", vBord], ["explorer", vExplorer], ["tech", vTech], ["entretien", vEntretien], ["studio", vStudio], ["donnees", vDonnees], ["diagnostic", vDiag]];
@@ -2064,17 +2123,18 @@
       catch (e) { vb.push(v[0] + " (" + e.message + ")"); }
     });
     add("Rendu des vues", vb.length === 0, vb.length ? vb.join(", ") : "OK");
-    add("Intégrité référentielle", META.integ.ok, META.integ.err.length + " erreurs");
+    add("Intégrité référentielle", META.integ.ok, META.integ.err.length ? META.integ.err.slice(0, 3).join(" | ") : "0 erreur");
     add("Sauvegarde auto", LASTSAVE > 0, LASTSAVE ? new Date(LASTSAVE).toLocaleTimeString("fr-FR") : "en attente");
     add("Exceptions capturées", ERRORS.length === 0, ERRORS.length ? ERRORS.slice(-3).map(function (e) { return e.m; }).join(" | ") : "aucune", true);
     TESTS = T;
     updateMeta();
     return T;
   }
-
   function autoFix() {
     var did = [];
     if (!META.integ.ok || !DB.engines.length) { DB = clone(SEED); did.push("base réinjectée"); }
+    var f = sanitize(DB);
+    if (f) did.push(f + " réparation(s) données");
     if (WP.fails > 0) { WP.P.mode = "nebula"; WP.fails = 0; WP.apply(); did.push("graphique réinitialisé"); }
     ERRORS.length = 0; did.push("journal purgé");
     recompute(); saveNow(); runTests(); updateMeta(); render();
@@ -2082,30 +2142,15 @@
     beep("ok");
   }
 
+  /* ══════════ ÉVÉNEMENTS ══════════ */
   function bindEvents() {
     document.addEventListener("click", function (ev) {
       var el = ev.target.closest ? ev.target.closest("[data-act]") : null;
-      if (!el) {
-        if (!(ev.target.closest && ev.target.closest(".omni"))) omniClose();
-        return;
-      }
+      if (!el) { if (!(ev.target.closest && ev.target.closest(".omni"))) omniClose(); return; }
       var act = el.dataset.act, id = el.dataset.id;
-      if (act === "omniSeed") {
-        var inp = $("#omni");
-        if (inp) { inp.value = el.dataset.q; S.omni.q = el.dataset.q; inp.focus(); omniRender(); }
-        return;
-      }
-      if (act === "omniHit") {
-        var kind = el.dataset.kind;
-        var hit = { kind: kind, id: id };
-        omniActivate(hit);
-        return;
-      }
-      if (act === "msearch") {
-        var q = prompt("Recherche prédictive (modèle, code, symptôme, rappel) :");
-        if (q) { var i2 = $("#omni"); if (i2) { i2.value = q; S.omni.q = q; omniRender(); i2.focus(); } }
-        return;
-      }
+      if (act === "omniSeed") { var inp = $("#omni"); if (inp) { inp.value = el.dataset.q; S.omni.q = el.dataset.q; inp.focus(); omniRender(); } return; }
+      if (act === "omniHit") { omniActivate({ kind: el.dataset.kind, id: id }); return; }
+      if (act === "msearch") { var q = prompt("Recherche prédictive (modèle, code, symptôme, rappel) :"); if (q) { var i2 = $("#omni"); if (i2) { i2.value = q; S.omni.q = q; omniRender(); i2.focus(); } } return; }
       if (act === "snd") { PREF.sound = !PREF.sound; markDirty(); updateMeta(); if (PREF.sound) beep("ok"); return; }
       if (act === "run") { WP.set("run", !WP.P.run); beep("tick"); return; }
       if (act === "goStudio") { location.hash = "#/studio"; return; }
@@ -2132,10 +2177,7 @@
       if (act === "expEng") {
         var xe = null;
         for (var i3 = 0; i3 < DB.engines.length; i3++) if (DB.engines[i3].id === id) xe = DB.engines[i3];
-        if (xe) {
-          download("fiche_" + xe.code.replace(/\W+/g, "_") + ".json", JSON.stringify({ engine: xe, models: engModels(xe), brand: engBrand(xe), ivi: ivi(xe), faults: faultsFor(xe), tsb: tsbFor(xe), plan: planFor(xe) }, null, 2));
-          toast("ok", "Fiche exportée"); beep("ok");
-        }
+        if (xe) { download("fiche_" + xe.code.replace(/\W+/g, "_") + ".json", JSON.stringify({ engine: xe, models: engModels(xe), brand: engBrand(xe), ivi: ivi(xe), faults: faultsFor(xe), tsb: tsbFor(xe), plan: planFor(xe) }, null, 2)); toast("ok", "Fiche exportée"); beep("ok"); }
         return;
       }
       if (act === "fbrand") { S.f.brand = (S.f.brand === el.dataset.b ? "" : el.dataset.b); S.shown = 48; render(); beep("tick"); return; }
@@ -2160,11 +2202,7 @@
       if (act === "logout") { STORE.sdel("md_adm"); updateMeta(); render(); toast("info", "Session verrouillée"); return; }
       if (act === "stMode") { WP.set("mode", el.dataset.m); beep("tick"); return; }
       if (act === "stTheme") { WP.P.useCustom = false; WP.set("theme", el.dataset.t); beep("tick"); return; }
-      if (act === "stPreset") {
-        var ps = WP.PRESETS[el.dataset.n];
-        if (ps) { Object.keys(ps).forEach(function (k) { WP.P[k] = ps[k]; }); WP.apply(); WP.resize(); render(); toast("ok", "Preset appliqué", el.dataset.n); beep("ok"); }
-        return;
-      }
+      if (act === "stPreset") { var ps = WP.PRESETS[el.dataset.n]; if (ps) { Object.keys(ps).forEach(function (k) { WP.P[k] = ps[k]; }); WP.apply(); WP.resize(); render(); toast("ok", "Preset appliqué", el.dataset.n); beep("ok"); } return; }
       if (act === "stRandom") { WP.randomize(); render(); toast("ok", "Scène aléatoire", WP.P.mode); beep("imp"); return; }
       if (act === "stReset") { WP.reset(); render(); toast("info", "Réglages réinitialisés"); return; }
       if (act === "stPng") { WP.exportPNG(); return; }
@@ -2172,10 +2210,8 @@
       if (act === "stDir") { WP.set("dir", WP.P.dir > 0 ? -1 : 1); render(); return; }
       if (act === "stCustom") { WP.P.useCustom = !!el.checked; WP.drawAll(); markDirty(); WP.sync(); return; }
     });
-
     document.addEventListener("input", function (ev) {
-      var t = ev.target;
-      if (!t) return;
+      var t = ev.target; if (!t) return;
       if (t.id === "omni") { S.omni.q = t.value; omniRender(); return; }
       if (t.dataset && t.dataset.c) { WP.setCustom(t.dataset.c, t.value); return; }
       if (t.dataset && t.dataset.p) {
@@ -2191,21 +2227,16 @@
         if (k === "q") f.q = t.value;
         else if (k === "brand") f.brand = t.value;
         else if (k === "sort") f.sort = t.value;
-        S.shown = 48;
-        deb(refreshResults, 100)();
-        return;
+        S.shown = 48; deb(refreshResults, 100)(); return;
       }
       if (t.dataset && t.dataset.tf) { S.tech[t.dataset.tf] = t.value; deb(refreshTech, 100)(); return; }
       if (t.dataset && t.dataset.calc) { S.calc[t.dataset.calc] = +t.value || 0; refreshCalc(); return; }
     });
-
     document.addEventListener("change", function (ev) {
-      var t = ev.target;
-      if (!t) return;
+      var t = ev.target; if (!t) return;
       if (t.dataset && t.dataset.calc === "sev") { S.calc.sev = +t.value; refreshCalc(); }
       if (t.id === "impFile" && t.files && t.files[0]) handleImportFile(t.files[0]);
     });
-
     document.addEventListener("submit", function (ev) {
       var form = ev.target.closest ? ev.target.closest("[data-form]") : null;
       if (!form) return;
@@ -2221,53 +2252,32 @@
         } else {
           var c = $("#lockCard");
           if (c) { c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake"); }
-          toast("err", "Mot de passe incorrect");
-          beep("err");
+          toast("err", "Mot de passe incorrect"); beep("err");
         }
       }
     });
-
-    document.addEventListener("dragover", function (ev) {
-      var dz = ev.target.closest ? ev.target.closest("#dz") : null;
-      if (dz) { ev.preventDefault(); dz.classList.add("over"); }
-    });
-    document.addEventListener("dragleave", function (ev) {
-      var dz = ev.target.closest ? ev.target.closest("#dz") : null;
-      if (dz) dz.classList.remove("over");
-    });
+    document.addEventListener("dragover", function (ev) { var dz = ev.target.closest ? ev.target.closest("#dz") : null; if (dz) { ev.preventDefault(); dz.classList.add("over"); } });
+    document.addEventListener("dragleave", function (ev) { var dz = ev.target.closest ? ev.target.closest("#dz") : null; if (dz) dz.classList.remove("over"); });
     document.addEventListener("drop", function (ev) {
       var dz = ev.target.closest ? ev.target.closest("#dz") : null;
       if (!dz) return;
-      ev.preventDefault();
-      dz.classList.remove("over");
+      ev.preventDefault(); dz.classList.remove("over");
       if (ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0]) handleImportFile(ev.dataTransfer.files[0]);
     });
-
     document.addEventListener("keydown", function (ev) {
-      if (ev.key === "Escape") {
-        if (modalOpenFn()) closeModal();
-        else if (S.drawer) closeDrawer();
-        else omniClose();
-        return;
-      }
-      if (ev.key === "/" && !/input|textarea|select/i.test(ev.target.tagName)) {
-        var o = $("#omni");
-        if (o) { ev.preventDefault(); o.focus(); }
-        return;
-      }
+      if (ev.key === "Escape") { if (modalOpenFn()) closeModal(); else if (S.drawer) closeDrawer(); else omniClose(); return; }
+      if (ev.key === "/" && !/input|textarea|select/i.test(ev.target.tagName)) { var o = $("#omni"); if (o) { ev.preventDefault(); o.focus(); } return; }
       if (ev.target && ev.target.id === "omni") {
         if (ev.key === "ArrowDown") { ev.preventDefault(); omniMove(1); }
         else if (ev.key === "ArrowUp") { ev.preventDefault(); omniMove(-1); }
         else if (ev.key === "Enter") {
           ev.preventDefault();
-          var box = $("#omnires");
-          var els = box ? $$(".hit", box) : [];
+          var box = $("#omnires"), els = box ? $$(".hit", box) : [];
           var pickEl = els[S.omni.idx] || els[0];
           if (pickEl) omniActivate({ kind: pickEl.dataset.kind, id: pickEl.dataset.id });
         }
       }
     });
-
     window.addEventListener("pagehide", saveNow);
     document.addEventListener("visibilitychange", function () { if (document.hidden) saveNow(); });
     setInterval(function () { if (DIRTY) saveNow(); }, 20000);
@@ -2279,28 +2289,17 @@
     S.view = allowed.indexOf(h) > -1 ? h : "bord";
     render();
   }
-
   function boot() {
     var o = $("#boot");
-    var done = function () {
-      if (!o) return;
-      o.className = "off";
-      o.style.display = "none";
-      STORE.sset("md_boot", "1");
-    };
-    if (STORE.sget("md_boot")) {
-      var bb = $("#bbar");
-      if (bb) bb.style.width = "100%";
-      setTimeout(done, 200);
-      return;
-    }
+    var done = function () { if (!o) return; o.className = "off"; o.style.display = "none"; STORE.sset("md_boot", "1"); };
+    if (STORE.sget("md_boot")) { var bb = $("#bbar"); if (bb) bb.style.width = "100%"; setTimeout(done, 200); return; }
     var L = [
-      ["Noyau MECADATA v7.3 — initialisation", 10],
-      ["Pack 3008 II Phase 2 intégré", 28],
+      ["Noyau MECADATA v7.4 — démarrage sain", 10],
+      ["Normalisation + réparation intégrité", 28],
       [DB.brands.length + " marques · " + DB.models.length + " modèles", 50],
-      [DB.engines.length + " motorisations construites", 70],
+      [DB.engines.length + " motorisations", 70],
       [DB.faults.length + " pannes · " + DB.tsb.length + " TSB/rappels", 86],
-      ["Recherche prédictive + studio 10 scènes prêts", 100]
+      ["Stockage : " + (STORE.backend ? STORE.backend() : "mémoire"), 100]
     ];
     var lg = $("#bl"), i = 0;
     var step = function () {
@@ -2311,41 +2310,50 @@
       d.innerHTML = "<b>OK</b> " + esc(x[0]);
       lg.appendChild(d);
       while (lg.children.length > 5) lg.removeChild(lg.firstChild);
-      var bar = $("#bbar");
-      if (bar) bar.style.width = x[1] + "%";
+      var bar = $("#bbar"); if (bar) bar.style.width = x[1] + "%";
       setTimeout(step, 120);
     };
     setTimeout(step, 150);
     setTimeout(done, 3200);
   }
 
+  function applyPayload(d, source) {
+    DB = d.db;
+    AUDIT = d.audit || [];
+    GARAGE = d.garage || [];
+    VIEWS = d.views || [];
+    if (d.prefs) Object.keys(d.prefs).forEach(function (k) { PREF[k] = d.prefs[k]; });
+    if (d.wp) {
+      Object.keys(d.wp).forEach(function (k) { WP.P[k] = d.wp[k]; });
+      if (!WP.P.custom) WP.P.custom = { bg: "#04070D", a: "#25D4EE", b: "#4D8DFF", c: "#E45CFF", d: "#43E08B" };
+      if (typeof WP.P.dir !== "number") WP.P.dir = 1;
+    }
+    LASTSAVE = d.ts || 0;
+    FIXES += sanitize(DB);
+    audit("adm", "Base chargée (" + source + ") — " + FIXES + " réparation(s)");
+  }
+
   function init() {
+    upgradeStore();
     if (!window.MD_RAW) {
       logErr("init", new Error("MD_RAW absent : 02-data.js non chargé"));
       window.__MD_READY = false;
       return;
     }
     SEED = buildCatalog(window.MD_RAW);
+    FIXES += sanitize(SEED);
     DB = clone(SEED);
+
     var raw = STORE.get(KEY);
+    if (!raw) raw = STORE.get(OLDKEY);
     if (raw) {
       safe("load", function () {
         var d = JSON.parse(raw);
-        if (d && d.db && d.db.engines && d.db.engines.length && d.v === 73) {
-          DB = d.db;
-          AUDIT = d.audit || [];
-          GARAGE = d.garage || [];
-          VIEWS = d.views || [];
-          if (d.prefs) Object.keys(d.prefs).forEach(function (k) { PREF[k] = d.prefs[k]; });
-          if (d.wp) {
-            Object.keys(d.wp).forEach(function (k) { WP.P[k] = d.wp[k]; });
-            if (!WP.P.custom) WP.P.custom = { bg: "#04070D", a: "#25D4EE", b: "#4D8DFF", c: "#E45CFF", d: "#43E08B" };
-            if (typeof WP.P.dir !== "number") WP.P.dir = 1;
-          }
-          LASTSAVE = d.ts || 0;
-        } else STORE.del(KEY);
+        if (d && d.db && d.db.engines && d.db.engines.length && (d.v === 74 || d.v === 73)) applyPayload(d, d.v === 74 ? "v7.4" : "migration v7.3");
+        else STORE.del(KEY);
       }, null);
     }
+    FIXES += sanitize(DB);
     recompute();
     WP.init();
     runTests();
@@ -2357,14 +2365,31 @@
     boot();
     audit("adm", "Lancement — sauvegarde automatique (" + DB.engines.length + " moteurs)");
     saveNow();
+    runTests();
+    render();
+
+    idbOpen().then(function (ok) {
+      if (!ok) return;
+      idbGet(KEY).then(function (r2) {
+        if (!r2) return;
+        try {
+          var d2 = JSON.parse(r2);
+          if (d2 && d2.db && d2.db.engines && d2.db.engines.length && d2.v === 74 && (d2.ts || 0) > LASTSAVE) {
+            applyPayload(d2, "IndexedDB");
+            recompute(); runTests(); updateMeta(); render();
+            toast("info", "Restauration persistante", "Base restaurée depuis IndexedDB.");
+          }
+        } catch (e) {}
+      });
+    });
+
     window.__MD_READY = true;
     window.__MD_SCRIPTS.app = true;
-    var jf = $("#jsfail");
-    if (jf && jf.parentNode) jf.parentNode.removeChild(jf);
+    var jf = $("#jsfail"); if (jf && jf.parentNode) jf.parentNode.removeChild(jf);
     var fl = TESTS.filter(function (t) { return !t.ok && !t.soft; }).length;
     setTimeout(function () {
       if (fl) toast("err", fl + " test(s) en échec", "Module Diagnostic → Auto-réparation.");
-      else toast("ok", "Système vérifié", TESTS.length + " contrôles OK · sauvegarde auto active.");
+      else toast("ok", "Démarrage sain", TESTS.length + " contrôles OK · " + FIXES + " réparation(s) auto · stockage " + (STORE.backend ? STORE.backend() : "mémoire") + ".");
     }, 3300);
   }
 
