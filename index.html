@@ -1,52 +1,21 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<!-- ═══════════════════════════════════════════════════════════════════════════
-  MECADATA // INGÉNIEUR EXPERT  v7.0  « CATALOGUE MATRIX »  —  FICHIER UNIQUE
-  Remplace TOUT. Aucun asset externe. APK / WebView / file://.
-
-  ▸ CORRECTIF DU BLOCAGE (SyntaxError: missing ) after argument list) :
-    la fonction CSV contenait v.replace(/"/g,"""") — quatre guillemets
-    consécutifs = deux chaînes vides juxtaposées → erreur de compilation qui
-    tuait TOUT le bloc moteur (écran « Moteur non démarré »). Corrigé en
-    v.replace(/"/g,'""'). L'ensemble du fichier a été ré-audité : plus aucune
-    chaîne à guillemets ambigus, apostrophes typographiques ’ dans l’UI,
-    watchdog ES5 isolé dans son propre bloc.
-
-  ▸ PARC MASSIF : catalogue généré par matrice constructive
-    112 marques · ~700 modèles réels 2017→2027 · familles moteur réelles
-    (codes, cylindrées, variantes de puissance/couple, boîtes) × applications
-    par marque/segment/années → plus de 2 800 motorisations uniques, dédupliquées,
-    sans modèle orphelin. 29 domaines techniques, ~150 pannes, ~55 TSB/rappels,
-    ~50 plans d'entretien.
-
-  ▸ PERFORMANCE : index par id, cache IVI, comptages pré-calculés, pagination 48,
-    fusion upsert indexée (O(1)) — 3 000+ moteurs restent fluides en WebView.
-  ▸ IMPORT UNIVERSEL : bundles externes (app/counts/data, marques, modeles,
-    motorisations, fiches, revisions), classification par contenu, alias FR/EN,
-    fusion sans doublon, auto-création du référentiel manquant.
-  ▸ Mot de passe administrateur niveau 3 : Kevin83600
-  ▸ Données de synthèse ingénieur — indicatives : confirmer au VIN / RTA.
-═══════════════════════════════════════════════════════════════════════════ -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#04070D">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>MECADATA // INGÉNIEUR EXPERT — Console technique 2017→2027</title>
+<title>MECADATA // INGÉNIEUR EXPERT v7.0</title>
 <style>
-:root{--bg0:#04070D;--bg1:#080D17;--sur:#0C1424;--sur2:#111C31;--line:rgba(96,160,255,.15);--line2:rgba(37,212,238,.42);--tx:#E6EEF9;--tx2:#9FB2C8;--tx3:#61748C;--cyan:#25D4EE;--blue:#4D8DFF;--mag:#E45CFF;--amber:#FFAF2E;--red:#FF4D5E;--green:#43E08B;--teal:#19B8A6;--grad:linear-gradient(135deg,#25D4EE,#4D8DFF 52%,#E45CFF);--gradA:linear-gradient(135deg,#FFAF2E,#FF7A3D);--disp:'Chakra Petch','Segoe UI',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;--body:system-ui,'Segoe UI',Roboto,Arial,sans-serif;--tb:56px;--sb:28px;--r:14px}
+:root{--bg0:#04070D;--bg1:#080D17;--sur:#0C1424;--sur2:#111C31;--line:rgba(96,160,255,.15);--line2:rgba(37,212,238,.42);--tx:#E6EEF9;--tx2:#9FB2C8;--tx3:#61748C;--cyan:#25D4EE;--blue:#4D8DFF;--mag:#E45CFF;--amber:#FFAF2E;--red:#FF4D5E;--green:#43E08B;--teal:#19B8A6;--grad:linear-gradient(135deg,#25D4EE,#4D8DFF 52%,#E45CFF);--gradA:linear-gradient(135deg,#FFAF2E,#FF7A3D);--disp:'Chakra Petch',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;--body:system-ui,'Segoe UI',Roboto,Arial,sans-serif;--tb:56px;--sb:28px;--r:14px}
 *{box-sizing:border-box;margin:0;padding:0;scrollbar-width:thin;scrollbar-color:#1E5A78 #080D17}
 ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-track{background:#080D17}
 ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#1E7E96,#2A4F9E);border:2px solid #080D17;border-radius:9px}
-::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#25D4EE,#E45CFF)}
-body{background:var(--bg0);color:var(--tx);font:14.5px/1.5 var(--body);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg0);color:var(--tx);font:14.5px/1.5 var(--body);min-height:100vh;overflow-x:hidden}
 body.lock{overflow:hidden}a{color:var(--cyan);text-decoration:none}button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 input,select,textarea{font:inherit;color:var(--tx)}:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:6px}
-::selection{background:rgba(37,212,238,.32)}svg.ic{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-#bgc{position:fixed;inset:0;z-index:0;width:100%;height:100%;transition:opacity .35s}
-#bgfx{position:fixed;inset:0;z-index:1;pointer-events:none;transition:opacity .35s}
+svg.ic{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#bgc{position:fixed;inset:0;z-index:0;width:100%;height:100%}
+#bgfx{position:fixed;inset:0;z-index:1;pointer-events:none}
 #bgfx .vig{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 40%,transparent 40%,rgba(2,4,9,.7) 100%)}
 #bgfx .grain{position:absolute;inset:-50%;width:200%;height:200%;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");animation:gr 1.1s steps(4) infinite}
 @keyframes gr{0%{transform:translate(0,0)}25%{transform:translate(-2%,1%)}50%{transform:translate(1%,-2%)}75%{transform:translate(-1%,2%)}100%{transform:translate(2%,-1%)}}
@@ -479,7 +448,6 @@ table.t .acts{display:flex;gap:5px;justify-content:flex-end}
 <div id="dr"></div><div id="md"></div><div id="ts"></div>
 
 <script>
-/* BLOC 1 — WATCHDOG ES5 isolé */
 window.__MD_READY=false;
 window.__MD_ERR=[];
 window.onerror=function(m,s,l,c){try{window.__MD_ERR.push(String(m)+" @"+(l||"?")+":"+(c||"?"))}catch(e){}return false};
@@ -502,11 +470,8 @@ document.addEventListener("click",function(e){var b=e.target;while(b&&b!==docume
 </script>
 
 <script>
-/* BLOC 2 — MATRICE CATALOGUE (données pures, aucune logique)
-   Segments : 0 Citadine · 1 Micro-citadine · 2 Compacte · 3 SUV urbain · 4 SUV compact
-   5 Berline · 6 Break · 7 Ludospace · 8 Utilitaire · 9 Coupé · 10 Roadster · 11 Sportive
-   12 Monospace · 13 Pick-up */
-window.MD_RAW={
+/* ═══ BASE USINE v7.0 — 112 marques · 480 modèles · 2800+ motorisations ═══ */
+window.MECADATA_BASE={
 br:[
 ["renault","Renault","France","Renault Group"],["dacia","Dacia","Roumanie","Renault Group"],["peugeot","Peugeot","France","Stellantis"],["citroen","Citroën","France","Stellantis"],["ds","DS Automobiles","France","Stellantis"],["alpine","Alpine","France","Renault Group"],["bugatti","Bugatti","France","Bugatti Rimac"],
 ["vw","Volkswagen","Allemagne","VW Group"],["audi","Audi","Allemagne","VW Group"],["skoda","Škoda","Tchéquie","VW Group"],["seat","SEAT","Espagne","VW Group"],["cupra","Cupra","Espagne","VW Group"],["porsche","Porsche","Allemagne","VW Group"],["bmw","BMW","Allemagne","BMW Group"],["alpina","Alpina","Allemagne","BMW Group"],["mini","MINI","Royaume-Uni","BMW Group"],["mercedes","Mercedes-Benz","Allemagne","Mercedes Group"],["smart","smart","Allemagne","Mercedes / Geely"],["opel","Opel","Allemagne","Stellantis"],["man","MAN","Allemagne","VW Group"],
@@ -669,7 +634,6 @@ fa:[
 ["EA825","e",3996,"4.0 V8",[[550,770],[600,800],[640,850],[650,850],[666,850],[800,950]],"ZF8",2017,2027,["lamborghini","bentley","porsche","audi"],[4,5,9,11]],
 ["BENW12","e",5950,"W12",[[635,900],[659,900]],"ZF8",2017,2024,["bentley"],[4,5,9]],
 ["RRV12","e",6749,"V12",[[571,850],[600,900]],"ZF8",2017,2027,["rolls"],[4,5,9]],
-["M177","e",3982,"4.0 V8 AMG",[[510,685],[550,700],[612,850],[639,900],[665,800],[707,900]],"ZF8",2017,2027,["aston","mercedes"],[4,5,9,11]],
 ["MCLV8","e",3994,"V8 Biturbo",[[720,770],[750,800]],"DCT7",2017,2027,["mclaren"],[9,10,11]],
 ["MCLV6","h",2993,"V6 Hybrid",[[680,720],[700,720]],"DCT8",2022,2027,["mclaren"],[9,11]],
 ["LOTV6","e",3456,"V6",[[400,420]],"BVM6",2022,2027,["lotus"],[9,11]],
@@ -825,12 +789,12 @@ fa:[
 ["AIW","b",0,"Électrique Aiways",[[204,310],[218,310]],"RED",2020,2025,["aiways"],[4]]
 ],
 ft:[
-["Courroie de distribution humide — désagrégation","EB2","critique","élevée",2017,2023,40000,120000,"Voyant pression huile|Crépine colmatée|Casse moteur","Courroie bain d’huile désagrégée, huile non conforme.","Courroie dernière réf. + nettoyage crépine + huile spec ; contrôle à chaque vidange.",450,900,"Campagne + extension 10 ans"],
-["Chaîne AAC 7 mm — rupture","DV5","critique","moyenne",2017,2022,60000,150000,"Cliquetis haut moteur|Casse chaîne","Chaîne 7 mm sous-dimensionnée.","Kit complet 8 mm + pignons + carter modifié.",1200,2200,"TSB + extension"],
-["SCR / AdBlue — pompe & cristallisation","DV5;DW10;EA288;OM654;OM656;B47;B57;PANTHER;MJT;MJ23;AJ200D;AJ300D;SH;SKD33;GD;F1C;4JJ3;4N15;YS23;LZ0;D4FE;D4HC;D22DT;VED4","majeure","élevée",2017,2027,40000,150000,"Défaut antipollution|Countdown|P20E8","Cristallisation d’urée, pompe HS.","Réservoir-pompe + injecteur + reset apprentissages.",900,1900,"Surveillance"],
+["Courroie de distribution humide — désagrégation","EB2","critique","élevée",2017,2023,40000,120000,"Voyant pression huile|Crépine colmatée|Casse moteur","Courroie bain d'huile désagrégée, huile non conforme.","Courroie dernière réf. + nettoyage crépine + huile spec ; contrôle à chaque vidange.",450,900,"Campagne + extension 10 ans"],
+["Chaîne AAC 7 mm — rupture","DV5","critique","moyenne",2017,2022,60000,150000,"Cliquetis haut moteur|Casse chaîne AAC","Chaîne 7 mm sous-dimensionnée.","Kit complet 8 mm + pignons + carter modifié.",1200,2200,"TSB + extension"],
+["SCR / AdBlue — pompe & cristallisation","DV5;DW10;EA288;OM654;OM656;B47;B57;PANTHER;MJT;MJ23;AJ200D;AJ300D;SH;SKD33;GD;F1C;4JJ3;4N15;YS23;LZ0;D4FE;D4HC;D22DT;VED4","majeure","élevée",2017,2027,40000,150000,"Défaut antipollution|Countdown|P20E8","Cristallisation d'urée, pompe HS.","Réservoir-pompe + injecteur + reset apprentissages.",900,1900,"Surveillance"],
 ["FAP — colmatage usage urbain","","majeure","élevée",2017,2027,30000,150000,"Voyant FAP|Régénérations fréquentes|Mode dégradé","Trajets courts.","Régénération forcée, nettoyage, trajet autoroutier.",120,1500,"Surveillance","d"],
 ["Vanne EGR — encrassement","","modérée","élevée",2017,2027,40000,160000,"À-coups|Fumée noire|Perte puissance","Calamine EGR.","Nettoyage/remplacement + adaptation.",150,750,"Surveillance","d"],
-["1.2 TCe H5Ft — consommation Motorgate","H4Dt;H5Ht","critique","moyenne",2017,2019,30000,100000,"Conso > 1 L/1000 km|Fumée bleue","Segmentation fragile + dilution.","Test conso normé → échange moteur sous extension.",0,6500,"Extension garantie"],
+["1.2 TCe — consommation Motorgate","H4Dt;H5Ht","critique","moyenne",2017,2019,30000,100000,"Conso > 1 L/1000 km|Fumée bleue","Segmentation fragile + dilution.","Test conso normé → échange moteur sous extension.",0,6500,"Extension garantie"],
 ["K9K / OM608 — coussinets de bielles","K9K","critique","faible",2017,2019,120000,260000,"Cognement à chaud|Limaille","Vidanges espacées.","Contrôle jeu + analyse huile ; vidange 15 000 km max.",300,5200,"Surveillance"],
 ["Module pompe à eau / thermostat — fuite","EA211;EA211EVO","majeure","élevée",2017,2027,40000,130000,"Fuite LDR|Surchauffe","Module plastique fissuré.","Module complet + purge sous vide.",350,800,"Surveillance"],
 ["Refroidisseur EGR TDI — risque incendie","EA288","critique","moyenne",2017,2022,30000,190000,"Odeur glycol|Fumée","Glycol + suie inflammables.","RAPPEL : refroidisseur + admission ; VIN.",0,0,"Rappel constructeur"],
@@ -842,7 +806,7 @@ ft:[
 ["e-TNGA — boulons de roue","E4TN","critique","faible",2022,2023,0,6000,"Risque desserrage roue","Défaut assemblage moyeu.","Rappel : boulons + couple contrôlé.",0,0,"Rappel constructeur"],
 ["Mach-E — contacteur HV","GE1","critique","faible",2021,2022,0,50000,"Perte puissance soudaine","Contacteurs HV.","Rappel boîtier contacteurs + logiciel.",0,0,"Rappel constructeur"],
 ["Ingenium diesel — chaîne","AJ200D","critique","moyenne",2017,2020,60000,150000,"Cliquetis démarrage|Casse chaîne","Allongement chaîne.","Kit chaîne révisé + tendeurs.",1500,3200,"TSB kit révisé"],
-["1.5 Ingenium 3 cyl. — courroie humide","AJ150P3","critique","moyenne",2020,2024,50000,140000,"Voyant pression huile|Débris","Courroie bain d’huile.","Courroie + crépine ; contrôle vidange.",600,1300,"Contrôle renforcé"],
+["1.5 Ingenium 3 cyl. — courroie humide","AJ150P3","critique","moyenne",2020,2024,50000,140000,"Voyant pression huile|Débris","Courroie bain d'huile.","Courroie + crépine ; contrôle vidange.",600,1300,"Contrôle renforcé"],
 ["2.2 Skyactiv-D — dilution repère X","SH","majeure","élevée",2017,2022,10000,90000,"Niveau au-dessus repère X","Régénérations incomplètes.","Vidange 10 000 km + jauge + PCM.",100,320,"TSB"],
 ["3.3 e-Skyactiv D — FAP & dilution","SKD33","modérée","moyenne",2022,2027,15000,100000,"Niveau qui monte","Usage urbain.","Vidange 12 000 km + jauge ; DL-1.",120,380,"Entretien renforcé"],
 ["TwinAir / MultiAir — module hydraulique","TJET;FF","critique","moyenne",2017,2020,40000,130000,"Ratés|Mode dégradé","Huile critique.","Module + 5W-40 C3 exclusive.",700,1600,"Surveillance"],
@@ -859,19 +823,19 @@ ft:[
 ["B58 — référence fiabilité","B58","info","faible",2017,2027,0,350000,"","Closed deck, chaîne robuste.","Surveillance conso ; CBS 15 000 km.",0,0,"Note fiabilisation"],
 ["HEMI / LT — poussoirs AFM/DFM","HEMI;LT2;L84","majeure","faible",2017,2027,60000,180000,"Claquement haut moteur|Ratés","Usure poussoirs.","Kit poussoirs révisé ; huile dexos.",1200,4200,"Surveillance"],
 ["ZF8 — vidange préventive","","info","moyenne",2017,2027,80000,120000,"","Annoncée à vie.","Vidange ZF8 + crépine 100 000 km.",350,650,"Note entretien"],
-["CVT — huile dégradée","","modérée","faible",2017,2027,60000,160000,"À-coups|Patinage","Usage chargé.","Vidange CVT 60 000 km.",250,550,"Note entretien"],
-["DCT7 sec — à-coups basse vitesse","CHERY;CHA;GAC;GWPT;SST15","modérée","moyenne",2020,2027,10000,80000,"À-coups|Hésitations","Cartographie DCT.","Mise à jour calculateur boîte.",0,300,"Campagne logicielle"],
+["CVT — huile dégradée","","modérée","faible",2017,2027,60000,160000,"À-coups|Patinage","Huile CVT dégradée.","Vidange CVT 60 000 km.",250,550,"Note entretien"],
+["DCT7 — à-coups basse vitesse","CHERY;CHA;GAC;GWPT;SST15","modérée","moyenne",2020,2027,10000,80000,"À-coups|Hésitations","Cartographie DCT.","Mise à jour calculateur boîte.",0,300,"Campagne logicielle"],
 ["VE Chine — 12V & OTA","LPEV;GWMEV;XPEV;NIOEV;GEEBEV;CHEREV;HQBEV;DFBEV;AIW;VFEV;SERBEV;LIBEV;EBY;EMG;AIONEV;VOY;JACEV;NET;XIA","mineure","moyenne",2022,2027,5000,70000,"Écran figé|Non prêt après OTA","12V plomb + OTA.","12V AGM + dernière version logicielle.",120,340,"Surveillance"],
 ["EREV / DM-i — thermique peu utilisé","LIREV;SERREV;DMi;CHERPHEV;GEEPHEV;GWMPHEV;DEEP","info","moyenne",2022,2027,0,120000,"","Thermique = générateur.","Vidange annuelle impérative.",120,320,"Note entretien"],
+["MX-30 R-EV — rotatif (huile & apex)","ROT","modérée","faible",2023,2027,5000,90000,"Consommation huile|Bruit à froid","Rotatif 8C.","Niveau tous les 1 000 km.",80,950,"Surveillance"],
 ["Iveco F1C — EGR / FAP / injecteurs","F1C","majeure","moyenne",2016,2027,80000,280000,"Voyant moteur|Perte puissance","Usage livraison.","Nettoyage EGR + régénération + test injecteurs.",250,2300,"Surveillance"],
 ["D-Max — FAP & injecteurs","4JJ3","modérée","moyenne",2020,2027,50000,220000,"Voyant DPF|Claquements","Usage chantier.","Régénération forcée + test injecteurs.",200,1700,"Surveillance"],
 ["Suspension pneumatique — fuites","","modérée","faible",2017,2027,80000,200000,"Affaissement|Compresseur bruyant","Boudins vieillissants.","Remplacement boudin/compresseur.",400,2200,"Surveillance"],
-["EA888 — consommation d’huile Gen3","EA888","modérée","moyenne",2017,2022,40000,140000,"Appoint huile|Fuite module eau","Segmentation / décanteur.","Module eau révisé + test conso normé.",300,850,"Surveillance"],
-["EA888 — pompe à eau / thermostat","EA888","majeure","moyenne",2017,2027,50000,140000,"Surchauffe|Fuite LDR","Module thermopompe.","Module complet dernière référence.",400,900,"Surveillance"],
+["EA888 — consommation d'huile Gen3","EA888","modérée","moyenne",2017,2022,40000,140000,"Appoint huile|Fuite module eau","Segmentation / décanteur.","Module eau révisé + test conso normé.",300,850,"Surveillance"],
 ["DSG7 DQ200 — mécatronique","","majeure","moyenne",2017,2027,40000,150000,"À-coups|Point mort|Voyant boîte","Accumulateur de pression.","TSB logiciel puis mécatronique.",0,1900,"TSB"],
 ["DSG humide — vidange 60 000 km","","info","élevée",2017,2027,55000,65000,"","DQ250/381/500.","Vidange + filtre 60 000 km.",250,480,"Note entretien"],
 ["EDC6 Getrag — broutage","","modérée","moyenne",2017,2023,30000,130000,"Broutage|À-coups 1-2","Embrayage sec.","Recalibration puis kit embrayage.",0,1400,"Surveillance"],
-["EAT8 Aisin — vidange préventive","","info","moyenne",2017,2027,80000,120000,"","Annoncée à vie.","Vidange 80–100 000 km AW-1.",300,520,"Note entretien"],
+["EAT8 Aisin — vidange préventive","","info","moyenne",2017,2027,80000,120000,"","Annoncée à vie.","Vidange 80-100 000 km AW-1.",300,520,"Note entretien"],
 ["M139 AMG — contraintes thermiques","M139","info","faible",2019,2027,0,200000,"","2.0 le plus puissant de série.","Huile à température avant charge.",0,0,"Note utilisation"],
 ["N63 V8 — joints queues soupapes","N63","majeure","moyenne",2017,2027,60000,160000,"Fumée bleue|Conso huile","V8 très chaud dans le V.","Kit joints révisé + décanteur.",800,3800,"Surveillance"],
 ["OM651 — chaîne arrière","OM654","majeure","faible",2017,2020,120000,270000,"Cliquetis côté boîte","Chaîne en bout de moteur.","Kit chaîne + injecteurs codés.",900,2600,"Surveillance"],
@@ -879,8 +843,8 @@ ft:[
 ["Système 48V — RSG / ISG","M254;M256;M254P","modérée","faible",2018,2027,20000,100000,"Voyant 48V|EQ Boost indisponible","Alterno-démarreur à courroie.","Contrôle RSG + courroie + 48V.",400,1600,"Surveillance"],
 ["1.5 TDCi — turbo","FOX","majeure","faible",2017,2020,90000,190000,"Sifflement|Perte puissance","Alimentation huile turbo.","Turbo + canalisation + crépine.",800,1700,"Surveillance"],
 ["Powershift DPS6 — broutage","","majeure","moyenne",2017,2018,30000,130000,"Broutage|Patinage","Embrayage sec + joints.","TSB joints + kits.",0,2300,"TSB + extension"],
-["2.3 EcoBoost — dilution huile","EB23","modérée","faible",2019,2027,20000,120000,"Odeur essence dans l’huile","Trajets courts.","Vidange rapprochée + contrôle niveau.",100,300,"Surveillance"],
-["Batterie 12V auxiliaire hybride","ZR;M20A;A25A;M15A;ETECH;IMMD;LEB;KR15;DURA25;MGHEV;GWMHEV;K15C;FB;G4FT","modérée","élevée",2017,2027,20000,120000,"Non prêt malgré traction chargée","12V très sollicitée en veille.","12V AGM + contrôle DC-DC.",150,380,"Surveillance"],
+["2.3 EcoBoost — dilution huile","EB23","modérée","faible",2019,2027,20000,120000,"Odeur essence dans l'huile","Trajets courts.","Vidange rapprochée + contrôle niveau.",100,300,"Surveillance"],
+["Batterie 12V auxiliaire hybride","ZR;M20A;A25A;M15A;ETECH;IMMD;LEB;KR15;DURA25;MGHEV;GWMHEV;K15C;FB","modérée","élevée",2017,2027,20000,120000,"Non prêt malgré traction chargée","12V très sollicitée en veille.","12V AGM + contrôle DC-DC.",150,380,"Surveillance"],
 ["Hilux D-4D — FAP","GD","majeure","moyenne",2017,2022,30000,130000,"Voyant DPF|Mode dégradé","Usage urbain.","Régénération forcée + mise à jour.",150,1600,"TSB"],
 ["1.0 VTEC Turbo — courroie humide","P10A","critique","élevée",2017,2021,40000,130000,"Voyant pression huile","Même mécanisme EB2.","Courroie + crépine + 0W-20 Honda.",500,1100,"Inspection renforcée"],
 ["1.5 VTEC Turbo — dilution huile","L15B","majeure","moyenne",2017,2019,5000,70000,"Niveau qui monte|Odeur essence","Climat froid, trajets courts.","Mise à jour PGM-FI + vidanges rapprochées.",0,220,"TSB calculateur"],
@@ -889,7 +853,7 @@ ft:[
 ["KGM 1.5 T-GDi — cliquetis chaîne","G15T","mineure","faible",2019,2027,40000,130000,"Bref cliquetis à froid","Tendeur première série.","Tendeur révisé si persistant.",0,650,"Surveillance"],
 ["KGM diesel — EGR & FAP","D22DT","modérée","moyenne",2017,2027,50000,180000,"Voyant moteur|À-coups","EGR encrassée.","Nettoyage EGR + régénération.",180,950,"Surveillance"],
 ["Boxer FA24 — usage circuit","FA24","info","faible",2022,2027,0,150000,"","Boxer atmosphérique sportif.","Niveau huile après session.",0,0,"Note utilisation"],
-["W12 / V12 — entretien lourd","BENW12;RRV12;W16;FERV12;LAMV12","info","faible",2017,2027,0,150000,"","Motorisations d’exception.","Entretien réseau constructeur.",0,0,"Note utilisation"],
+["W12 / V12 — entretien lourd","BENW12;RRV12;W16;FERV12;LAMV12","info","faible",2017,2027,0,150000,"","Motorisations d'exception.","Entretien réseau constructeur.",0,0,"Note utilisation"],
 ["Freins carbone-céramique","","info","faible",2017,2027,0,200000,"","Sensibles aux chocs et au sel.","Contrôle fissures ; usage piste.",0,0,"Note utilisation"],
 ["DCT8 humide — vidange","","info","moyenne",2020,2027,60000,90000,"","Double embrayage humide.","Vidange 60 000 km SP-IV M.",250,480,"Note entretien"],
 ["Turbo — wastegate cliquetis","H4Dt;K14D;G3LC;HRA2;PE","mineure","moyenne",2017,2027,40000,120000,"Cliquetis métallique bas régime","Jeu de tringlerie.","Surveillance ; turbo si hors cote.",0,900,"Surveillance"],
@@ -900,9 +864,9 @@ ft:[
 ["Embrayage — usure prématurée","","modérée","moyenne",2017,2027,60000,150000,"Patinage|Point de léchage haut","Usage urbain / charge.","Kit embrayage + volant moteur.",700,1800,"Surveillance"],
 ["Cardan / transmission — soufflet","","mineure","moyenne",2017,2027,60000,180000,"Graisse projetée|Claquement","Soufflet fissuré.","Remplacement soufflet / cardan.",150,600,"Surveillance"],
 ["Roulements de roue — bruit","","mineure","moyenne",2017,2027,80000,200000,"Ronflement évolutif","Usure normale.","Remplacement moyeu.",200,550,"Surveillance"],
-["Amortisseurs — fuite","","modérée","moyenne",2017,2027,80000,200000,"Rebonds|Suintement","Usure hydraulique.","Paire d’amortisseurs + butées.",300,900,"Surveillance"],
+["Amortisseurs — fuite","","modérée","moyenne",2017,2027,80000,200000,"Rebonds|Suintement","Usure hydraulique.","Paire d'amortisseurs + butées.",300,900,"Surveillance"],
 ["Triangles / silentblocs","","mineure","élevée",2017,2027,60000,160000,"Claquement train avant","Silentblocs fatigués.","Bras + géométrie.",200,700,"Surveillance"],
-["Direction assistée — à-coups","","modérée","faible",2017,2027,40000,160000,"Direction dure|Voyant EPS","Capteur d’angle / moteur EPS.","Diagnostic + calibration.",250,1400,"Surveillance"],
+["Direction assistée — à-coups","","modérée","faible",2017,2027,40000,160000,"Direction dure|Voyant EPS","Capteur d'angle / moteur EPS.","Diagnostic + calibration.",250,1400,"Surveillance"],
 ["Freinage — étriers grippés","","modérée","moyenne",2017,2027,50000,160000,"Freinage qui tire|Usure irrégulière","Coulisseaux corrodés.","Révision étriers + graissage.",150,600,"Surveillance"],
 ["ABS / ESP — capteur de roue","","modérée","moyenne",2017,2027,40000,180000,"Voyants ABS/ESP","Capteur ou couronne.","Remplacement capteur + effacement.",120,450,"Surveillance"],
 ["Airbag — connectique sous siège","","modérée","faible",2017,2027,20000,180000,"Voyant airbag","Connecteur sous siège.","Reprise connectique + effacement.",80,300,"Surveillance"],
@@ -927,15 +891,15 @@ ft:[
 ["Pneumatiques — usure irrégulière","","mineure","élevée",2017,2027,20000,80000,"Usure en facettes","Géométrie / amortisseurs.","Géométrie + rotation.",80,400,"Note entretien"],
 ["Carrosserie — corrosion","","mineure","moyenne",2017,2027,60000,250000,"Cloques|Points de rouille","Sel / éclats.","Traitement antirouille.",200,1500,"Surveillance"],
 ["Éclairage — LED matrix","","modérée","faible",2017,2027,30000,180000,"Segments éteints|Condensation","Module LED / étanchéité.","Module + contrôle étanchéité.",300,2200,"Surveillance"],
-["Multimédia — écran figé","","mineure","élevée",2019,2027,0,120000,"Écran noir|Redémarrages","Logiciel embarqué.","Mise à jour / réinitialisation.",0,300,"Campagne logicielle"],
+["Multimédia — écran figé","","mineure","élevée",2019,2027,0,120000,"Écran noir|Redémarrages","Logiciel embarqué.","Mise à jour / reset usine.",0,300,"Campagne logicielle"],
 ["ADAS — calibration caméra","","modérée","moyenne",2019,2027,0,150000,"Voyants aide à la conduite","Pare-brise remplacé / choc.","Calibration statique + dynamique.",150,450,"Note entretien"],
 ["Batterie HV — dégradation","","modérée","faible",2017,2027,60000,250000,"Autonomie réduite|Charge lente","Cellules vieillissantes.","Bilan SOH + équilibrage modules.",0,9000,"Surveillance","b"],
 ["Batterie HV — équilibrage","","mineure","moyenne",2019,2027,30000,200000,"Charge DC bridée","Déséquilibre cellules.","Mise à jour BMS + équilibrage.",0,600,"Surveillance","b"],
 ["Câble de charge T2 — verrouillage","","modérée","moyenne",2019,2027,10000,150000,"Charge impossible|Câble bloqué","Actionneur de verrou.","Actionneur + contrôle connectique.",200,900,"Surveillance","b"],
 ["Préconditionnement batterie — indisponible","","mineure","moyenne",2021,2027,0,120000,"Charge DC lente en hiver","Logiciel de gestion thermique.","Mise à jour logicielle.",0,200,"Campagne logicielle","b"],
-["Pompe à chaleur — panne","","modérée","faible",2021,2027,20000,150000,"Chauffage faible|Bruit","Vanne 4 voies / compresseur.","Diagnostic circuit frigorifique.",400,2200,"Surveillance","b"],
+["Pompe à chaleur — panne","","modérée","faible",2021,2027,20000,150000,"Chauffage faible en hiver","Vanne 4 voies / compresseur.","Diagnostic circuit frigorifique.",400,2200,"Surveillance","b"],
 ["Réducteur EV — bruit","","mineure","faible",2019,2027,60000,220000,"Sifflement proportionnel","Roulements / huile.","Vidange réducteur + contrôle.",250,1500,"Surveillance","b"],
-["Hybride — embrayage de découplage","","modérée","faible",2019,2027,40000,180000,"À-coups thermique/électrique","Actionneur d’embrayage.","Apprentissages + actionneur.",300,1600,"Surveillance","h"],
+["Hybride — embrayage de découplage","","modérée","faible",2019,2027,40000,180000,"À-coups thermique/électrique","Actionneur d'embrayage.","Apprentissages + actionneur.",300,1600,"Surveillance","h"],
 ["Hybride — filtre batterie HV","","mineure","élevée",2017,2027,20000,150000,"Ventilation bruyante|Puissance bridée","Filtre colmaté.","Nettoyage filtre 30 000 km.",0,120,"Note entretien","h"],
 ["GPL — jeu aux soupapes","","mineure","faible",2017,2027,60000,160000,"","Sièges renforcés usine.","Contrôle jeu 60 000 km.",0,320,"Note entretien","g"],
 ["GPL — détendeur","","modérée","faible",2017,2027,80000,200000,"Passage essence forcé","Détendeur encrassé.","Révision détendeur + filtres.",250,700,"Surveillance","g"],
@@ -950,14 +914,14 @@ ft:[
 ["Sellerie / garnissage — bruits","","mineure","moyenne",2017,2027,20000,200000,"Grincements|Bruits parasites","Agrafes / mousses.","Reprise garnissage.",50,300,"Surveillance"],
 ["Châssis — berceau corrodé","","modérée","faible",2017,2027,90000,250000,"Corrosion perforante","Sel / protection insuffisante.","Traitement + contrôle structure.",400,2500,"Surveillance"],
 ["Carburant — pompe basse pression","","majeure","faible",2017,2024,60000,200000,"Calage|Démarrage impossible","Rotor de pompe déformé.","Rappel pompe + contrôle.",0,900,"Rappel constructeur"],
-["Réservoir — mise à l’air","","mineure","faible",2017,2027,60000,200000,"Sifflement au bouchon|Conso","Canister saturé.","Contrôle EVAP + canister.",120,600,"Surveillance"],
-["Boîtier papillon — encrassement","","modérée","moyenne",2017,2027,50000,160000,"Ralenti instable|À-coups","Dépôts d’huile.","Nettoyage + adaptation.",100,400,"Surveillance","e"],
+["Réservoir — mise à l'air","","mineure","faible",2017,2027,60000,200000,"Sifflement au bouchon|Conso","Canister saturé.","Contrôle EVAP + canister.",120,600,"Surveillance"],
+["Boîtier papillon — encrassement","","modérée","moyenne",2017,2027,50000,160000,"Ralenti instable|À-coups","Dépôts d'huile.","Nettoyage + adaptation.",100,400,"Surveillance","e"],
 ["Distribution accessoires — courroie","","modérée","moyenne",2017,2027,80000,180000,"Sifflement|Voyant batterie","Courroie / galets usés.","Kit courroie accessoires.",200,600,"Note entretien"],
 ["Pompe à eau électrique EV — défaut","","modérée","faible",2019,2027,40000,180000,"Puissance bridée|Voyant","Pompe de refroidissement batterie.","Remplacement pompe + purge.",400,1400,"Surveillance","b"],
 ["Chargeur embarqué triphasé — phase","","modérée","faible",2019,2027,20000,150000,"Charge limitée à 3,7 kW","Une phase HS.","Diagnostic OBC + réparation.",600,2600,"Surveillance"],
 ["Suspension adaptative — capteur","","modérée","faible",2017,2027,60000,200000,"Voyant suspension|Raideur figée","Capteur de hauteur.","Capteur + calibration.",250,1100,"Surveillance"],
 ["Frein de parking électrique","","modérée","moyenne",2017,2027,60000,200000,"Blocage|Voyant EPB","Actionneur / câble.","Actionneur + procédure de dépose.",250,900,"Surveillance"],
-["Toit ouvrant — infiltration","","mineure","faible",2017,2027,40000,200000,"Traces d’eau au ciel de toit","Drains bouchés.","Nettoyage drains + joints.",80,600,"Surveillance"],
+["Toit ouvrant — infiltration","","mineure","faible",2017,2027,40000,200000,"Traces d'eau au ciel de toit","Drains bouchés.","Nettoyage drains + joints.",80,600,"Surveillance"],
 ["Serrures / ouvrants — actionneur","","mineure","moyenne",2017,2027,40000,200000,"Ouverture aléatoire","Actionneur fatigué.","Remplacement actionneur.",150,600,"Surveillance"],
 ["Rétroviseurs — moteur de rabattement","","mineure","faible",2017,2027,40000,200000,"Rabattement inopérant","Moteur / engrenage.","Module rétroviseur.",120,500,"Surveillance"],
 ["Sièges chauffants — résistance","","mineure","faible",2017,2027,40000,200000,"Chauffage inopérant","Nappe coupée.","Nappe + contrôle faisceau.",150,700,"Surveillance"],
@@ -969,123 +933,91 @@ ft:[
 ["Clé / antidémarrage — appairage","","modérée","faible",2017,2027,20000,200000,"Démarrage refusé","Transpondeur / antenne.","Appairage + antenne.",150,700,"Surveillance"],
 ["Boîte de transfert — usure","","majeure","faible",2017,2024,70000,200000,"À-coups|Bruit","Chaîne de transfert détendue.","Transfert échange standard.",900,2800,"Surveillance"],
 ["Embrayage de ventilateur","","modérée","faible",2017,2027,90000,220000,"Bruit permanent|Surchauffe","Visc coupleur HS.","Visc coupleur.",250,800,"Surveillance"],
-["Refroidisseur d’huile — fuite","","modérée","faible",2017,2027,80000,220000,"Suintement|Conso huile","Joints durcis.","Joints + contrôle pression.",250,900,"Surveillance"],
+["Refroidisseur d'huile — fuite","","modérée","faible",2017,2027,80000,220000,"Suintement|Conso huile","Joints durcis.","Joints + contrôle pression.",250,900,"Surveillance"],
 ["Pompe haute pression — usure","","majeure","faible",2017,2027,90000,220000,"Claquement|Perte puissance","Poussoir / came usés.","Pompe HP + poussoir.",600,1800,"Surveillance","d"],
 ["Rampe commune — limaille","","critique","faible",2017,2024,90000,220000,"Casse injection complète","Pompe HP dégradée.","Circuit injection complet.",2500,6000,"Surveillance","d"],
 ["Admission — volet de swirl","","modérée","faible",2017,2027,80000,200000,"À-coups|Casse volet","Axe de volet usé.","Admission + volets.",400,1400,"Surveillance","d"]
 ],
 ts:[
-["STL-2023-EB2-014","peugeot;citroen;opel;ds","EB2","Courroie EB2 : contrôle + extension","2023-06","Distribution","critique","Désagrégation courroie humide.","Contrôle atelier ; courroie + crépine ; huile 0W-20 B71 2010."],
-["RPL-STL-2024-EB2","peugeot;citroen;opel;ds","EB2","RAPPEL — courroie PureTech","2024-04","Rappel","critique","Risque casse moteur 2017-2022.","Campagne rappel : courroie + circuit d’huile."],
-["STL-2023-DV5-007","peugeot;citroen;opel;ds","DV5","Chaîne AAC 7 → 8 mm","2023-02","Distribution","critique","Ruptures chaîne AAC.","Kit 8 mm + pignons + carter modifié."],
-["RPL-STL-2023-DV5","peugeot;citroen;opel;ds","DV5","RAPPEL — chaîne AAC BlueHDi","2023-11","Rappel","critique","Rupture chaîne moteur.","Kit chaîne renforcé."],
-["STL-2024-EDCS6","peugeot;citroen;opel;fiat;alfa;jeep;lancia","EB2G3","Hybrid e-DCS6 : mise à jour","2024-06","Transmission","modérée","À-coups et calages.","Calculateur + apprentissages."],
-["STL-2024-ECMP","peugeot;citroen;opel;toyota;fiat","ESTELL","eCMP : OBC & 12V","2024-05","Charge","modérée","Charge AC interrompue.","OBC + 12V AGM + câble T2."],
+["STL-2023-EB2-014","peugeot;citroen;opel;ds","EB2","Courroie EB2 : contrôle + extension","2023-06","Distribution","critique","Désagrégation courroie humide.","Contrôle à chaque entrée atelier ; courroie + crépine ; 0W-20 B71 2010."],
+["RPL-STL-2024-EB2","peugeot;citroen;opel;ds","EB2","RAPPEL — courroie de distribution PureTech","2024-04","Rappel","critique","Risque casse moteur 1.2 PureTech 2017-2022.","Campagne : contrôle/remplacement courroie + nettoyage circuit d'huile."],
+["STL-2023-DV5-007","peugeot;citroen;opel;ds","DV5","Chaîne AAC : passage 7 → 8 mm","2023-02","Distribution","critique","Ruptures chaîne AAC 7 mm.","Kit complet 8 mm + pignons + carter modifié."],
+["RPL-STL-2023-DV5","peugeot;citroen;opel;ds","DV5","RAPPEL — chaîne AAC 1.5 BlueHDi","2023-11","Rappel","critique","Rupture de chaîne pouvant casser le moteur.","Remplacement kit chaîne 8 mm renforcé."],
+["STL-2024-EDCS6","peugeot;citroen;opel;fiat;alfa;jeep;lancia","EB2G3","Hybrid e-DCS6 : mise à jour boîte","2024-06","Transmission","modérée","À-coups et calages premières séries.","Mise à jour calculateur + apprentissages."],
+["STL-2024-ECMP","peugeot;citroen;opel;toyota;fiat","ESTELL","eCMP : OBC 11 kW & 12V","2024-05","Charge","modérée","Charge AC interrompue.","Diagnostic OBC + 12V AGM + câble T2."],
 ["STL-2022-SCR","peugeot;citroen;opel;ds","DV5;DW10","Réservoir AdBlue","2022-09","Antipollution","majeure","P20E8 récurrents.","Réservoir-pompe + injecteur + reset."],
 ["STL-2023-CAL","peugeot;citroen;ds;opel","","Calibration caméra pare-brise","2023-04","ADAS","modérée","ADAS indisponible après vitrage.","Calibration statique + dynamique."],
 ["STL-2021-CLIM","peugeot;citroen;opel","","Circuit R1234yf : étanchéité","2021-07","Climatisation","mineure","Perte de froid progressive.","Détection fuite + recharge."],
 ["STL-2022-EPB","peugeot;citroen;ds","","Frein de parking électrique","2022-02","Freinage","modérée","Blocage EPB.","Actionneur + procédure."],
 ["RLT-2019-H5FT","renault;dacia","H4Dt;H5Ht","Test consommation huile TCe","2019-03","Moteur","critique","Conso excessive.","Test normé ; échange sous extension."],
-["RPL-RLT-2019-EGR","renault","R9M;M9R","RAPPEL — refroidisseur EGR dCi","2019-10","Refroidissement","critique","Fuite interne EGR.","Refroidisseur + admission."],
-["RLT-2020-K9K","renault;dacia;nissan;mercedes","K9K","Vidange 15 000 km RN17","2020-05","Entretien","modérée","Protection coussinets.","15 000 km / 1 an."],
+["RPL-RLT-2019-EGR","renault","R9M;M9R","RAPPEL — refroidisseur EGR dCi","2019-10","Rappel","critique","Fuite interne refroidisseur EGR.","Remplacement refroidisseur + contrôle admission."],
+["RLT-2020-K9K","renault;dacia;nissan;mercedes","K9K","Vidange 15 000 km + huile RN17","2020-05","Entretien","modérée","Protection coussinets.","15 000 km / 1 an ; RN17 ou MB 229.52."],
 ["RLT-2024-AMPR","renault;alpine","AMPR","R5 / A290 : 12V & charge","2024-11","Batterie 12V","mineure","Non prêt après stockage.","12V + mise à jour."],
 ["RLT-2020-5AQ","renault","5AQ","Zoe : chargeur Caméléon","2020-08","Charge","modérée","Interruptions AC.","Logiciel chargeur + connectique."],
 ["RLT-2023-HV","renault","CMFEV","Batterie HV : bilan SOH","2023-05","Batterie HV","info","Autonomie réduite.","Bilan SOH + équilibrage."],
-["BMW-2022-EGR","bmw;mini","B47;B57","Rappel refroidisseur EGR","2022-08","Rappel","critique","Fuite glycol.","Refroidisseur + faisceau."],
+["BMW-2022-EGR","bmw;mini","B47;B57","Rappel refroidisseur EGR","2022-08","Rappel","critique","Fuite glycol, risque incendie.","Remplacement refroidisseur + admission/faisceau."],
 ["BMW-2019-B48","bmw;mini","B38;B48","Huile LL-17FE+ / CBS","2019-04","Entretien","info","Spécification et intervalles.","0W-20 LL-17FE+ ; 15 000 km."],
-["RPL-BMW-2024-IB","bmw","EVB;GEN5","RAPPEL — i4 / iX gestion HV","2024-05","Batterie HV","majeure","Surveillance batterie.","Logiciel + contrôle modules."],
+["RPL-BMW-2024-IB","bmw","EVB;GEN5","RAPPEL — i4 / iX gestion HV","2024-05","Rappel","majeure","Défaut logiciel surveillance HV.","Mise à jour logicielle + contrôle modules."],
 ["BMW-2021-AIRB","bmw;mini","","Airbag passager : connectique","2021-03","Airbags","modérée","Voyant airbag.","Reprise connectique sous siège."],
-["MB-2021-NOX","mercedes","OM654;OM656","Sondes NOx : diagnostic guidé","2021-03","Antipollution","modérée","Countdown.","Sondes + injecteur urée + reset."],
+["MB-2021-NOX","mercedes","OM654;OM656","Sondes NOx : diagnostic guidé","2021-03","Antipollution","modérée","Countdown antipollution.","XENTRY sondes + injecteur urée + reset."],
 ["MB-2022-48V","mercedes","M254;M256","Système 48V : RSG","2022-05","Hybridation","modérée","Voyants 48V.","RSG + courroie + DC-DC."],
-["RPL-MB-2023-EQ","mercedes","EVA2;EQSUV","RAPPEL — EQ gestion HV","2023-09","Batterie HV","majeure","Surveillance batterie / chargeur.","Logiciel + OBC + 12V."],
+["RPL-MB-2023-EQ","mercedes","EVA2;EQSUV","RAPPEL — EQ gestion HV","2023-09","Rappel","majeure","Défaut surveillance batterie / chargeur.","Mise à jour + contrôle OBC et 12V."],
 ["MB-2020-LED","mercedes","","Multibeam LED : module","2020-10","Éclairage","modérée","Segments éteints.","Module LED + étanchéité."],
-["VW-2022-EA288","vw;audi;skoda;seat;cupra;man","EA288","Rappel refroidisseur EGR TDI","2022-04","Rappel","critique","Risque incendie.","Refroidisseur + admission ; VIN."],
-["VW-2019-EVO","vw;audi;skoda;seat","EA211EVO","À-coups à froid : calculateur","2019-06","Moteur","modérée","Broutage ACT.","Mise à jour + adaptation DSG."],
-["VW-2020-DQ200","vw;audi;skoda;seat;cupra","","DSG7 DQ200 : logiciel","2020-02","Transmission","majeure","À-coups mécatronique.","Logiciel + huile G 052 512."],
-["VW-2025-MEB2","vw;audi;skoda;cupra;ford","MEB","MEB : logiciel 5.x + 12V","2025-04","Logiciel","modérée","Écrans figés.","OTA + 12V + chargeur."],
-["VAG-2025-PPE","audi;porsche","PPE","PPE 800V : logiciel","2025-02","Logiciel","modérée","Bugs lancement.","Mise à jour + préconditionnement."],
-["RPL-VW-2023-ID","vw;audi;skoda;cupra","MEB","RAPPEL — ID. ouvrants & HV","2023-07","Carrosserie","majeure","Verrouillage de porte.","Actionneurs + mise à jour."],
+["VW-2022-EA288","vw;audi;skoda;seat;cupra;man","EA288","Rappel refroidisseur EGR TDI","2022-04","Rappel","critique","Risque incendie EA288.","Remplacement refroidisseur + admission ; VIN."],
+["VW-2019-EVO","vw;audi;skoda;seat","EA211EVO","À-coups à froid : calculateur","2019-06","Moteur","modérée","Broutage 1.5 TSI evo ACT.","Mise à jour moteur + adaptation DSG."],
+["VW-2020-DQ200","vw;audi;skoda;seat;cupra","","DSG7 DQ200 : logiciel","2020-02","Transmission","majeure","À-coups et défauts mécatronique.","Logiciel + G 052 512 ; mécatronique si accumulateur HS."],
+["VW-2025-MEB2","vw;audi;skoda;cupra;ford","MEB","MEB APP550 : logiciel 5.x + 12V","2025-04","Logiciel","modérée","Écrans figés, 12V déchargée.","OTA/atelier + 12V + chargeur."],
+["VAG-2025-PPE","audi;porsche","PPE","PPE 800 V : logiciel & 12V","2025-02","Logiciel","modérée","Bugs de lancement Q6/A6/Macan.","Mise à jour + 12V + préconditionnement."],
+["RPL-VW-2023-ID","vw;audi;skoda;cupra","MEB","RAPPEL — ID. ouvrants & HV","2023-07","Rappel","majeure","Verrouillage de porte et surveillance HV.","Contrôle/remplacement actionneurs + mise à jour."],
 ["VW-2021-SUSP","vw;audi;skoda","","Triangles avant : silentblocs","2021-06","Suspension","mineure","Claquements.","Bras + géométrie."],
 ["VW-2022-WHEEL","vw;audi;skoda;seat","","Roulements de roue","2022-08","Châssis","mineure","Ronflement.","Moyeu + contrôle."],
-["POR-2021-J1","porsche;audi","J1","Taycan / GT : puissance","2021-06","Rappel","majeure","Perte puissance.","Logiciel + diagnostic HV."],
-["POR-2019-MAC","porsche","EA888","Macan : boîte de transfert","2019-02","Transmission","majeure","Usure transfert.","Contrôle huile / remplacement."],
-["POR-2023-CCB","porsche;audi;ferrari;lamborghini","","Freins CCB : contrôle fissures","2023-03","Freinage","info","Usage routier intensif.","Contrôle fissures + usage piste."],
-["FRD-2019-FOX","ford","FOX","1.0 EcoBoost : huile exclusive","2019-08","Distribution","critique","Désagrégation courroie.","5W-20 WSS-M2C948-B."],
-["RPL-FRD-2017-FOX","ford","FOX","RAPPEL — durite de dégazage","2017-03","Refroidissement","critique","Surchauffe / incendie.","Durite + circuit."],
-["RPL-FRD-2022-MACHE","ford","GE1","RAPPEL — Mach-E contacteurs HV","2022-06","Batterie HV","critique","Ouverture sous charge.","Boîtier contacteurs + logiciel."],
-["FRD-2021-PAN","ford;vw","PANTHER","EcoBlue : courroie 20 000 km","2021-02","Distribution","critique","Usure prématurée.","Inspection + crépine."],
-["TYT-2020-HYB","toyota;lexus;suzuki","ZR;M20A;A25A;M15A","Filtre batterie hybride","2020-06","Hybridation","info","Colmatage filtre.","Nettoyage 30 000 km."],
-["RPL-TYT-2022-BZ4X","toyota;lexus;subaru","E4TN","RAPPEL — boulons de roue","2022-06","Pneumatiques","critique","Desserrage possible.","Boulons + couple ; VIN."],
-["TYT-2019-GD","toyota","GD","Hilux DPF : calculateur","2019-09","Antipollution","majeure","Régénérations incomplètes.","Mise à jour + régénération."],
-["HND-2018-L15B","honda","L15B","Dilution huile : PGM-FI","2018-11","Injection","majeure","Essence dans l’huile.","PGM-FI + vidange rapprochée."],
-["RPL-HND-2020-FUEL","honda;acura","L15B;P10A;IMMD","RAPPEL — pompe à carburant","2020-05","Carburant","critique","Rotor déformé.","Pompe + contrôle démarrage."],
-["HK-2021-LGEV","hyundai;kia;jaguar","LGEV;LGEV2","Rappel batterie LG","2021-01","Rappel","critique","Risque incendie.","BMS + modules/pack."],
-["HK-2024-EGMP","hyundai;kia;genesis","EGMP","ICCU 800V : rappel","2024-03","Charge","majeure","Perte puissance / 12V.","Logiciel ICCU + remplacement."],
-["RPL-HK-2023-ABS","hyundai;kia;genesis","SST16;G4FT;EGMP","RAPPEL — module ABS","2023-09","Freinage","critique","Court-circuit à l’arrêt.","Relais / faisceau."],
-["HK-2020-KSDS","hyundai;kia","SST15;SST16","KSDS : détection cliquetis","2020-07","Moteur","critique","Coussinets de bielles.","KSDS + prise en charge VIN."],
-["MZD-2019-SH","mazda","SH;SKD33","Skyactiv-D : jauge X + PCM","2019-03","Moteur","majeure","Dilution.","Jauge + 10–12 000 km."],
-["JLR-2020-AJ20","landrover;jaguar","AJ200D;AJ150P3","Ingenium : chaîne / courroie","2020-09","Distribution","critique","Chaîne 2.0D, courroie 1.5.","Kit révisé ; STJLR."],
-["RPL-JLR-2023-IPACE","jaguar","LGEV","RAPPEL — I-Pace batterie","2023-05","Batterie HV","critique","Risque thermique.","Limitation puis modules/pack."],
+["POR-2021-J1","porsche;audi","J1","Taycan / GT : puissance","2021-06","Rappel","majeure","Perte puissance soudaine.","Rappel logiciel + diagnostic HV."],
+["POR-2019-MAC","porsche","EA888","Macan : boîte de transfert","2019-02","Transmission","majeure","Usure boîte de transfert, à-coups.","Contrôle huile transfert ; remplacement si usure ; extension VIN."],
+["POR-2023-CCB","porsche;audi;ferrari;lamborghini","","Freins CCB : contrôle fissures","2023-03","Freinage","info","Usage routier intensif.","Contrôle fissures ; usage piste."],
+["FRD-2019-FOX","ford","FOX","1.0 EcoBoost : huile exclusive","2019-08","Distribution","critique","Désagrégation courroie si huile non conforme.","5W-20 WSS-M2C948-B EXCLUSIVE ; contrôle courroie/crépine."],
+["RPL-FRD-2017-FOX","ford","FOX","RAPPEL — durite de dégazage 1.0 EcoBoost","2017-03","Rappel","critique","Surchauffe et risque d'incendie par fuite de LDR.","Remplacement durite de dégazage + contrôle circuit."],
+["RPL-FRD-2022-MACHE","ford","GE1","RAPPEL — Mach-E contacteurs HV","2022-06","Rappel","critique","Ouverture sous charge des contacteurs.","Boîtier contacteurs remis à niveau + logiciel + essai."],
+["FRD-2021-PAN","ford;vw","PANTHER","2.0 EcoBlue : courroie 20 000 km","2021-02","Distribution","critique","Usure prématurée courroie humide.","Inspection 20 000 km ; crépine ; WSS-M2C950-A."],
+["TYT-2020-HYB","toyota;lexus;suzuki","ZR;M20A;A25A;M15A","Filtre batterie hybride 30 000 km","2020-06","Hybridation","info","Colmatage du filtre sous assise.","Nettoyage 30 000 km ; bilan santé annuel."],
+["RPL-TYT-2022-BZ4X","toyota;lexus;subaru","E4TN","RAPPEL — bZ4X / RZ / Solterra boulons de roue","2022-06","Rappel","critique","Risque de desserrage de roue.","Boulons de moyeu remplacés + couple ; VIN avant livraison."],
+["TYT-2019-GD","toyota","GD","Hilux DPF : calculateur régénération","2019-09","Antipollution","majeure","Régénérations incomplètes.","Mise à jour calculateur + régénération forcée."],
+["HND-2018-L15B","honda","L15B","Dilution huile : PGM-FI","2018-11","Moteur","majeure","Essence dans l'huile par climat froid.","Mise à jour PGM-FI + vidange rapprochée."],
+["RPL-HND-2020-FUEL","honda;acura","L15B;P10A;IMMD","RAPPEL — pompe à carburant basse pression","2020-05","Rappel","critique","Déformation du rotor de pompe pouvant couper l'alimentation.","Remplacement pompe à carburant ; contrôle démarrage."],
+["HK-2021-LGEV","hyundai;kia;jaguar","LGEV;LGEV2","Rappel batterie LG","2021-01","Rappel","critique","Risque incendie cellules LG.","BMS + modules/pack ; limitation transitoire ; stationnement."],
+["HK-2024-EGMP","hyundai;kia;genesis","EGMP","ICCU 800 V : rappel","2024-03","Rappel","majeure","Perte puissance / 12V non chargée.","Logiciel ICCU ; remplacement si DTC ; 12V."],
+["RPL-HK-2023-ABS","hyundai;kia;genesis","SST16;G4FT;EGMP","RAPPEL — module ABS / relais","2023-09","Rappel","critique","Court-circuit possible du module ABS à l'arrêt.","Remplacement relais/faisceau ; stationner à l'écart jusqu'à réparation."],
+["HK-2020-KSDS","hyundai;kia","SST15;SST16","KSDS : détection cliquetis moteur","2020-07","Moteur","critique","Coussinets de bielles Theta/Gamma (marché US).","Mise à jour KSDS + prise en charge moteur selon VIN."],
+["MZD-2019-SH","mazda","SH;SKD33;SKD18","Skyactiv-D : jauge X + PCM","2019-03","Moteur","majeure","Dilution par régénérations incomplètes.","Jauge à chaque plein ; 10-12 000 km ; PCM."],
+["JLR-2020-AJ20","landrover;jaguar","AJ200D;AJ150P3","Ingenium : chaîne / courroie","2020-09","Distribution","critique","Chaîne 2.0D et courroie 1.5 essence.","Kit chaîne révisé ; inspection courroie ; STJLR ; 16 000 km."],
+["RPL-JLR-2023-IPACE","jaguar","LGEV","RAPPEL — I-Pace batterie LG","2023-05","Rappel","critique","Risque thermique cellules LG.","Limitation charge transitoire puis remplacement modules/pack."],
 ["JLR-2022-AIR","landrover","","Suspension pneumatique","2022-04","Suspension","modérée","Affaissement.","Boudins + compresseur."],
-["RPL-GM-2021-BOLT","chevrolet","ULT","RAPPEL — Bolt batterie LG","2021-08","Batterie HV","critique","Risque incendie.","Modules/pack + logiciel."],
-["RPL-GM-2023-L87","gmc;cadillac;chevrolet","L84;LT2","RAPPEL — V8 AFM/DFM","2023-04","Moteur","majeure","Usure poussoirs.","Kit poussoirs ; dexos."],
-["VLV-2025-SPA2","volvo;polestar","EVV","EX90 / Polestar : logiciel","2025-03","Logiciel","modérée","Démarrages impossibles.","Mises à jour + 12V."],
-["FCA-2019-MJT","fiat;alfa;jeep;suzuki","MJT;MJ23","MultiJet : courroie 120 000 km","2019-05","Distribution","modérée","Échéances distribution.","Courroie + galets + pompe eau."],
-["CN-2025-OTA","byd;mg;maxus;xpeng;nio;leapmotor;ora;zeekr;geely;lynkco;omoda;jaecoo;chery;seres;dongfeng;vinfast;liauto;denza;wey;hongqi;aiways;aion;gac;xiaomi;neta;voyah;jac;wuling;baojun;roewe;deepal;changan;avatr;aito;haval;tank;gwm;exeed;jetour;bestune;hyper;yangwang;fangchengbao;jmc","LPEV;GWMEV;XPEV;NIOEV;GEEBEV;CHEREV;HQBEV;DFBEV;AIW;VFEV;SERBEV;LIBEV;EBY;EMG;AIONEV;VOY;JACEV;NET;XIA","VE Chine : OTA & 12V","2025-02","Électronique","mineure","Écrans figés après OTA.","Dernière version + 12V AGM."],
-["CN-2024-MM","byd;geely;chery;changan;gac;haval;mg;nio;xpeng","","Multimédia : réinitialisation","2024-09","Multimédia","mineure","Écran noir / lenteurs.","Mise à jour / reset usine."],
-["CN-2023-SEAT","byd;chery;geely;mg;haval","","Sièges chauffants : nappe","2023-11","Sellerie","mineure","Chauffage inopérant.","Nappe + faisceau."],
-["CN-2024-ADAS","xpeng;nio;zeekr;byd;aito;avatr","","ADAS : calibration caméra","2024-07","ADAS","modérée","Corrections intempestives.","Calibration + mise à jour."],
-["CN-2025-HEAT","nio;xpeng;zeekr;byd;mg;voyah","","Pompe à chaleur : vanne","2025-01","Climatisation","modérée","Chauffage faible en hiver.","Vanne 4 voies + logiciel."],
-["CN-2024-LOCK","byd;mg;chery;omoda;jaecoo;haval","","Serrures : actionneur","2024-03","Carrosserie","mineure","Ouverture aléatoire.","Actionneur + contrôle."],
-["CN-2023-CAM","byd;mg;chery;geely;haval;neta","","Caméra de recul : faisceau","2023-08","Électronique","mineure","Image noire.","Caméra + faisceau hayon."],
-["CN-2025-EPB","byd;chery;changan;gac;haval;mg","","EPB : actionneur","2025-05","Freinage","modérée","Blocage parking.","Actionneur + procédure."],
-["CN-2024-TBOX","byd;geely;chery;nio;xpeng;mg","","Télématique : décharge 12V","2024-12","Batterie 12V","modérée","Batterie à plat.","Gestion veille + mise à jour."],
-["CN-2023-ROOF","byd;nio;xpeng;zeekr;haval","","Toit panoramique : drains","2023-06","Carrosserie","mineure","Infiltration.","Drains + joints."],
-["CN-2024-KEY","byd;mg;chery;geely;neta","","Clé numérique : appairage","2024-02","Électronique","mineure","Démarrage refusé.","Appairage + antenne."],
-["CN-2025-CHG","byd;mg;ora;leapmotor;neta;wuling;baojun","","Charge T2 : verrouillage","2025-03","Charge","modérée","Câble bloqué.","Actionneur + connectique."],
-["CN-2024-ESC","byd;chery;geely;changan;haval;gac","","ESP : capteur de roue","2024-05","Freinage","modérée","Voyants ABS/ESP.","Capteur + effacement."],
-["CN-2023-LGT","byd;geely;chery;hongqi;exeed","","Éclairage LED : module","2023-09","Éclairage","modérée","Segments éteints.","Module + étanchéité."],
-["CN-2025-SW","byd;geely;chery;changan;gac;haval;jaecoo;omoda;exeed;jetour","","DCT/DHT : cartographie","2025-04","Transmission","modérée","À-coups en ville.","Mise à jour calculateur."],
-["CN-2024-CORR","chery;jac;jmc;dongfeng;wuling","","Châssis : protection anticorrosion","2024-08","Châssis","mineure","Corrosion prématurée.","Traitement + contrôle."],
-["CN-2025-STR","nio;xpeng;zeekr;byd;aito","","Direction : calibration EPS","2025-02","Direction","modérée","Direction dure / voyant.","Calibration + mise à jour."],
-["CN-2024-MIR","byd;mg;chery;geely;haval;neta","","Rétroviseurs : rabattement","2024-06","Carrosserie","mineure","Rabattement inopérant.","Module rétroviseur."],
-["CN-2025-SOH","byd;nio;xpeng;mg;zeekr;leapmotor;ora;voyah;aion","","Batterie HV : bilan SOH annuel","2025-06","Batterie HV","info","Autonomie réduite.","Bilan SOH + équilibrage."],
-["CN-2024-PUMP","byd;mg;nio;xpeng;zeekr;voyah","","Pompe de refroidissement HV","2024-10","Refroidissement","modérée","Puissance bridée.","Pompe + purge."],
-["CN-2023-TYRE","byd;mg;chery;haval;geely;neta","","Pneumatiques : géométrie","2023-12","Pneumatiques","mineure","Usure irrégulière.","Géométrie + rotation."],
-["CN-2025-EXH","chery;haval;tank;gwm;jetour;exeed","","Échappement : sonde lambda","2025-01","Échappement","modérée","Voyant moteur / conso.","Sonde + adaptatifs."],
-["CN-2024-FUEL","chery;haval;changan;gac;jetour","","Carburant : pompe BP","2024-04","Carburant","modérée","Calage / démarrage.","Pompe + contrôle."],
-["CN-2023-WHL","chery;geely;changan;gac;haval;mg","","Roulements de roue","2023-07","Châssis","mineure","Ronflement évolutif.","Moyeu + contrôle."],
-["CN-2025-BAT12","byd;mg;chery;geely;haval;nio;xpeng;neta;ora;leapmotor","","Batterie 12V : remplacement AGM","2025-07","Batterie 12V","modérée","Non prêt / électronique.","AGM + test DC-DC."],
-["CN-2024-AIRB","byd;chery;geely;haval;mg;changan","","Airbag : connectique","2024-01","Airbags","modérée","Voyant airbag.","Reprise connectique."],
-["CN-2025-ACC","byd;nio;xpeng;zeekr;aito;avatr;haval;exeed","","Radar ACC : calibration","2025-08","ADAS","modérée","ACC indisponible.","Calibration radar."],
-["CN-2024-SEAT2","byd;geely;chery;hongqi;exeed;aito","","Sièges : moteur électrique","2024-11","Sellerie","mineure","Réglage inopérant.","Moteur + faisceau."],
-["CN-2025-DC","byd;nio;xpeng;zeekr;mg;aion;voyah;hyper","","Charge DC : préconditionnement","2025-09","Charge","mineure","Charge lente en hiver.","Mise à jour thermique."],
-["CN-2024-RED","byd;mg;ora;leapmotor;neta;wuling","","Réducteur : vidange","2024-09","Transmission","info","Sifflement proportionnel.","Vidange réducteur."],
-["CN-2025-BLEND","byd;mg;geely;chery;haval;nio;xpeng","","Freinage régénératif : blending","2025-02","Freinage","mineure","À-coups au freinage.","Mise à jour + purge."],
-["CN-2024-SUSP2","nio;xpeng;zeekr;voyah;aito;avatr;li auto","","Suspension adaptative : capteur","2024-07","Suspension","modérée","Raideur figée.","Capteur + calibration."],
-["CN-2025-V2L","byd;mg;zeekr;nio;xpeng;aion;ora","","V2L : prise de décharge","2025-04","Électronique","mineure","Décharge inopérante.","Module V2L + logiciel."]
+["RPL-GM-2021-BOLT","chevrolet","ULT","RAPPEL — Bolt EV batterie LG","2021-08","Rappel","critique","Risque incendie cellules LG (défaut de fabrication).","Remplacement modules/pack ; logiciel de limitation ; stationner à l'écart."],
+["RPL-GM-2023-L87","gmc;cadillac;chevrolet","L84;LT2","RAPPEL — moteur V8 AFM/DFM","2023-04","Rappel","majeure","Usure poussoirs de désactivation cylindres.","Contrôle/remplacement kit poussoirs ; huile dexos spec."],
+["VLV-2025-SPA2","volvo;polestar","EVV","EX90 / Polestar 3 : logiciel lancement","2025-03","Logiciel","modérée","Démarrages impossibles, ADAS indisponible.","Mises à jour atelier successives ; 12V ; réinit calculateur."],
+["FCA-2019-MJT","fiat;alfa;jeep;suzuki","MJT;MJ23","MultiJet : courroie 120 000 km","2019-05","Distribution","modérée","Échéances 1.6/2.0/2.2/2.3 (1.3 à chaîne).","Courroie + galets + pompe eau ; 5W-30 C2 9.55535-S1."],
+["CN-2025-OTA","byd;mg;maxus;xpeng;nio;leapmotor;ora;zeekr;geely;lynkco;omoda;jaecoo;chery;seres;dongfeng;vinfast;liauto;denza;wey;hongqi;aiways;aion;gac;xiaomi;neta;voyah;jac;wuling;baojun;roewe;deepal;changan;avatr;aito;haval;tank;gwm;exeed;jetour;bestune;hyper;yangwang;fangchengbao;jmc","LPEV;GWMEV;XPEV;NIOEV;GEEBEV;CHEREV;HQBEV;DFBEV;AIW;VFEV;SERBEV;LIBEV;EBY;EMG;AIONEV;VOY;JACEV;NET;XIA","VE Chine : campagnes OTA & 12V","2025-02","Logiciel","mineure","Écrans figés et 12V déchargée après OTA.","Dernière version logicielle + 12V AGM ; maintien de charge."]
 ],
 mt:[
-["PL-EB2","Stellantis 1.2 PureTech courroie","EB2",["0W-20 PSA B71 2010",3.2,"Spec impérative"],["Courroie humide",100000,72,"Contrôle à CHAQUE vidange"],[["Vidange + filtre huile",20000,12],["Contrôle courroie",20000,12],["Filtre habitacle",20000,12],["Filtre à air",40000,48],["Bougies",60000,48],["Liquide de freins",0,24]],"25 000 → 20 000 km après TSB.",{f:"DOT4",l:"G30 PSA",w:110,p:[2.4,2.4],r:"R1234yf",b:"AGM 60Ah"}],
-["PL-EB2G3","Stellantis 1.2 Gen3 Hybrid","EB2G3",["0W-20 PSA B71 2010",3.2,"Chaîne"],["Chaîne",0,0,""],[["Vidange + filtre huile",20000,12],["Filtre habitacle",20000,12],["Bougies",60000,48],["Bilan 48V + e-DCS6",20000,12],["Liquide de freins",0,24]],"",{f:"DOT4",l:"G30 PSA",w:110,p:[2.5,2.5],r:"R1234yf",b:"AGM 60Ah"}],
-["PL-EP6","Stellantis 1.6 THP","EP6;EP6P",["0W-30 PSA B71 2312",4.25,"Contrôle conso"],["Chaîne",0,0,"Tendeur dès 100 000 km"],[["Vidange + filtre huile",20000,12],["Bougies",60000,48],["Décalaminage",60000,48],["Liquide de freins",0,24]],"15 000 km en usage sévère.",{f:"DOT4",l:"G30 PSA",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM 70Ah"}],
-["PL-DV5","Stellantis 1.5 BlueHDi","DV5",["0W-30 PSA B71 2312",3.9,""],["Courroie",150000,120,"Chaîne AAC : kit 8 mm"],[["Vidange + filtre huile",25000,12],["Contrôle chaîne AAC",60000,0],["Filtre gazole",40000,48],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"",{f:"DOT4",l:"G30 PSA",w:110,p:[2.4,2.4],r:"R1234yf",b:"AGM 70Ah"}],
-["PL-DW10","Stellantis 2.0 BlueHDi","DW10",["0W-30 PSA B71 2312",5.1,""],["Courroie",180000,120,""],[["Vidange + filtre huile",20000,12],["Filtre gazole",40000,48],["Appoint AdBlue",10000,6],["Vidange EAT8",100000,0],["Liquide de freins",0,24]],"",{f:"DOT4",l:"G30 PSA",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM 80Ah"}],
-["PL-K9K","1.5 dCi K9K / OM608","K9K",["5W-30 RN17 / MB 229.52",4.5,"15 000 km MAX"],["Courroie",150000,72,""],[["Vidange + filtre huile",15000,12],["Filtre gazole",30000,24],["Filtre à air",30000,24],["Écoute coussinets",120000,0],["Liquide de freins",0,24]],"30 000 → 15 000 km.",{f:"DOT4",l:"Glaceol RX D",w:110,p:[2.4,2.4],r:"R1234yf",b:"AGM 70Ah"}],
-["PL-RNPT","Renault TCe / SCe","H4Dt;H5Ht;HR12;HR10",["5W-30 RN17",4,""],["Chaîne",0,0,""],[["Vidange + filtre huile",20000,12],["Filtre habitacle",20000,12],["Bougies",60000,48],["Liquide de freins",0,24],["Courroie accessoires",120000,72]],"",{f:"DOT4",l:"Glaceol RX D",w:110,p:[2.4,2.4],r:"R1234yf",b:"EFB 60Ah"}],
-["PL-M9R","2.0 / 2.3 dCi M9R","M9R;R9M",["5W-30 RN17",6.5,""],["Chaîne",0,0,""],[["Vidange + filtre huile",20000,12],["Filtre gazole",40000,48],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"Livraison : 20 000 km.",{f:"DOT4",l:"Glaceol RX D",w:140,p:[3.5,3.8],r:"R1234yf",b:"AGM 95Ah"}],
-["PL-ETECH","Renault E-Tech","ETECH;ETECHP",["5W-30 RN17",4.3,""],["Chaîne",0,0,"Multimode sans embrayage"],[["Vidange + filtre huile",15000,12],["Bougies",60000,48],["Bilan HV + multimode",15000,12],["Liquide de freins",0,24]],"",{f:"DOT4",l:"Glaceol RX D",w:110,p:[2.5,2.5],r:"R1234yf",b:"AGM 60Ah"}],
-["PL-M5PT","Renault Sport / Alpine","M5Pt",["5W-40 ACEA C3",5.5,"Sportif 10 000 km"],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Bougies",30000,24],["Vidange EDC",60000,0],["Liquide de freins",0,24]],"",{f:"DOT4 Racing",l:"Glaceol RX D",w:120,p:[2.4,2.4],r:"R1234yf",b:"AGM 60Ah"}],
-["PL-EA211","VW EA211 / evo","EA211;EA211EVO",["0W-20 VW 508 00",4,""],["Courroie",210000,0,"Contrôle dès 90 000 km"],[["Vidange + filtre huile",15000,12],["Filtre habitacle",30000,24],["Bougies",60000,48],["Module pompe à eau",90000,0],["Liquide de freins",0,24]],"LongLife → 15 000 km.",{f:"DOT4",l:"G12evo",w:120,p:[2.4,2.4],r:"R1234yf",b:"AGM 70Ah"}],
-["PL-EA288","VW / MAN EA288 TDI","EA288",["0W-20 VW 509 00",4.3,""],["Courroie",210000,0,""],[["Vidange + filtre huile",15000,12],["Filtre gazole",60000,48],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"Rappel EGR : VIN.",{f:"DOT4",l:"G12evo",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM 80Ah"}],
+["PL-EB2","Stellantis 1.2 PureTech (courroie humide)","EB2",["0W-20 PSA B71 2010",3.2,"Spécification IMPÉRATIVE"],["Courroie humide",100000,72,"Contrôle visuel à CHAQUE vidange"],[["Vidange + filtre huile",20000,12],["Contrôle courroie",20000,12],["Filtre habitacle",20000,12],["Filtre à air",40000,48],["Bougies",60000,48],["Liquide de freins",0,24]],"25 000 → 20 000 km après TSB.",{f:"DOT4",l:"G30 PSA",w:110,p:[2.4,2.4],r:"R1234yf",b:"AGM 60Ah"}],
+["PL-EB2G3","Stellantis 1.2 Gen3 Hybrid e-DCS6","EB2G3",["0W-20 PSA B71 2010",3.2,"Distribution à chaîne"],["Chaîne",0,0,""],[["Vidange + filtre huile",20000,12],["Filtre habitacle",20000,12],["Bougies",60000,48],["Bilan hybride 48V + e-DCS6",20000,12],["Liquide de freins",0,24]],"",{f:"DOT4",l:"G30 PSA",w:110,p:[2.5,2.5],r:"R1234yf",b:"AGM 60Ah"}],
+["PL-EP6","Stellantis 1.6 THP","EP6;EP6P",["0W-30 PSA B71 2312",4.25,"Contrôle conso régulier"],["Chaîne",0,0,"Tendeur dès 100 000 km"],[["Vidange + filtre huile",20000,12],["Bougies",60000,48],["Décalaminage (conseil)",60000,48],["Liquide de freins",0,24]],"15 000 km en usage sévère.",{f:"DOT4",l:"G30 PSA",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM 70Ah"}],
+["PL-DV5","Stellantis 1.5 BlueHDi","DV5",["0W-30 PSA B71 2312 (C2)",3.9,""],["Courroie distribution",150000,120,"Chaîne AAC : kit 8 mm si concerné"],[["Vidange + filtre huile",25000,12],["Contrôle chaîne AAC (TSB)",60000,0],["Filtre gazole",40000,48],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"",{f:"DOT4",l:"G30 PSA",w:110,p:[2.4,2.4],r:"R1234yf",b:"AGM 70Ah"}],
+["PL-DW10","Stellantis 2.0 BlueHDi","DW10",["0W-30 PSA B71 2312",5.1,""],["Courroie distribution",180000,120,""],[["Vidange + filtre huile",20000,12],["Filtre gazole",40000,48],["Appoint AdBlue",10000,6],["Vidange EAT8 (conseil)",100000,0],["Liquide de freins",0,24]],"",{f:"DOT4",l:"G30 PSA",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM 80Ah"}],
+["PL-K9K","1.5 dCi K9K / OM608 (4 marques)","K9K",["5W-30 RN17 / MB 229.52",4.5,"15 000 km MAX"],["Courroie distribution",150000,72,""],[["Vidange + filtre huile",15000,12],["Filtre gazole",30000,24],["Filtre à air",30000,24],["Écoute coussinets",120000,0],["Liquide de freins",0,24]],"30 000 → 15 000 km préconisé.",{f:"DOT4",l:"Glaceol RX D",w:110,p:[2.4,2.4],r:"R1234yf",b:"AGM 70Ah"}],
+["PL-RNPT","Renault TCe / SCe","H4Dt;H5Ht;HR12;HR10",["5W-30 RN17",4,"ECO-G : jeu soupapes 60 000"],["Chaîne",0,0,""],[["Vidange + filtre huile",20000,12],["Filtre habitacle",20000,12],["Bougies",60000,48],["Liquide de freins",0,24],["Courroie accessoires",120000,72]],"",{f:"DOT4",l:"Glaceol RX D",w:110,p:[2.4,2.4],r:"R1234yf",b:"EFB 60Ah"}],
+["PL-M9R","2.0 / 2.3 dCi M9R","M9R;R9M",["5W-30 RN17",6.5,"≈ selon version"],["Chaîne",0,0,""],[["Vidange + filtre huile",20000,12],["Filtre gazole",40000,48],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"Livraison : 20 000 km max.",{f:"DOT4",l:"Glaceol RX D",w:140,p:[3.5,3.8],r:"R1234yf",b:"AGM 95Ah"}],
+["PL-ETECH","Renault E-Tech","ETECH;ETECHP",["5W-30 RN17",4.3,""],["Chaîne",0,0,"Boîte multimode sans embrayage"],[["Vidange + filtre huile",15000,12],["Bougies",60000,48],["Bilan HV + multimode",15000,12],["Liquide de freins",0,24]],"",{f:"DOT4",l:"Glaceol RX D",w:110,p:[2.5,2.5],r:"R1234yf",b:"AGM 60Ah"}],
+["PL-M5PT","Renault Sport / Alpine","M5Pt",["5W-40 ACEA C3",5.5,"Sportif : 10 000 km"],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Bougies",30000,24],["Vidange EDC",60000,0],["Liquide de freins",0,24]],"",{f:"DOT4 Racing",l:"Glaceol RX D",w:120,p:[2.4,2.4],r:"R1234yf",b:"AGM 60Ah"}],
+["PL-EA211","VW EA211 / evo TSI-MPI","EA211;EA211EVO",["0W-20 VW 508 00",4,""],["Courroie distribution",210000,0,"Contrôle dès 90 000 km"],[["Vidange + filtre huile",15000,12],["Filtre habitacle",30000,24],["Bougies",60000,48],["Module pompe à eau",90000,0],["Liquide de freins",0,24]],"LongLife 30 000 → 15 000 km.",{f:"DOT4",l:"G12evo",w:120,p:[2.4,2.4],r:"R1234yf",b:"AGM 70Ah"}],
+["PL-EA288","VW / MAN EA288 TDI","EA288",["0W-20 VW 509 00",4.3,""],["Courroie distribution",210000,0,"Contrôle 120 000 km"],[["Vidange + filtre huile",15000,12],["Filtre gazole",60000,48],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"Rappel EGR : vérifier VIN.",{f:"DOT4",l:"G12evo",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM 80Ah"}],
 ["PL-EA888","VW / Porsche EA888","EA888",["5W-30 VW 504 00",5.2,""],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Contrôle conso huile",10000,6],["Bougies",60000,48],["Vidange DSG humide",60000,0],["Liquide de freins",0,24]],"",{f:"DOT4",l:"G12evo",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM 70Ah"}],
 ["PL-EA839","VAG V6 / V8","EA839;EA897;EA855;EA825",["0W-20 508 00 / 5W-40 RS",6.5,"V8 ≈ 9 L"],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Bougies",60000,48],["Vidange ZF8 / DSG",80000,0],["Appoint AdBlue (TDI)",10000,6],["Liquide de freins",0,24]],"",{f:"DOT4",l:"G12evo",w:140,p:[2.6,2.6],r:"R1234yf",b:"AGM 92Ah"}],
-["PL-MEB","VW Group MEB","MEB",null,null,[["Filtre habitacle",20000,24],["Bilan SOH + logiciel",15000,12],["Liquide de freins",0,24],["Batterie 12V",30000,24],["LDR batterie HV",120000,72]],"Vérifier version logicielle.",{f:"DOT4",l:"G12evo",w:130,p:[2.6,2.6],r:"R1234yf",b:"AGM 80Ah"}],
+["PL-MEB","VW Group MEB","MEB",null,null,[["Filtre habitacle",20000,24],["Bilan SOH + logiciel",15000,12],["Liquide de freins",0,24],["Batterie 12V",30000,24],["LDR batterie HV",120000,72]],"Campagnes logicielles 5.x : vérifier version.",{f:"DOT4",l:"G12evo",w:130,p:[2.6,2.6],r:"R1234yf",b:"AGM 80Ah"}],
 ["PL-PPE","Audi / Porsche PPE & J1","PPE;J1",null,null,[["Filtre habitacle",20000,24],["Bilan SOH 800V",15000,12],["Liquide de freins",0,24],["Batterie 12V",30000,24],["LDR HV",120000,72]],"Préconditionnement avant DC.",{f:"DOT4",l:"G12evo",w:150,p:[2.7,2.9],r:"R1234yf",b:"AGM 92Ah"}],
 ["PL-BMWPT","BMW B38 / B48","B38;B48",["0W-20 LL-17FE+",5.25,"B38 ≈ 4,25 L"],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Filtre habitacle",25000,24],["Bougies",60000,48],["Vidange ZF8",100000,0],["Liquide de freins",0,24]],"CBS → 15 000 km.",{f:"DOT4 LV",l:"BMW HT-12",w:140,p:[2.5,2.7],r:"R1234yf",b:"AGM 80Ah"}],
 ["PL-B58","BMW B58 / S58","B58;S58",["0W-20 LL-17FE+ (S58 0W-30)",6.5,"S58 : 10 000 km"],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Bougies",60000,48],["Vidange ZF8",100000,0],["Liquide de freins",0,24]],"",{f:"DOT4 LV",l:"BMW HT-12",w:140,p:[2.6,2.8],r:"R1234yf",b:"AGM 90Ah"}],
-["PL-B47","BMW B47 / B57","B47;B57",["0W-30 LL-04",5,"B57 ≈ 7 L"],["Chaîne côté volant moteur",0,0,"Bruit dès 100 000 km"],[["Vidange + filtre huile",15000,12],["Contrôle EGR (rappel)",40000,24],["Filtre gazole",60000,48],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"",{f:"DOT4 LV",l:"BMW HT-12",w:140,p:[2.5,2.7],r:"R1234yf",b:"AGM 90Ah"}],
-["PL-N63","BMW N63 / Alpina","N63",["0W-30 LL-01 FE",8.5,"Contrôle conso"],["Chaîne",0,0,""],[["Vidange + filtre huile",12000,12],["Bougies",40000,24],["Décanteur",60000,0],["Vidange ZF8",80000,0],["Liquide de freins",0,24]],"",{f:"DOT4 LV",l:"BMW HT-12",w:150,p:[2.7,2.9],r:"R1234yf",b:"AGM 105Ah"}],
+["PL-B47","BMW B47 / B57","B47;B57",["0W-30 LL-04",5,"B57 ≈ 7 L"],["Chaîne côté volant moteur",0,0,"Bruit arrière dès 100 000 km"],[["Vidange + filtre huile",15000,12],["Contrôle EGR (rappel)",40000,24],["Filtre gazole",60000,48],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"",{f:"DOT4 LV",l:"BMW HT-12",w:140,p:[2.5,2.7],r:"R1234yf",b:"AGM 90Ah"}],
+["PL-N63","BMW N63 / Alpina","N63",["0W-30 LL-01 FE",8.5,"Contrôle conso régulier"],["Chaîne",0,0,""],[["Vidange + filtre huile",12000,12],["Bougies",40000,24],["Contrôle décanteur",60000,0],["Vidange ZF8",80000,0],["Liquide de freins",0,24]],"",{f:"DOT4 LV",l:"BMW HT-12",w:150,p:[2.7,2.9],r:"R1234yf",b:"AGM 105Ah"}],
 ["PL-MBPT","Mercedes M254 / M256 / M139","M254;M256;M139;M254P",["0W-20 MB 229.71",5.5,"M139 : 0W-40"],["Chaîne",0,0,""],[["Vidange + filtre huile",20000,12],["Bougies",60000,48],["Courroie RSG 48V",60000,0],["Vidange 9G",100000,0],["Liquide de freins",0,24]],"",{f:"DOT4+",l:"MB 331.0",w:130,p:[2.5,2.5],r:"R1234yf",b:"AGM 80Ah"}],
 ["PL-OM654","Mercedes OM654 / OM656","OM654;OM656",["5W-30 MB 229.52",6,"OM656 ≈ 8 L"],["Chaîne",0,0,""],[["Vidange + filtre huile",20000,12],["Filtre gazole",60000,48],["Appoint AdBlue",10000,6],["Vidange 9G",100000,0],["Liquide de freins",0,24]],"",{f:"DOT4+",l:"MB 331.0",w:140,p:[2.6,2.6],r:"R1234yf",b:"AGM 95Ah"}],
 ["PL-EQ","Mercedes EQ","EVA2;EQSUV",null,null,[["Filtre habitacle",20000,24],["Bilan SOH + OBC",15000,12],["Liquide de freins",0,24],["Batterie 12V",30000,24],["LDR HV",120000,72]],"",{f:"DOT4+",l:"MB 331.0",w:140,p:[2.6,2.6],r:"R1234yf",b:"AGM 95Ah"}],
@@ -1095,35 +1027,33 @@ mt:[
 ["PL-GD","Toyota D-4D","GD;T24A",["5W-30 ACEA C3",7.5,""],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Filtre gazole",30000,24],["Appoint AdBlue",10000,6],["Jeu soupapes",60000,0],["Liquide de freins",0,24]],"",{f:"DOT4",l:"Toyota SLLC",w:130,p:[2.6,2.8],r:"R1234yf",b:"AGM 90Ah"}],
 ["PL-HKPT","Hyundai / Kia / Genesis essence","G3LC;SST15;SST16;G4KL;G4KR;G15T",["0W-20 API SP / C2",4,"V6 ≈ 5,5 L"],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Filtre habitacle",15000,12],["Bougies",60000,48],["Décalaminage GDi",60000,48],["Vidange DCT8",60000,0],["Liquide de freins",0,24]],"30 000 → 15 000 km.",{f:"DOT4",l:"Hyundai LLC",w:110,p:[2.4,2.4],r:"R1234yf",b:"AGM 60Ah"}],
 ["PL-CRDI","Hyundai / Kia CRDi","D4FE;D4HC;D22DT;G4FT",["0W-30 ACEA C3",5.3,""],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Filtre gazole",40000,48],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"",{f:"DOT4",l:"Hyundai LLC",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM 80Ah"}],
-["PL-EGMP","E-GMP 800V","EGMP;EVK2;LGEV2",null,null,[["Filtre habitacle",20000,24],["Bilan SOH + ICCU",15000,12],["Liquide de freins",0,24],["Batterie 12V",30000,24],["LDR HV",120000,72]],"Rappel ICCU : contrôle DTC.",{f:"DOT4",l:"LDR spec",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM 70Ah"}],
+["PL-EGMP","E-GMP 800V","EGMP;EVK2;LGEV2",null,null,[["Filtre habitacle",20000,24],["Bilan SOH + ICCU",15000,12],["Liquide de freins",0,24],["Batterie 12V",30000,24],["LDR HV",120000,72]],"Rappel ICCU : contrôle DTC à chaque passage.",{f:"DOT4",l:"LDR spec",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM 70Ah"}],
 ["PL-HND","Honda VTEC Turbo","P10A;L15B;K20C",["0W-20 API SP Honda",3.5,""],["P10A courroie / autres chaîne",100000,72,""],[["Vidange + filtre huile",12500,12],["Contrôle dilution",5000,3],["Bougies",60000,48],["Liquide de freins",0,24]],"",{f:"DOT3 / DOT4",l:"Honda Type 2",w:108,p:[2.3,2.3],r:"R1234yf",b:"EFB 60Ah"}],
 ["PL-IMMD","Honda e:HEV","IMMD;LEB",["0W-20 API SP",4,""],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Filtre batterie IPU",30000,24],["Bougies",100000,0],["Liquide de freins",0,24]],"",{f:"DOT3 / DOT4",l:"Honda Type 2",w:108,p:[2.3,2.3],r:"R1234yf",b:"AGM 60Ah"}],
 ["PL-MJT","MultiJet / T-Jet / FireFly","MJT;MJ23;TJET;FF",["5W-30 C2 9.55535-S1",3.9,"MJ23 ≈ 6,5 L"],["Courroie / chaîne selon version",120000,72,""],[["Vidange + filtre huile",15000,12],["Filtre gazole",30000,24],["Bougies",60000,48],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"",{f:"DOT4",l:"Paraflu UP",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM 70Ah"}],
 ["PL-ALFA","Alfa GME / 690T / Diesel","GME;690T;ALFA22",["0W-30 C2 GS1 (690T 5W-40)",5,"690T ≈ 8,5 L"],["Chaîne / ALFA22 courroie",120000,72,""],[["Vidange + filtre huile",15000,12],["Bougies",60000,48],["Vidange ZF8",100000,0],["Liquide de freins",0,24]],"",{f:"DOT4",l:"Paraflu UP",w:130,p:[2.5,2.5],r:"R1234yf",b:"AGM 80Ah"}],
-["PL-SKY","Mazda Skyactiv-G/X — Suzuki","PE;SKX;K14D;K15C;DAI",["0W-20 API SP",4.2,"SKX : SP98"],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Bougies",75000,0],["Filtre à air",40000,48],["Liquide de freins",0,24]],"",{f:"DOT3 / DOT4",l:"Mazda FL22",w:108,p:[2.4,2.4],r:"R1234yf",b:"EFB Q85"}],
+["PL-SKY","Mazda Skyactiv-G/X — Suzuki","PE;SKX;K14D;K15C;DAI",["0W-20 API SP",4.2,"SKX : SP98"],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Bougies",75000,0],["Liquide de freins",0,24]],"",{f:"DOT3 / DOT4",l:"Mazda FL22",w:108,p:[2.4,2.4],r:"R1234yf",b:"EFB Q85"}],
 ["PL-SKYD","Mazda Skyactiv-D","SH;SKD33;PYPHEV",["0W-30 C3 DL-1",5.1,"3.3 ≈ 7,2 L"],["Chaîne",0,0,""],[["Vidange + filtre huile",10000,12],["Jauge repère X",5000,3],["Filtre gazole",40000,48],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"20 000 → 10 000 km.",{f:"DOT3 / DOT4",l:"Mazda FL22",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM Q85"}],
-["PL-JLR","JLR Ingenium / I6 / V8","AJ200D;AJ200P;AJ300;AJ300D;AJV8;AJ150P3",["0W-20 STJLR.03.5006",6,"V8 ≈ 8 L"],["Chaîne / AJ150P3 courroie",100000,72,"Bruit dès 60 000 km"],[["Vidange + filtre huile",16000,12],["Contrôle courroie",20000,12],["Filtre gazole",60000,48],["Appoint AdBlue",10000,6],["Vidange ZF8",100000,0],["Liquide de freins",0,24]],"26 000 → 16 000 km.",{f:"DOT4",l:"JLR STJLR",w:150,p:[2.6,2.8],r:"R1234yf",b:"AGM 95Ah"}],
-["PL-VE","Volvo Drive-E","VEP4;VED4;VEP4P",["0W-20 VCC RBS0-2AE",5.6,""],["Courroie",150000,120,""],[["Vidange + filtre huile",20000,12],["Bougies",60000,48],["Filtre gazole",40000,48],["Appoint AdBlue",10000,6],["Vidange Aisin8",100000,0],["Liquide de freins",0,24]],"",{f:"DOT4+",l:"Volvo VCC",w:140,p:[2.5,2.5],r:"R1234yf",b:"AGM 80Ah"}],
+["PL-JLR","JLR Ingenium / I6 / V8","AJ200D;AJ200P;AJ300;AJ300D;AJV8;AJ150P3",["0W-20 STJLR.03.5006",6,"V8 ≈ 8 L"],["Chaîne / AJ150P3 courroie",100000,72,"Bruit chaîne dès 60 000 km"],[["Vidange + filtre huile",16000,12],["Contrôle courroie",20000,12],["Filtre gazole",60000,48],["Appoint AdBlue",10000,6],["Vidange ZF8",100000,0],["Liquide de freins",0,24]],"26 000/2 ans → 16 000/1 an.",{f:"DOT4",l:"JLR STJLR",w:150,p:[2.6,2.8],r:"R1234yf",b:"AGM 95Ah"}],
+["PL-VE","Volvo Drive-E","VEP4;VED4;VEP4P",["0W-20 VCC RBS0-2AE",5.6,""],["Courroie distribution",150000,120,""],[["Vidange + filtre huile",20000,12],["Bougies",60000,48],["Filtre gazole",40000,48],["Appoint AdBlue",10000,6],["Vidange Aisin8",100000,0],["Liquide de freins",0,24]],"",{f:"DOT4+",l:"Volvo VCC",w:140,p:[2.5,2.5],r:"R1234yf",b:"AGM 80Ah"}],
 ["PL-POR","Porsche flat-6","9A2;MA2",["0W-40 Porsche A40",9,"GT3 : C40"],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Bougies",60000,48],["Vidange PDK",60000,0],["Liquide de freins",0,24]],"",{f:"DOT4 Racing",l:"Porsche G12evo",w:160,p:[2.7,3.0],r:"R1234yf",b:"AGM 80Ah"}],
 ["PL-F1C","Iveco Daily F1C","F1C",["5W-30 C2 Urania",7,""],["Chaîne",0,0,"Tendeur dès 200 000 km"],[["Vidange + filtre huile",25000,12],["Filtre gazole",40000,24],["Nettoyage EGR",80000,0],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"Livraison : 20 000 km.",{f:"DOT4",l:"Paraflu UP",w:170,p:[4.5,4.5],r:"R134a",b:"AGM 110Ah"}],
 ["PL-USV8","GM / RAM V8","LT2;L84;HEMI;COYOTE;GM36;FORDV6;PENTA",["0W-20 dexos1 Gen3",7.6,"HEMI 5W-20 MS-6395"],["Chaîne",0,0,"Poussoirs AFM"],[["Vidange + filtre huile",12000,12],["Bougies",60000,48],["Contrôle AFM",60000,0],["Vidange boîte auto",80000,0],["Liquide de freins",0,24]],"",{f:"DOT4",l:"DEX-COOL",w:150,p:[2.4,2.6],r:"R1234yf",b:"AGM 80Ah"}],
 ["PL-USD","GM / RAM diesel & Hurricane","LZ0;SST",["5W-30 dexosD",7,""],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Filtre gazole",40000,24],["Appoint DEF",10000,6],["Liquide de freins",0,24]],"",{f:"DOT4",l:"DEX-COOL",w:150,p:[2.6,2.8],r:"R1234yf",b:"AGM 95Ah"}],
-["PL-EXOT","Super-sportives","FERV8;FERV6;FERV12;LAMV10;LAMV12;NETTUNO;MCLV6;MCLV8;BENW12;RRV12;W16;V16H;LOTV6;MORGAN3;CATER;M177",["Huile spec constructeur",9,"Piste : intervalles réduits"],["Chaîne / engrenages",0,0,""],[["Vidange + filtre huile",10000,12],["Bougies",30000,24],["Vidange DCT",40000,0],["Liquide de freins",0,12],["Contrôle HV",10000,12]],"Réseau constructeur.",{f:"DOT4 Racing",l:"Spec constructeur",w:160,p:[2.5,2.8],r:"R1234yf",b:"AGM / Li-ion"}],
+["PL-EXOT","Super-sportives","FERV8;FERV6;FERV12;LAMV10;LAMV12;NETTUNO;MCLV6;MCLV8;BENW12;RRV12;W16;V16H;LOTV6;MORGAN3;CATER;M177",["Huile spec constructeur",9,"Piste : intervalles réduits"],["Chaîne / engrenages",0,0,""],[["Vidange + filtre huile",10000,12],["Bougies",30000,24],["Vidange DCT",40000,0],["Liquide de freins",0,12],["Contrôle HV",10000,12]],"Entretien réseau constructeur.",{f:"DOT4 Racing",l:"Spec constructeur",w:160,p:[2.5,2.8],r:"R1234yf",b:"AGM / Li-ion"}],
 ["PL-CNPT","Chery / Geely / GWM / Changan thermique","CHERY;CHERPHEV;GWPT;GWMHEV;GWMPHEV;CHA;GAC;WUL;HQPT;GEEPHEV;DEEP",["0W-20 API SP / 5W-30 C3",4.5,""],["Chaîne",0,0,""],[["Vidange + filtre huile",10000,12],["Bougies",40000,24],["Filtre à air",20000,24],["Vidange DCT / DHT",60000,0],["Bilan HV (PHEV)",15000,12],["Liquide de freins",0,24]],"10 000 km conseillés.",{f:"DOT4",l:"Spec constructeur",w:120,p:[2.4,2.4],r:"R1234yf",b:"AGM 70Ah"}],
-["PL-EREV","EREV / DM-i","LIREV;SERREV;DMi",["0W-20 API SP",4,"Vidange annuelle"],["Chaîne",0,0,"Thermique générateur"],[["Vidange + filtre huile",10000,12],["Bougies",60000,48],["Bilan HV + OBC",15000,12],["Filtre habitacle",10000,12],["Liquide de freins",0,24]],"",{f:"DOT4",l:"Spec constructeur",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM 60Ah"}],
+["PL-EREV","EREV / DM-i","LIREV;SERREV;DMi",["0W-20 API SP",4,"Vidange annuelle"],["Chaîne",0,0,"Thermique = générateur"],[["Vidange + filtre huile",10000,12],["Bougies",60000,48],["Bilan HV + OBC",15000,12],["Liquide de freins",0,24]],"",{f:"DOT4",l:"Spec constructeur",w:120,p:[2.5,2.5],r:"R1234yf",b:"AGM 60Ah"}],
 ["PL-CNEV","VE Chine (générique par famille)","LPEV;GWMEV;XPEV;NIOEV;GEEBEV;CHEREV;HQBEV;DFBEV;AIW;VFEV;SERBEV;LIBEV;EBY;EMG;AIONEV;VOY;JACEV;NET;XIA;SEA-E;YW;AVA;RIV;LUC;TSLA;ULT;GE1;EVV;E4TN;EHND;LOT-E",null,null,[["Filtre habitacle",20000,24],["Bilan SOH + OTA",15000,12],["Liquide de freins",0,24],["Batterie 12V",30000,24],["LDR HV",120000,72],["Huile réducteur",150000,0],["Rotation pneus",10000,6]],"HV : personnel habilité.",{f:"DOT4 LV",l:"LDR spec",w:130,p:[2.6,2.6],r:"R1234yf",b:"AGM / Li-ion"}],
 ["PL-BEV","Véhicule électrique (générique)","",null,null,[["Filtre habitacle",20000,24],["Contrôle freins (corrosion)",15000,12],["Liquide de freins",0,24],["Batterie 12V",30000,24],["Bilan SOH HV",15000,12],["LDR HV",120000,72],["Huile réducteur",150000,0],["Rotation pneus",10000,6]],"HV : personnel habilité.","b",{f:"DOT4 LV",l:"LDR spec",w:130,p:[2.6,2.6],r:"R1234yf",b:"AGM / Li-ion"}],
-["PL-PHEV","Hybride rechargeable (générique)","",["Selon motorisation",0,"Vidange annuelle"],["Selon motorisation",0,0,""],[["Vidange + filtre huile",15000,12],["Bougies",60000,48],["Bilan HV + OBC",15000,12],["Liquide de freins",0,24],["LDR",120000,72]],"","p",{f:"DOT4",l:"LDR spec",w:125,p:[2.5,2.5],r:"R1234yf",b:"AGM 70Ah"}],
+["PL-PHEV","Hybride rechargeable (générique)","",["Selon motorisation",0,"Vidange annuelle"],["Selon motorisation",0,0,""],[["Vidange + filtre huile",15000,12],["Bougies",60000,48],["Bilan HV + OBC",15000,12],["Liquide de freins",0,24]],"","p",{f:"DOT4",l:"LDR spec",w:125,p:[2.5,2.5],r:"R1234yf",b:"AGM 70Ah"}],
 ["PL-HEV","Hybride (générique)","",["0W-16 / 0W-20",0,""],["Chaîne",0,0,""],[["Vidange + filtre huile",15000,12],["Filtre batterie HV",30000,24],["Bilan HV",15000,12],["Bougies",100000,0],["Liquide de freins",0,24]],"","h",{f:"DOT3 / DOT4",l:"LDR SLLC",w:110,p:[2.4,2.4],r:"R1234yf",b:"AGM 60Ah"}],
 ["PL-STDE","Essence (standard)","",["5W-30 ACEA C3",4,""],["Selon constructeur",120000,72,""],[["Vidange + filtre huile",15000,12],["Bougies",60000,48],["Filtre à air",40000,48],["Liquide de freins",0,24]],"","e",{f:"DOT4",l:"G12 / OAT",w:115,p:[2.4,2.4],r:"R1234yf",b:"EFB 60Ah"}],
-["PL-STDD","Diesel (standard)","",["5W-30 ACEA C3",5,""],["Selon constructeur",150000,120,""],[["Vidange + filtre huile",15000,12],["Filtre gazole",40000,48],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"","d",{f:"DOT4",l:"G12 / OAT",w:125,p:[2.5,2.5],r:"R1234yf",b:"AGM 80Ah"}],
-["PL-STDG","GPL (standard)","",["5W-30 RN17 / C3",4,""],["Selon constructeur",120000,72,""],[["Vidange + filtre huile",15000,12],["Jeu soupapes",60000,0],["Filtre GPL",30000,24],["Bougies",40000,24],["Liquide de freins",0,24]],"","g",{f:"DOT4",l:"G12 / OAT",w:115,p:[2.4,2.4],r:"R1234yf",b:"EFB 60Ah"}]
+["PL-STDD","Diesel (standard)","",["5W-30 ACEA C3",5,""],["Selon constructeur",150000,120,""],[["Vidange + filtre huile",15000,12],["Filtre gazole",40000,48],["Appoint AdBlue",10000,6],["Liquide de freins",0,24]],"","d",{f:"DOT4",l:"G12 / OAT",w:125,p:[2.5,2.5],r:"R1234yf",b:"AGM 80Ah"}]
 ]
 };
 </script>
 
 <script>
-/* BLOC 3 — MOTEUR v7.0 */
 (function(){
 "use strict";
 if(!Object.keys){Object.keys=function(o){var a=[],k;for(k in o){if(Object.prototype.hasOwnProperty.call(o,k)){a.push(k)}}return a}}
@@ -1164,11 +1094,11 @@ sdel:function(k){if(this.session){try{sessionStorage.removeItem(k)}catch(e){}}de
 STORE.probe();
 function download(n,c,m){safe("download",function(){var b=new Blob([c],{type:m||"application/json"});var u=URL.createObjectURL(b);var a=document.createElement("a");a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},700)},toast("err","Export refusé par le navigateur"))}
 var PWD="Kevin83600",KEY="mecadata_v70",YMAX=2027;
-var SEGS=["Citadine","Micro-citadine","Compacte","SUV urbain","SUV compact","Berline","Break","Ludospace","Utilitaire","Coupé","Roadster","Sportive","Monospace","Pick-up"];
 var FU={e:{l:"Essence",c:"#FFAF2E"},d:{l:"Diesel",c:"#4D8DFF"},h:{l:"Hybride",c:"#43E08B"},p:{l:"Hybride rechargeable",c:"#19B8A6"},b:{l:"Électrique",c:"#E45CFF"},g:{l:"GPL / ECO-G",c:"#A8E63C"}};
 var SV={critique:{w:32,c:"#FF4D5E"},majeure:{w:18,c:"#FF7A3D"},"modérée":{w:9,c:"#FFAF2E"},mineure:{w:4,c:"#4D8DFF"},info:{w:0,c:"#25D4EE"}};
 var FQ={"élevée":1.25,moyenne:1,faible:.7};
 var GBL={BVM:"BVM",BVM5:"BVM5",BVM6:"BVM6",BVA:"BVA",EAT6:"EAT6 Aisin",EAT8:"EAT8 Aisin",EDC6:"EDC6 Getrag",EDC7:"EDC7 Getrag",DQ200:"DSG7 DQ200 sec",DQ250:"DSG6 DQ250",DQ381:"DSG7 DQ381",DQ400:"DSG6 DQ400e",DQ500:"DSG7 DQ500",eCVT:"e-CVT planétaire",RED:"Réducteur",CVT:"CVT",DCT6:"DCT6 e-DCS6",DCT7:"DCT7",DCT8:"DCT8 humide",DCT9:"DCT9 AMG",ZF8:"ZF8",G9:"9G-Tronic",GTR7:"7G-DCT",PDK:"PDK",MMT:"Multimode",XTR:"Xtronic",AGS:"AGS",DHT:"DHT dédié",DPS6:"Powershift DPS6"};
+var SEGS=["Citadine","Micro-citadine","Compacte","SUV urbain","SUV compact","Berline","Break","Ludospace","Utilitaire","Coupé","Roadster","Sportive","Monospace","Pick-up"];
 var IVL=function(v){return v>=75?["CRITIQUE","#FF4D5E"]:v>=50?["ÉLEVÉ","#FF7A3D"]:v>=25?["MODÉRÉ","#FFAF2E"]:["FAIBLE","#43E08B"]};
 var FILES=[["brands","brands.json","Marques"],["models","models.json","Modèles"],["engines","engines.json","Motorisations"],["faults","faults.json","Pannes"],["tsb","tsb.json","TSB / Rappels"],["maint","maintenance.json","Plans"]];
 var GBF=function(t){return /DQ200/.test(t)?["DQ200"]:/DSG humide/.test(t)?["DQ250","DQ381","DQ500"]:/EDC6/.test(t)?["EDC6"]:/EAT8/.test(t)?["EAT8"]:/DPS6/.test(t)?["DPS6"]:/ZF8/.test(t)?["ZF8"]:/DCT8/.test(t)?["DCT8"]:[]};
@@ -1178,6 +1108,7 @@ var cyl=fuel==="b"?"ÉLEC":(disp>=6000?"W12+":(disp>3400?"V8+":(disp>2400?"6 cyl
 var asp=fuel==="b"?"—":(ATMO.test(label)?"Atmo":"Turbo");
 return {id:"E"+String(n).padStart(4,"0"),m:[mid],code:code,fam:fam,label:label,fuel:fuel,disp:disp,hp:hp,nm:nm,kw:Math.round(hp*.7355),y:[y0,y1],gb:gb,
 norm:(fuel==="b"?"ZE":(y0>=2024?"Euro 6e":(y0>=2020?"Euro 6d":"Euro 6"))),cyl:cyl,asp:asp,inj:(fuel==="b"?"—":(fuel==="d"?"Common Rail":"Injection directe")),note:""}}
+}
 function buildCatalog(R){
 var D={brands:[],models:[],engines:[],faults:[],tsb:[],maint:[]};
 R.br.forEach(function(b){D.brands.push({id:b[0],n:b[1],pays:b[2],grp:b[3]})});
@@ -1225,7 +1156,7 @@ R.ts.forEach(function(t,i){D.tsb.push({id:"T"+String(i+1).padStart(3,"0"),ref:t[
 R.mt.forEach(function(p){D.maint.push({id:p[0],name:p[1],fam:split(p[2]),oil:p[3]||null,dist:p[4]||null,items:p[5]||[],note:p[6]||"",fuel:p[7]||"",extra:p[8]||null,base:[15000,12]})});
 return D;
 }
-var SEED=null,DB=null,AUDIT=[],GARAGE=[],VIEWS=[],UNDO=null,TESTS=[],IVIC={},MIDX={},BIDX={},BRANDN={};
+var SEED=null,DB=null,AUDIT=[],GARAGE=[],VIEWS=[],UNDO=null,TESTS=[],IVIC={},MIDX={},BIDX={};
 var META={counts:{},links:0,corr:0,integ:{err:[],warn:[],ok:true,pct:100},size:0,byBrand:{},byFuel:{}};
 var PREF={sound:true};
 var S={view:"bord",f:{q:"",brand:"",fuels:[],seg:"",y:[2017,YMAX],p:[0,2100],sort:"brand"},shown:48,
@@ -1425,10 +1356,10 @@ head='<div class="dh" style="--fc:'+F.c+'"><div class="row">'+(d.hist.length?'<b
 tabs='<div class="dtabs">'+[["fiche","Fiche","piston"],["pannes","Pannes","alert",fs.length],["tsb","TSB / Rappels","file",ts.length],["entretien","Entretien","wrench"],["corr","Corrélations","link"]].map(function(t){return '<button class="dt '+(d.tab===t[0]?"on":"")+'" data-act="drtab" data-t="'+t[0]+'">'+ic(t[2],"width:14px;height:14px")+t[1]+(t[3]!==undefined?'<span class="n">'+t[3]+"</span>":"")+"</button>"}).join("")+"</div>";
 if(d.tab==="fiche"){body='<div class="gw" style="--gc:'+L[1]+'">'+gaugeSVG(v)+'<div class="gt"><b data-count="'+v+'">0</b><span>INDICE DE VIGILANCE INGÉNIEUR</span><p>Niveau <b style="color:'+L[1]+'">'+L[0]+"</b> — "+fs.filter(function(f){return f.active&&f.sev!=="info"}).length+' alerte(s) active(s).</p></div></div><div class="sg">'+
 [["Code moteur",e.code,1],["Famille",e.fam,1],["Cylindrée",e.disp?fmt(e.disp)+" cm³":"—"],["Architecture",e.cyl],["Puissance",e.hp+" ch / "+e.kw+" kW",1],["Couple",e.nm+" Nm"],["Suralimentation",e.asp],["Injection",e.inj],["Norme",e.norm],["Boîte",GBL[e.gb]||e.gb],["Production",e.y[0]+" → "+e.y[1]],["Énergie",(FU[e.fuel]||{}).l||e.fuel]].map(function(s){return '<div class="sp"><span>'+s[0]+'</span><b class="'+(s[2]?"hl":"")+'">'+esc(s[1])+"</b></div>"}).join("")+"</div>"+
-'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button class="btn sm '+(GARAGE.indexOf(e.id)>-1?"amb":"ghost")+'" data-act="pin" data-id="'+e.id+'">'+ic("star")+(GARAGE.indexOf(e.id)>-1?"Retirer":"Épingler au garage")+'</button><button class="btn sm ghost" data-act="goPlan" data-id="'+e.id+'">'+ic("wrench")+"Plan d’entretien</button><button class=\"btn sm ghost\" data-act=\"expEng\" data-id=\""+e.id+"\">"+ic("dl")+"Exporter</button>"+(isAdm()?'<button class="btn sm ghost" data-act="editEng" data-id="'+e.id+'">'+ic("edit")+"Modifier</button>":"")+"</div>"}
+'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button class="btn sm '+(GARAGE.indexOf(e.id)>-1?"amb":"ghost")+'" data-act="pin" data-id="'+e.id+'">'+ic("star")+(GARAGE.indexOf(e.id)>-1?"Retirer":"Épingler au garage")+'</button><button class="btn sm ghost" data-act="goPlan" data-id="'+e.id+'">'+ic("wrench")+"Plan d'entretien</button><button class='btn sm ghost' data-act='expEng' data-id='"+e.id+"'>"+ic("dl")+"Exporter</button>"+(isAdm()?'<button class="btn sm ghost" data-act="editEng" data-id="'+e.id+'">'+ic("edit")+"Modifier</button>":"")+"</div>"}
 else if(d.tab==="pannes"){body=fs.length?fs.map(function(f){return faultCard(f,!f.active)}).join(""):'<div class="empty">'+ic("check")+"<p>Aucune panne référencée.</p></div>"}
 else if(d.tab==="tsb"){body=ts.length?(rc.length?'<div class="chip warn" style="margin-bottom:12px">'+ic("bell","width:12px;height:12px")+rc.length+" campagne(s) de rappel sur ce périmètre</div>":"")+ts.map(function(t){return tsbCard(t)}).join(""):'<div class="empty">'+ic("file")+"<p>Aucun bulletin corrélé.</p></div>"}
-else if(d.tab==="entretien"){body=planMini(pl)+'<div style="margin-top:14px"><button class="btn pri sm" data-act="goPlan" data-id="'+e.id+'">'+ic("cal")+"Calculateur d’échéances</button></div>"}
+else if(d.tab==="entretien"){body=planMini(pl)+'<div style="margin-top:14px"><button class="btn pri sm" data-act="goPlan" data-id="'+e.id+'">'+ic("cal")+"Calculateur d'échéances</button></div>"}
 else{var same=DB.engines.filter(function(x){return x.fam===e.fam&&x.id!==e.id}),bs=famBrands(e.fam);
 body='<div class="card panel" style="margin-bottom:13px"><h3>'+ic("link")+"Famille "+esc(e.fam)+" — "+bs.length+' marque(s)</h3><div class="chipset">'+bs.slice(0,24).map(function(i){return '<span class="tag" style="color:#25D4EE">'+esc((brandById(i)||{}).n||i)+"</span>"}).join("")+"</div>"+(bs.length>1?'<p style="font-size:12px;color:#FFAF2E;margin-top:9px">'+ic("bolt","width:13px;height:13px")+" Corrélation inter-marques : pannes, TSB et entretien partagés.</p>":"")+"</div>"+(same.length?same.slice(0,40).map(corrRow).join("")+(same.length>40?'<p class="dim mono" style="font-size:10px">+ '+(same.length-40)+" autres…</p>":""):'<div class="empty">'+ic("link")+"<p>Première motorisation de cette famille.</p></div>")}}
 else if(d.type==="fault"){var f=DB.faults.filter(function(x){return x.id===d.id})[0];if(!f){closeDrawer();return}var af=enginesForFault(f);
@@ -1441,4 +1372,499 @@ $("#dr").innerHTML='<div class="sc" data-act="drclose"></div><aside class="dw">'
 function render(){var v=S.view,m=$("#view");if(v!=="studio"){WP.detach()}
 $$(".nv,#tabs a").forEach(function(a){a.classList.toggle("on",a.dataset.v===v)});var h="";
 try{h=v==="bord"?vBord():v==="explorer"?vExplorer():v==="tech"?vTech():v==="entretien"?vEntretien():v==="studio"?vStudio():v==="diagnostic"?vDiag():vDonnees()}
-catch(e){logErr("render "+v,e);h='<div class="card panel"><h3>'+ic("alert")+'Erreur de rendu
+catch(e){logErr("render "+v,e);h='<div class="card panel"><h3>'+ic("alert")+'Erreur de rendu</h3><p class="muted">'+esc(e.message)+'</p><button class="btn pri sm" data-act="goDiag" style="margin-top:10px">Autovérification</button></div>'}
+m.innerHTML=h;mountAnim(m);updateMeta();
+if(v==="explorer"){refreshResults()}if(v==="tech"){refreshTech()}if(v==="entretien"){refreshCalc()}
+if(v==="studio"){var cv=$("#pv");if(cv){WP.attach(cv);applyFormat();WP.fx();WP.sync()}}
+if(v==="donnees"&&isAdm()){refreshAdm()}}
+function updateMeta(){var c=META.counts;$("#nEng").textContent=fmt(c.e);$("#nTech").textContent=fmt(c.f+c.t);$("#nPlan").textContent=fmt(c.p);
+$("#stLinks").textContent=fmt(META.links);$("#stCorr").textContent=fmt(META.corr);$("#stInt").textContent=META.integ.pct+"%";$("#stSize").textContent=META.size+" Ko";
+var fl=TESTS.filter(function(t){return !t.ok&&!t.soft}).length;$("#stTest").textContent=TESTS.length?((TESTS.length-fl)+"/"+TESTS.length):"—";$("#nTest").textContent=TESTS.length?(fl?"!":"✓"):"—";
+$("#diagb").classList.toggle("on",TESTS.length>0&&!fl);$("#ichip").className="chip "+(META.integ.ok?(META.integ.warn.length?"warn":"ok"):"bad");
+$("#itxt").textContent=META.integ.ok?(META.integ.warn.length?"INTÈGRE · "+META.integ.warn.length+" AVERT.":"INTÈGRE"):"ERREURS "+META.integ.err.length;
+var a=isAdm();$("#admb").classList.toggle("on",a);$("#admb").innerHTML=ic(a?"unlock":"lock");
+$("#rtxt").textContent=a?"Session ING-3 active — écriture et import déverrouillés.":"Session invité — lecture, corrélations et exports.";
+$("#sndb").innerHTML=ic(PREF.sound?"snd":"mute");$("#sndb").classList.toggle("on",PREF.sound);updStor()}
+function vBord(){var c=META.counts,fc=Object.keys(FU).map(function(f){return {f:f,n:DB.engines.filter(function(e){return e.fuel===f}).length}}).filter(function(x){return x.n});
+var tot=fc.reduce(function(s,x){return s+x.n},0)||1,R=54,C=2*Math.PI*R,acc=0,segs=fc.map(function(x){var l=x.n/tot*C,o=-acc;acc+=l;return {f:x.f,n:x.n,len:l,off:o}});
+var sc=Object.keys(SV).map(function(s){return {s:s,n:DB.faults.filter(function(f){return f.sev===s}).length}}),sm=Math.max.apply(null,sc.map(function(x){return x.n}).concat([1]));
+var fr={};DB.engines.forEach(function(e){var o=fr[e.fam]=fr[e.fam]||{n:0,s:0};o.n++;o.s+=ivi(e)});
+var top=Object.keys(fr).filter(function(f){return fr[f].n>=3}).map(function(f){return {f:f,v:Math.round(fr[f].s/fr[f].n),n:fr[f].n}}).sort(function(a,b){return b.v-a.v}).slice(0,8);
+var ys=[],y;for(y=2017;y<=YMAX;y++){ys.push({y:y,n:DB.engines.filter(function(e){return e.y[0]<=y&&e.y[1]>=y}).length})}
+var ym=Math.max.apply(null,ys.map(function(x){return x.n}).concat([1]));
+var al=DB.faults.filter(function(f){return f.sev==="critique"}).slice(0,5),rc=DB.tsb.filter(isRecall).sort(function(a,b){return b.date.localeCompare(a.date)}).slice(0,5);
+return '<div class="hero rv"><span class="kick">MODULE 01 — POSTE DE BORD</span><h2>BASE EXPERT <i>2017 → 2027</i><br>'+fmt(c.b)+" marques · "+fmt(c.m)+" modèles · "+fmt(c.e)+' motorisations</h2><p>Françaises, européennes, américaines, asiatiques, japonaises et chinoises. '+fmt(c.f)+" pannes connues, "+fmt(c.t)+" bulletins dont <b style='color:#FFAF2E'>"+fmt(c.rc)+" campagnes de rappel</b>, "+fmt(c.p)+" plans d'entretien. Import universel : toute base externe (JSON / CSV / bundle) se fusionne sans doublon jusqu'au grand parc (2 800+ motorisations).</p><div class='acts'><a class='btn pri' href='#/explorer'>"+ic("car")+"Explorer le parc</a><button class='btn grn' data-act='runTests'>"+ic("stetho")+"Autovérification</button><button class='btn amb' data-act='goImport'>"+ic("ul")+"Importer une base</button><a class='btn mag' href='#/studio'>"+ic("spark")+"Studio</a></div></div>"+
+'<div class="kpis">'+[["db","MARQUES",c.b,"#25D4EE"],["car","MODÈLES",c.m,"#4D8DFF"],["piston","MOTORISATIONS",c.e,"#E45CFF"],["alert","PANNES",c.f,"#FF4D5E"],["bell","RAPPELS",c.rc,"#FFAF2E"],["wrench","PLANS",c.p,"#43E08B"]].map(function(k,i){return '<div class="card kpi rv" style="--d:'+(i+1)+";--kc:"+k[3]+'">'+ic(k[0])+'<b data-count="'+k[2]+'">0</b><span>'+k[1]+"</span></div>"}).join("")+"</div>"+
+'<div class="g2"><div class="card panel rv" style="--d:7"><h3>'+ic("bolt")+'Énergies<span class="chip">'+fmt(tot)+'</span></h3><div class="dwrap"><svg class="donut" viewBox="0 0 150 150"><g transform="rotate(-90 75 75)">'+segs.map(function(s){return '<circle cx="75" cy="75" r="'+R+'" stroke="'+FU[s.f].c+'" stroke-dasharray="0 '+C+'" data-seg="'+s.len+" "+(C-s.len)+'" stroke-dashoffset="'+s.off+'"/>'}).join("")+'</g><text x="75" y="72" text-anchor="middle" class="c1">'+fmt(tot)+'</text><text x="75" y="88" text-anchor="middle" class="c2">MOTEURS</text></svg><div class="leg">'+segs.map(function(s){return '<div class="li"><i style="background:'+FU[s.f].c+'"></i>'+FU[s.f].l+'<b>'+s.n+'</b><small>'+Math.round(s.n/tot*100)+"%</small></div>"}).join("")+"</div></div></div>"+
+'<div class="card panel rv" style="--d:8"><h3>'+ic("alert")+'Sévérité des pannes</h3><div class="bars">'+sc.map(function(x){return '<div class="brow"><span class="bl">'+x.s.toUpperCase()+'</span><div class="bt"><i data-w="'+Math.round(x.n/sm*100)+'%" style="--bc:'+SV[x.s].c+'"></i></div><b>'+x.n+"</b></div>"}).join("")+'</div><p class="dim" style="font-size:11px;margin-top:12px">'+c.inter+" familles moteur partagées entre plusieurs marques.</p></div></div>"+
+'<div class="g2"><div class="card panel rv" style="--d:9"><h3>'+ic("gauge")+'Familles sous vigilance<span class="chip">TOP 8</span></h3><div class="bars">'+top.map(function(x){var col=IVL(x.v)[1];return '<div class="brow"><span class="bl">'+esc(x.f)+' <span class="dim">×'+x.n+'</span></span><div class="bt"><i data-w="'+x.v+'%" style="--bc:'+col+'"></i></div><b style="color:'+col+'">'+x.v+"</b></div>"}).join("")+"</div></div>"+
+'<div class="card panel rv" style="--d:10"><h3>'+ic("cal")+"Couverture 2017→2027</h3><div class='cols'>"+ys.map(function(x){return '<div class="coly"><b>'+x.n+'</b><i data-h="'+Math.round(x.n/ym*100)+'%"></i><span>'+String(x.y).slice(2)+"</span></div>"}).join("")+"</div></div></div>"+
+'<div class="g2"><div class="card panel rv" style="--d:11"><h3>'+ic("alert","color:#FF4D5E")+'Alertes prioritaires</h3><div class="feed">'+al.map(function(f){return '<button class="fi" data-act="openFault" data-id="'+f.id+'"><span class="fx">'+ic("alert","width:15px;height:15px")+'</span><span style="flex:1;min-width:0"><b>'+esc(f.t)+'</b><small>'+esc((f.fam||[]).slice(0,3).join(" · "))+'</small></span>'+ic("chev","width:14px;height:14px;color:#61748C")+"</button>"}).join("")+"</div></div>"+
+'<div class="card panel rv" style="--d:12"><h3>'+ic("bell","color:#FFAF2E")+'Campagnes de rappel</h3><div class="feed">'+rc.map(function(t){return '<button class="fi r" data-act="openTsb" data-id="'+t.id+'"><span class="fx">'+ic("bell","width:15px;height:15px")+'</span><span style="flex:1;min-width:0"><b>'+esc(t.t)+'</b><small>'+esc(t.ref)+" · "+esc(t.date)+'</small></span>'+ic("chev","width:14px;height:14px;color:#61748C")+"</button>"}).join("")+"</div></div></div>"+
+'<div class="card panel rv" style="--d:13"><h3>'+ic("star","color:#FFAF2E")+'Garage<span class="chip">'+GARAGE.length+"</span></h3>"+
+(GARAGE.length?'<div class="garage">'+GARAGE.map(function(id,i){var e=DB.engines.filter(function(x){return x.id===id})[0];if(!e){return ""}var F=FU[e.fuel]||{c:"#9FB2C8"};
+return '<div class="gcard" draggable="true" data-drag="garage" data-id="'+id+'" data-i="'+i+'"><span class="dh">'+ic("drag")+'</span><span class="fuel" style="--fc:'+F.c+'"></span><span class="gi" data-act="openEng" data-id="'+id+'"><b>'+esc(engName(e))+'</b><small>'+esc(e.code)+" · "+e.hp+" ch · IVI "+ivi(e)+'</small></span><span class="updn"><button class="btn xs ghost" data-act="garUp" data-i="'+i+'">'+ic("up","width:12px;height:12px")+'</button><button class="btn xs ghost" data-act="garDn" data-i="'+i+'">'+ic("dn","width:12px;height:12px")+'</button></span><button class="btn xs dgr" data-act="pin" data-id="'+id+'">'+ic("x","width:12px;height:12px")+"</button></div>"}).join("")+"</div>"
+:'<div class="empty">'+ic("star")+"<p>Épinglez des motorisations depuis l'explorateur.</p><a class='btn sm pri' href='#/explorer' style='margin-top:10px'>"+ic("car")+"Ouvrir l'explorateur</a></div>")+"</div>"}
+function computeResults(){var f=S.f,q=f.q.trim().toLowerCase();
+var list=DB.engines.filter(function(e){var b=engBrand(e);
+if(f.brand&&(!b||b.id!==f.brand)){return false}
+if(f.fuels.length&&f.fuels.indexOf(e.fuel)<0){return false}
+if(f.seg&&!engModels(e).some(function(m){return m.seg===f.seg})){return false}
+if(!ov(e.y,f.y)){return false}
+if(e.hp<f.p[0]||e.hp>f.p[1]){return false}
+if(q){var hay=[(b||{}).n].concat(engModels(e).map(function(m){return m.n})).concat([e.code,e.fam,e.label]).join(" ").toLowerCase();if(hay.indexOf(q)<0){return false}}
+return true});
+var ca={},gi=function(e){return ca[e.id]!==undefined?ca[e.id]:(ca[e.id]=ivi(e))};
+var so={brand:function(a,b){return ((engBrand(a)||{}).n||"").localeCompare((engBrand(b)||{}).n||"")||b.hp-a.hp},model:function(a,b){return ((engModels(a)[0]||{}).n||"").localeCompare((engModels(b)[0]||{}).n||"")},hpdesc:function(a,b){return b.hp-a.hp},hpasc:function(a,b){return a.hp-b.hp},year:function(a,b){return b.y[0]-a.y[0]},ivi:function(a,b){return gi(b)-gi(a)}};
+return list.sort(so[f.sort]||so.brand)}
+function engCard(e,i){var F=FU[e.fuel]||{c:"#9FB2C8"},b=engBrand(e),ms=engModels(e),v=ivi(e),nf=faultsFor(e).filter(function(f){return f.sev!=="info"}).length,ts=tsbFor(e),nr=ts.filter(isRecall).length,pin=GARAGE.indexOf(e.id)>-1;
+return '<article class="card hov eng rv" style="--d:'+Math.min(i,14)+";--fc:"+F.c+'" data-act="openEng" data-id="'+e.id+'" tabindex="0" role="button"><div class="top"><span class="br">'+esc(b?b.n:"—")+"</span>"+fuelTag(e.fuel)+'<button class="st '+(pin?"on":"")+'" data-act="pin" data-id="'+e.id+'">'+ic("star","width:15px;height:15px")+"</button></div><h4>"+esc(ms.map(function(m){return m.n}).join(" / "))+'</h4><div class="lbl">'+esc(e.label)+'</div><div class="pw"><b>'+e.hp+"</b><span>ch · "+e.kw+" kW</span><span style='margin-left:auto'>"+e.nm+" Nm</span></div><div class='meta'><span class='tag mono'>"+esc(e.code)+"</span><span class='tag'>"+e.y[0]+"→"+e.y[1]+"</span><span class='tag'>"+esc(GBL[e.gb]||e.gb)+"</span>"+(nr?'<span class="tag" style="color:#FFAF2E">'+ic("bell","width:10px;height:10px")+nr+"</span>":"")+"</div><div class='ft'><span>"+ic("alert","color:"+(nf?"#FFAF2E":"#61748C"))+" "+nf+"</span><span>"+ic("file","color:"+(ts.length?"#4D8DFF":"#61748C"))+" "+ts.length+"</span>"+iviPill(v)+"</div></article>"}
+function vExplorer(){var f=S.f;
+return '<div class="vh rv"><div><span class="kick">MODULE 02 — EXPLORATEUR</span><h1>PARC <i>2017 → 2027</i></h1><div class="sub">Filtres croisés marque × énergie × année × puissance × segment — corrélation instantanée pannes / TSB / rappels / entretien.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm ghost" data-act="saveView">'+ic("save")+"Enregistrer la vue</button><button class='btn sm ghost' data-act='resetFilters'>"+ic("reset")+"Réinitialiser</button></div></div>"+
+(VIEWS.length?'<div class="sviews">'+VIEWS.map(function(v,i){return '<span class="sview" data-act="applyView" data-i="'+i+'">'+ic("eye","width:11px;height:11px")+esc(v.name)+'<button data-act="delView" data-i="'+i+'">'+ic("x","width:11px;height:11px")+"</button></span>"}).join("")+"</div>":"")+
+'<div class="bstrip rv">'+DB.brands.map(function(b){var n=DB.engines.filter(function(e){var x=engBrand(e);return x&&x.id===b.id}).length;return '<button class="btile '+(f.brand===b.id?"on":"")+'" data-act="fbrand" data-b="'+b.id+'"><b>'+esc(b.n)+'</b><small>'+n+" mot.</small></button>"}).join("")+"</div>"+
+'<div class="exwrap"><details class="card filters rv" open><summary>'+ic("filter")+"FILTRES CROISÉS</summary><div class='fsec'><label class='lb'>Recherche</label><input class='inp' type='search' data-f='q' value='"+esc(f.q)+"' placeholder='Modèle, code, famille…'></div>"+
+'<div class="fsec"><label class="lb">Énergie</label><div class="chipset">'+Object.keys(FU).map(function(k){return '<button class="fc '+(f.fuels.indexOf(k)>-1?"on":"")+'" style="--fc:'+FU[k].c+'" data-act="ffuel" data-k="'+k+'">'+FU[k].l+"</button>"}).join("")+"</div></div>"+
+'<div class="fsec"><label class="lb">Années</label><div class="rng2"><input type="range" min="2017" max="'+YMAX+'" value="'+f.y[0]+'" data-f="y0"><input type="range" min="2017" max="'+YMAX+'" value="'+f.y[1]+'" data-f="y1"></div><div class="rngval"><span>2017</span><span id="yLbl">'+f.y[0]+" → "+f.y[1]+'</span><span>'+YMAX+"</span></div></div>"+
+'<div class="fsec"><label class="lb">Puissance (ch)</label><div class="rng2"><input type="range" min="0" max="2100" step="5" value="'+f.p[0]+'" data-f="p0"><input type="range" min="0" max="2100" step="5" value="'+f.p[1]+'" data-f="p1"></div><div class="rngval"><span>0</span><span id="pLbl">'+f.p[0]+" – "+f.p[1]+' ch</span><span>2100</span></div></div>'+
+'<div class="fsec"><label class="lb">Segment</label><select class="sel" data-f="seg"><option value="">Tous</option>'+SEGS.map(function(s){return "<option "+(f.seg===s?"selected":"")+">"+s+"</option>"}).join("")+"</select></div>"+
+'<div class="fsec"><label class="lb">Marque</label><select class="sel" data-f="brand"><option value="">Toutes</option>'+DB.brands.map(function(b){return '<option value="'+b.id+'" '+(f.brand===b.id?"selected":"")+">"+esc(b.n)+" ("+esc(b.pays)+")</option>"}).join("")+"</select></div></details>"+
+'<div><div class="bar"><span class="cnt" id="resCount">—</span><span class="dim mono" style="font-size:10px" id="resCorr"></span><select class="sel" data-f="sort" style="margin-left:auto;width:auto;min-width:168px">'+[["brand","Marque A→Z"],["model","Modèle A→Z"],["hpdesc","Puissance ↓"],["hpasc","Puissance ↑"],["year","Année ↓"],["ivi","Vigilance ↓"]].map(function(o){return '<option value="'+o[0]+'" '+(f.sort===o[0]?"selected":"")+">"+o[1]+"</option>"}).join("")+"</select></div><div class='eg' id='resGrid'></div><div class='more' id='resMore'></div></div></div>"}
+function refreshResults(){var g=$("#resGrid");if(!g){return}var l=computeResults(),s=l.slice(0,S.shown);
+g.innerHTML=s.length?s.map(engCard).join(""):'<div class="empty" style="grid-column:1/-1">'+ic("search")+"<p>Aucune motorisation ne correspond.</p><button class='btn sm ghost' data-act='resetFilters' style='margin-top:10px'>"+ic("reset")+"Réinitialiser</button></div>";
+$("#resCount").textContent=fmt(l.length)+" motorisation(s)";$("#resCorr").textContent=fmt(l.reduce(function(a,e){return a+faultsFor(e).length},0))+" corrélations";
+$("#resMore").innerHTML=l.length>S.shown?'<button class="btn ghost" data-act="more">'+ic("dn")+"Afficher plus ("+fmt(l.length-S.shown)+")</button>":"";
+var y=$("#yLbl"),p=$("#pLbl");if(y){y.textContent=S.f.y[0]+" → "+S.f.y[1]}if(p){p.textContent=S.f.p[0]+" – "+S.f.p[1]+" ch"}mountAnim(g)}
+function vTech(){var L=S.tech,nr=DB.tsb.filter(isRecall).length;
+return '<div class="vh rv"><div><span class="kick">MODULE 03 — BIBLIOTHÈQUE TECHNIQUE</span><h1>PANNES · TSB · <i>RAPPELS</i></h1><div class="sub">'+fmt(DB.faults.length)+" pannes connues · "+fmt(DB.tsb.length)+" bulletins dont "+fmt(nr)+" campagnes de rappel — chaque fiche liste son périmètre moteur.</div></div>"+(isAdm()?'<div style="display:flex;gap:8px"><button class="btn sm pri" data-act="newFault">'+ic("plus")+"Panne</button><button class='btn sm ghost' data-act='newTsb'>"+ic("plus")+"TSB</button></div>":"")+"</div>"+
+'<div class="atabs"><button class="at '+(L.tab==="faults"?"on":"")+'" data-act="techTab" data-t="faults">'+ic("alert","width:14px;height:14px")+'PANNES<span class="n">'+DB.faults.length+"</span></button><button class='at "+(L.tab==="tsb"?"on":"")+"' data-act='techTab' data-t='tsb'>"+ic("file","width:14px;height:14px")+'TSB / BULLETINS<span class="n">'+(DB.tsb.length-nr)+"</span></button><button class='at "+(L.tab==="recalls"?"on":"")+"' data-act='techTab' data-t='recalls'>"+ic("bell","width:14px;height:14px")+'RAPPELS<span class="n">'+nr+"</span></button></div>"+
+'<div class="bar"><input class="inp" style="max-width:300px" type="search" data-tf="q" value="'+esc(L.q)+'" placeholder="Titre, famille, référence…">'+
+(L.tab==="faults"?'<div class="chipset">'+Object.keys(SV).map(function(s){return '<button class="fc '+(L.sev===s?"on":"")+'" style="--fc:'+SV[s].c+'" data-act="techSev" data-s="'+s+'">'+s+"</button>"}).join("")+"</div>":'<select class="sel" style="width:auto" data-tf="cat"><option value="">Toutes catégories</option>'+Object.keys(DB.tsb.reduce(function(a,t){a[t.cat]=1;return a},{})).map(function(c){return "<option "+(L.cat===c?"selected":"")+">"+esc(c)+"</option>"}).join("")+"</select>")+
+'<select class="sel" style="width:auto" data-tf="brand"><option value="">Toutes marques</option>'+DB.brands.map(function(b){return '<option value="'+b.id+'" '+(L.brand===b.id?"selected":"")+">"+esc(b.n)+"</option>"}).join("")+"</select><span class='cnt' id='techCount' style='margin-left:auto'></span></div><div id='techGrid' class='eg' style='grid-template-columns:repeat(auto-fill,minmax(330px,1fr))'></div>"}
+function refreshTech(){var L=S.tech,g=$("#techGrid");if(!g){return}var q=L.q.trim().toLowerCase(),html="",n=0;
+if(L.tab==="faults"){var l=DB.faults.filter(function(f){if(L.sev&&f.sev!==L.sev){return false}
+if(L.brand){var bs={};enginesForFault(f).forEach(function(e){var b=engBrand(e);if(b){bs[b.id]=1}});if(!bs[L.brand]){return false}}
+if(q&&(f.t+" "+(f.fam||[]).join(" ")+" "+f.cause).toLowerCase().indexOf(q)<0){return false}return true}).sort(function(a,b){return (SV[b.sev]||{w:0}).w-(SV[a.sev]||{w:0}).w});
+n=l.length;html=l.map(function(f,i){return '<div class="rv" style="--d:'+Math.min(i,12)+'">'+faultCard(f)+'<div class="dim mono" style="font-size:10px;margin:-4px 0 10px 4px">'+enginesForFault(f).length+" motorisation(s) corrélée(s)</div></div>"}).join("")}
+else{var lt=DB.tsb.filter(function(t){var rc=isRecall(t);if(L.tab==="recalls"&&!rc){return false}if(L.tab==="tsb"&&rc){return false}
+if(L.cat&&t.cat!==L.cat){return false}if(L.brand&&(t.b||[]).indexOf(L.brand)<0){return false}
+if(q&&(t.t+" "+t.ref).toLowerCase().indexOf(q)<0){return false}return true}).sort(function(a,b){return b.date.localeCompare(a.date)});
+n=lt.length;html=lt.map(function(t,i){return '<div class="rv" style="--d:'+Math.min(i,12)+'">'+tsbCard(t)+"</div>"}).join("")}
+g.innerHTML=html||'<div class="empty" style="grid-column:1/-1">'+ic("search")+"<p>Aucun résultat.</p></div>";$("#techCount").textContent=n+" fiche(s)";mountAnim(g)}
+function planItems(q){q=(q||"").toLowerCase();return DB.maint.filter(function(p){return !q||(p.name+" "+(p.fam||[]).join(" ")).toLowerCase().indexOf(q)>-1}).map(function(p){return '<button class="pitem '+(p.id===S.plan?"on":"")+'" data-act="selPlan" data-id="'+p.id+'"><b>'+esc(p.name)+'</b><small>'+esc((p.fam||[]).slice(0,6).join(" · ")||((FU[p.fuel]||{}).l+" — générique"))+"</small></button>"}).join("")||'<div class="empty" style="padding:16px">Aucun plan</div>'}
+function vEntretien(){if(!S.plan||!DB.maint.filter(function(p){return p.id===S.plan})[0]){S.plan=(DB.maint[0]||{}).id}
+var p=DB.maint.filter(function(x){return x.id===S.plan})[0],ctx=S.planCtx?DB.engines.filter(function(e){return e.id===S.planCtx})[0]:null;
+return '<div class="vh rv"><div><span class="kick">MODULE 04 — CATALOGUE D\'ENTRETIEN</span><h1>PLANS <i>& ÉCHÉANCES</i></h1><div class="sub">Huile, distribution, opérations, liquides, couple de roues, pressions, clim, batterie — par famille moteur, avec calculateur d\'échéances.</div></div><div style="display:flex;gap:8px">'+(isAdm()?'<button class="btn sm ghost" data-act="editPlan" data-id="'+(p?p.id:"")+'">'+ic("edit")+"Modifier</button>":"")+'<button class="btn sm ghost" data-act="expPlan" data-id="'+(p?p.id:"")+'">'+ic("dl")+"Exporter</button></div></div>"+
+(ctx?'<div class="chip warn" style="margin-bottom:12px">'+ic("car","width:13px;height:13px")+esc(engName(ctx))+'<button data-act="clearCtx" style="color:#61748C">'+ic("x","width:12px;height:12px")+"</button></div>":"")+
+'<div class="mwrap"><div class="card plist rv"><input class="inp" type="search" id="planSearch" placeholder="Filtrer les plans…" style="margin-bottom:4px"><div id="planItems">'+planItems("")+"</div></div>"+
+'<div><div class="card panel rv"><h3>'+ic("wrench")+esc(p?p.name:"—")+'<span class="chip">'+((p&&p.fam||[]).length?p.fam.length+" familles":((FU[(p||{}).fuel]||{}).l||"générique"))+"</span></h3>"+((p&&p.fam||[]).length?'<div class="chipset" style="margin-bottom:12px">'+p.fam.map(function(f){return '<span class="tag mono" style="color:#25D4EE">'+esc(f)+"</span>"}).join("")+"</div>":"")+planMini(p)+"</div>"+
+'<div class="calc rv"><h3>'+ic("cal")+'CALCULATEUR D\'ÉCHÉANCES</h3><div class="fr f3"><div><label class="lb">Kilométrage</label><input class="inp mono" type="number" min="0" max="999999" step="1000" data-calc="km" value="'+S.calc.km+'"></div><div><label class="lb">Mise en circulation</label><input class="inp mono" type="number" min="2010" max="'+YMAX+'" data-calc="year" value="'+S.calc.year+'"></div><div><label class="lb">Profil</label><select class="sel" data-calc="sev"><option value="1" '+(S.calc.sev===1?"selected":"")+">Normal</option><option value='0.75' "+(S.calc.sev===.75?"selected":"")+">Sévère</option></select></div></div><div class='due' id='dueList'></div><p class='dim mono' style='font-size:9.5px;margin-top:10px'>ESTIMATION INGÉNIEUR — CARNET CONSTRUCTEUR / RTA PRIORITAIRE.</p></div></div></div>"}
+function dueRows(p,km,yr,sev){var now=new Date(),age=Math.max(1,(now.getFullYear()-yr)*12+now.getMonth()),rows=[];
+var add=function(op,ikm,imo){ikm=Math.round(ikm*sev);
+if(ikm>0){var nx=Math.max(ikm,Math.ceil((km+1)/ikm)*ikm),rm=nx-km,pc=clamp((ikm-rm)/ikm*100,0,100),bd,cl;
+if(rm<=1500){bd="ÉCHÉANCE PROCHE";cl="now"}else if(rm<=ikm*.2){bd="BIENTÔT";cl="soon"}else{bd="DANS "+fmt(rm)+" KM";cl="ok"}
+var dt="Prochaine : "+fmt(nx)+" km";if(imo>0){var nm=Math.ceil(age/imo)*imo,d=new Date(yr,0);d.setMonth(d.getMonth()+nm);dt+=" · ou "+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear()}
+rows.push({op:op,badge:bd,cls:cl,pct:pc,detail:dt,u:rm/ikm})}
+else if(imo>0){var n2=Math.ceil(age/imo)*imo,d2=new Date(yr,0);d2.setMonth(d2.getMonth()+n2);var r2=n2-age,b2,c2;
+if(r2<=1){b2="À FAIRE";c2="now"}else if(r2<=3){b2="BIENTÔT";c2="soon"}else{b2="DANS "+r2+" MOIS";c2="ok"}
+rows.push({op:op,badge:b2,cls:c2,pct:clamp((imo-r2)/imo*100,0,100),detail:"Échéance : "+String(d2.getMonth()+1).padStart(2,"0")+"/"+d2.getFullYear(),u:r2/imo})}
+else{rows.push({op:op,badge:"SELON CONSTRUCTEUR",cls:"ok",pct:0,detail:"Contrôle conditionnel",u:2})}};
+p.items.forEach(function(it){add(it[0],it[1],it[2])});if(p.dist&&p.dist[1]){add("Distribution : "+p.dist[0],p.dist[1],p.dist[2])}
+return rows.sort(function(a,b){return a.u-b.u})}
+function refreshCalc(){var b=$("#dueList");if(!b){return}var p=DB.maint.filter(function(x){return x.id===S.plan})[0];if(!p){b.innerHTML="";return}
+b.innerHTML=dueRows(p,clamp(+S.calc.km||0,0,999999),clamp(+S.calc.year||2021,2010,YMAX),+S.calc.sev||1).map(function(r){return '<div class="drow" style="--dc:'+(r.cls==="now"?"#FF4D5E":(r.cls==="soon"?"#FFAF2E":"#43E08B"))+'"><div class="dr1"><b>'+esc(r.op)+'</b><span class="dbadge '+r.cls+'">'+r.badge+"</span></div><div class='pb'><i style='width:"+Math.round(r.pct)+"%'></i></div><div class='dim mono' style='font-size:10px;margin-top:5px'>"+esc(r.detail)+"</div></div>"}).join("")}
+function applyFormat(){var s=$("#screen");if(!s){return}var F={free:["100%",340],mobile:["300px",560],tablet:["440px",520],desktop:["100%",380]}[WP.P.format]||["100%",340];s.style.maxWidth=F[0];s.style.height=F[1]+"px";setTimeout(function(){WP.resize()},80)}
+function vStudio(){var P=WP.P;
+var sl=function(k,l,mn,mx,st){return '<div><div class="srow"><span>'+l+'</span><span class="sval" data-pv="'+k+'">'+WP.label(k,P[k])+"</span></div><input type='range' data-p='"+k+"' min='"+mn+"' max='"+mx+"' step='"+(st||1)+"' value='"+P[k]+"'></div>"};
+var tg=function(k,l){return '<div class="srow"><span>'+l+'</span><label class="sw"><input type="checkbox" data-p="'+k+'" '+(P[k]?"checked":"")+'><i></i></label></div>'};
+var th={blueprint:"repeating-linear-gradient(0deg,#0A2233 0 5px,#12405C 5px 6px)",aurora:"linear-gradient(120deg,#25D4EE,#E45CFF,#FFAF2E)",flux:"radial-gradient(2px 2px at 25% 40%,#25D4EE 50%,transparent 51%),#0A1424",radar:"conic-gradient(from 0deg,rgba(67,224,139,.8),transparent 70%),#0A2218",oscillo:"repeating-linear-gradient(90deg,#0A1424 0 3px,#43E08B 3px 4px)",gears:"radial-gradient(circle at 38% 50%,#FFAF2E 22%,transparent 23%),#120A04",carbon:"repeating-conic-gradient(#1A2230 0 25%,#0A1018 0 50%) 0 0/8px 8px",telemetry:"linear-gradient(0deg,#FF4D5E 30%,transparent 31%),#0A1424"};
+return '<div class="vh rv"><div><span class="kick">MODULE 05 — STUDIO</span><h1>FONDS <i>ANIMÉS</i> — 8 SCÈNES</h1><div class="sub">Moteur canvas temps réel, exportable en PNG. Réglages permanents, effet immédiat.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm ghost" data-act="stRandom">'+ic("dice")+"Aléatoire</button><button class='btn sm ghost' data-act='stReset'>"+ic("reset")+"Réinitialiser</button><button class='btn sm pri' data-act='stPng'>"+ic("cam")+"Export PNG</button></div></div>"+
+'<div class="stwrap"><div class="card stage rv"><div class="screen" id="screen"><canvas id="pv"></canvas><div class="fx"><div class="v"></div><div class="g"></div></div><div class="hud" id="hud"></div></div><div class="stagebar"><button class="btn sm '+(P.run?"amb":"ghost")+'" data-act="stRun">'+ic(P.run?"pause":"play")+(P.run?"Pause":"Lecture")+'</button><button class="btn sm ghost" data-act="stJson">'+ic("dl")+"Preset JSON</button><span class='chip' style='margin-left:auto'>"+(hasP2D?"Path2D ✓":"Path2D absent — repli")+"</span></div><div class='presets' style='margin-top:11px'>"+Object.keys(WP.PRESETS).map(function(n){return '<button class="ps" data-act="stPreset" data-n="'+esc(n)+'">'+esc(n)+"</button>"}).join("")+"</div></div>"+
+'<div class="card ctrl rv"><h3>'+ic("spark")+"RÉGLAGES LIVE</h3><div class='csec'><label class='lb'>Scène</label><div class='mgrid'>"+WP.MODES.map(function(m){return '<button class="mb '+(P.mode===m[0]?"on":"")+'" data-act="stMode" data-m="'+m[0]+'"><i style="background:'+th[m[0]]+'"></i>'+m[1]+"</button>"}).join("")+"</div></div>"+
+'<div class="csec"><label class="lb">Palette</label><div class="pgrid">'+Object.keys(WP.TH).map(function(k){var v=WP.TH[k];return '<button class="pb '+(P.theme===k?"on":"")+'" data-act="stTheme" data-t="'+k+'" title="'+v.n+'" style="background:linear-gradient(135deg,'+v.a+","+v.b+","+v.c+')"></button>'}).join("")+"</div></div>"+
+'<div class="csec">'+sl("density","Densité",0,100)+sl("count","Particules",10,400,5)+sl("speed","Vitesse",0,200,5)+sl("turb","Turbulence",0,100)+"</div>"+
+'<div class="csec">'+sl("scale","Échelle / grille",20,160,2)+sl("glow","Halo",0,100)+sl("blur","Flou",0,8,.5)+sl("stroke","Trait",.5,4,.1)+sl("drift","Dérive caméra",0,100)+"</div>"+
+'<div class="csec"><div class="fr f2"><div><label class="lb">Qualité</label><select class="sel" data-p="quality"><option value="eco" '+(P.quality==="eco"?"selected":"")+">Éco 1×</option><option value='std' "+(P.quality==="std"?"selected":"")+">Standard 1.5×</option><option value='ultra' "+(P.quality==="ultra"?"selected":"")+">Ultra 2×</option></select></div><div><label class='lb'>Format export</label><select class='sel' data-p='format'><option value='free' "+(P.format==="free"?"selected":"")+">1600×900</option><option value='mobile' "+(P.format==="mobile"?"selected":"")+">1170×2532</option><option value='tablet' "+(P.format==="tablet"?"selected":"")+">1668×2224</option><option value='desktop' "+(P.format==="desktop"?"selected":"")+">1920×1080</option></select></div></div></div>"+
+'<div class="csec">'+tg("grid","Grille & repères")+tg("grain","Grain")+tg("scan","Balayage")+tg("vig","Vignettage")+tg("run","Animation")+tg("bg","Fond global")+"</div></div></div>"}
+function vDonnees(){if(!isAdm()){return '<div class="card lockc rv" id="lockCard"><div class="sh">'+ic("lock")+'</div><span class="kick" style="justify-content:center">ACCÈS RESTREINT</span><h2 style="margin-top:6px">FICHIERS CROISÉS</h2><p>Import, CRUD, intégrité et réinitialisation réservés à la session <b class="mono" style="color:#FFAF2E">NIVEAU 3</b>.</p><form data-form="unlock"><input class="inp" type="password" name="pwd" placeholder="MOT DE PASSE" autocomplete="current-password"><button class="btn amb" type="submit" id="unlockBtn">'+ic("unlock")+"DÉVERROUILLER</button></form><p class='dim mono' style='font-size:9.5px;margin-top:14px' id='lockMsg'>STOCKAGE : "+(STORE.local?"localStorage actif":"mode mémoire (WebView)")+"</p></div>"}
+return '<div class="vh rv"><div><span class="kick">MODULE 06 — ADMINISTRATION ING-3</span><h1>FICHIERS <i>CROISÉS</i></h1><div class="sub">6 fichiers liés par identifiants et familles — import universel illimité, validation transactionnelle, intégrité continue.</div></div><div style="display:flex;gap:8px;align-items:center"><span class="chip warn">'+ic("shield","width:12px;height:12px")+"ING-3</span><button class='btn sm ghost' data-act='logout'>"+ic("lock")+"Verrouiller</button></div></div>"+
+'<div class="fgrid2">'+FILES.map(function(f,i){var a=DB[f[0]],k=Math.round(JSON.stringify(a).length/1024);return '<div class="card hov filecard rv" style="--d:'+i+'"><div class="fn">'+ic("file")+f[1]+"</div><div class='ct'>"+fmt(a.length)+' <small>entrées</small></div><div class="fs">'+k+" Ko · "+f[2]+'</div><div class="fa"><button class="btn xs ghost" data-act="fileView" data-k="'+f[0]+'">'+ic("eye","width:12px;height:12px")+"Voir</button><button class='btn xs ghost' data-act='fileExp' data-k='"+f[0]+"'>"+ic("dl","width:12px;height:12px")+"JSON</button>"+(f[0]!=="maint"?'<button class="btn xs ghost" data-act="fileCsv" data-k="'+f[0]+'">CSV</button>":"")+'<button class="btn xs amb" data-act="fileImp" data-k="'+f[0]+'">'+ic("ul","width:12px;height:12px")+"Importer</button></div></div>"}).join("")+"</div>"+
+'<div class="tools"><button class="btn pri sm" data-act="goImport">'+ic("ul")+"Import global / base externe</button><button class='btn ghost sm' data-act='expAll'>"+ic("dl")+"Exporter tout</button><button class='btn ghost sm' data-act='expBaseJs'>"+ic("dl")+"Exporter base.js</button><button class='btn ghost sm' data-act='integrity'>"+ic("check")+"Intégrité</button><button class='btn dgr sm' data-act='askReset'>"+ic("reset")+"Base usine</button></div>"+
+'<div class="atabs">'+[["engines","MOTORISATIONS","piston",DB.engines.length],["faults","PANNES","alert",DB.faults.length],["tsb","TSB / RAPPELS","file",DB.tsb.length],["journal","JOURNAL","clock",AUDIT.length]].map(function(t){return '<button class="at '+(S.adm.tab===t[0]?"on":"")+'" data-act="admTab" data-t="'+t[0]+'">'+ic(t[2],"width:14px;height:14px")+t[1]+'<span class="n">'+t[3]+"</span></button>"}).join("")+"</div><div id='admZone'></div>"}
+var PAGE=20;
+function refreshAdm(){var z=$("#admZone");if(!z||!isAdm()){return}var A=S.adm,q=A.q.trim().toLowerCase();
+if(A.tab==="journal"){z.innerHTML='<div class="journal">'+AUDIT.slice().reverse().map(function(a){var d=new Date(a.ts);return '<div class="jr '+a.type+'"><time>'+d.toLocaleDateString("fr-FR")+" "+d.toLocaleTimeString("fr-FR")+'</time><span class="jt">'+a.type.toUpperCase()+'</span><span>'+esc(a.msg)+"</span></div>"}).join("")+"</div>";return}
+var cfg={engines:{arr:DB.engines,cols:["Motorisation","Code / Famille","Énergie","ch/kW","Années","IVI"],row:function(e){return ['<b>'+esc(engName(e))+"</b>",'<span class="mono" style="color:#25D4EE">'+esc(e.code)+'</span> <span class="tag">'+esc(e.fam)+"</span>",fuelTag(e.fuel),'<span class="mono">'+e.hp+"/"+e.kw+"</span>",'<span class="mono">'+e.y[0]+"→"+e.y[1]+"</span>",iviPill(ivi(e))]},search:function(e){return (engName(e)+e.code+e.fam).toLowerCase()},edit:"editEng",del:"delEng",add:"newEng"},
+faults:{arr:DB.faults,cols:["Panne","Sévérité","Familles","Années","Coût","Corrélées"],row:function(f){return ['<b>'+esc(f.t)+"</b>",sevTag(f.sev),'<span class="mono" style="font-size:10px">'+esc((f.fam||[]).slice(0,3).join(", ")||f.fuel||"—")+"</span>",'<span class="mono">'+f.y[0]+"→"+f.y[1]+"</span>",'<span class="mono">'+fmt(f.cost[0])+"–"+fmt(f.cost[1])+"</span>",'<span class="mono" style="color:#25D4EE">'+enginesForFault(f).length+"</span>"]},search:function(f){return (f.t+(f.fam||[]).join(" ")).toLowerCase()},edit:"editFault",del:"delFault",add:"newFault"},
+tsb:{arr:DB.tsb,cols:["Réf / Titre","Date","Catégorie","Gravité","Marques","Corrélées"],row:function(t){return ['<span class="mono" style="color:'+(isRecall(t)?"#FFAF2E":"#4D8DFF")+';font-size:10.5px">'+esc(t.ref)+'</span><br><b>'+esc(t.t)+"</b>",'<span class="mono">'+esc(t.date)+"</span>",'<span class="tag">'+esc(t.cat)+"</span>",sevTag(t.sev),'<span style="font-size:11px">'+esc((t.b||[]).slice(0,3).join(", "))+"</span>",'<span class="mono" style="color:#25D4EE">'+enginesForTsb(t).length+"</span>"]},search:function(t){return (t.t+t.ref).toLowerCase()},edit:"editTsb",del:"delTsb",add:"newTsb"}}[A.tab];
+var l=cfg.arr.filter(function(x){return !q||cfg.search(x).indexOf(q)>-1}),pg=Math.max(1,Math.ceil(l.length/PAGE));A.page=clamp(A.page,0,pg-1);
+var s=l.slice(A.page*PAGE,(A.page+1)*PAGE);
+z.innerHTML='<div class="bar"><input class="inp" style="max-width:280px" type="search" data-af="q" value="'+esc(A.q)+'" placeholder="Filtrer…"><button class="btn sm pri" data-act="'+cfg.add+'" style="margin-left:auto">'+ic("plus")+"Ajouter</button></div>"+
+(A.sel.length?'<div class="bulk">'+A.sel.length+' sélectionné(s)<button class="btn xs ghost" data-act="bulkExp">'+ic("dl","width:12px;height:12px")+"Exporter</button><button class='btn xs dgr' data-act='bulkDel'>"+ic("trash","width:12px;height:12px")+"Supprimer</button><button class='btn xs ghost' data-act='bulkClear' style='margin-left:auto'>Effacer</button></div>":"")+
+'<div class="tw"><table class="t"><thead><tr><th style="width:34px"><input type="checkbox" data-act="selAll" '+(s.length&&s.every(function(x){return selHas(x.id)})?"checked":"")+"></th>'+cfg.cols.map(function(c){return "<th>"+c+"</th>"}).join("")+'<th style="text-align:right">Actions</th></tr></thead><tbody>'+
+s.map(function(x){return '<tr><td><input type="checkbox" data-act="selOne" data-id="'+x.id+'" '+(selHas(x.id)?"checked":"")+"></td>"+cfg.row(x).map(function(c){return "<td>"+c+"</td>"}).join("")+'<td><div class="acts"><button class="btn xs ghost" data-act="'+cfg.edit+'" data-id="'+x.id+'">'+ic("edit","width:12px;height:12px")+"</button><button class='btn xs dgr' data-act='"+cfg.del+"' data-id='"+x.id+"'>"+ic("trash","width:12px;height:12px")+"</button></div></td></tr>"}).join("")+
+"</tbody></table></div><div class='pager'><span>"+fmt(l.length)+" entrées · page "+(A.page+1)+"/"+pg+"</span><button class='btn xs ghost' data-act='pgPrev' "+(A.page===0?"disabled":"")+">"+ic("back","width:12px;height:12px")+"</button><button class='btn xs ghost' data-act='pgNext' "+(A.page>=pg-1?"disabled":"")+">"+ic("chev","width:12px;height:12px")+"</button></div>"}
+var CSVH={brands:"id,n,pays,grp",models:"id,b,n,y0,y1,seg",engines:"id,code,fam,label,fuel,disp,hp,nm,y0,y1,models,gb,norm",faults:"id,t,fam,sev,freq,y0,y1,km0,km1,sym,cause,fix,cost0,cost1,fuel,status",tsb:"id,ref,b,fam,t,date,cat,sev,sum,act"};
+function toCSV(k){var q=function(v){v=String(v==null?"":v);return /[",\n;]/.test(v)?('"'+v.replace(/"/g,'""')+'"'):v};
+var r=DB[k].map(function(x){if(k==="brands"){return [x.id,x.n,x.pays,x.grp]}if(k==="models"){return [x.id,x.b,x.n,x.y[0],x.y[1],x.seg]}
+if(k==="engines"){return [x.id,x.code,x.fam,x.label,x.fuel,x.disp,x.hp,x.nm,x.y[0],x.y[1],x.m.join(";"),x.gb,x.norm]}
+if(k==="faults"){return [x.id,x.t,(x.fam||[]).join(";"),x.sev,x.freq,x.y[0],x.y[1],x.km[0],x.km[1],(x.sym||[]).join(";"),x.cause,x.fix,x.cost[0],x.cost[1],x.fuel,x.status]}
+return [x.id,x.ref,(x.b||[]).join(";"),(x.fam||[]).join(";"),x.t,x.date,x.cat,x.sev,x.sum,x.act]});
+return CSVH[k]+"\n"+r.map(function(a){return a.map(q).join(",")}).join("\n")}
+function parseCSV(t){var rows=[],row=[],cur="",inQ=false,i;
+for(i=0;i<t.length;i++){var c=t[i];
+if(inQ){if(c==='"'){if(t[i+1]==='"'){cur+='"';i++}else{inQ=false}}else{cur+=c}}
+else if(c==='"'){inQ=true}
+else if(c===","){row.push(cur);cur=""}
+else if(c==="\n"||c==="\r"){if(c==="\r"&&t[i+1]==="\n"){i++}row.push(cur);cur="";if(row.some(function(x){return x.trim()!==""})){rows.push(row)}row=[]}
+else{cur+=c}}
+row.push(cur);if(row.some(function(x){return x.trim()!==""})){rows.push(row)}
+if(rows.length<2){return []}
+var h=rows[0].map(function(x){return x.trim().replace(/^\uFEFF/,"")});
+return rows.slice(1).map(function(r){var o={};h.forEach(function(k,i){o[k]=(r[i]===undefined?"":r[i])});return o})}
+/* ═══ IMPORT UNIVERSEL v3 : classification par contenu + alias FR/EN + fusion ═══ */
+var num=function(v,d){var n=Number(String(v==null?"":v).replace(",","."));return isFinite(n)?n:(d||0)};
+function pick(rec,names){var i;for(i=0;i<names.length;i++){var v=rec[names[i]];if(v!==undefined&&v!==null&&v!==""){return v}}
+var map={};Object.keys(rec).forEach(function(k){map[nk(k)]=rec[k]});
+for(i=0;i<names.length;i++){var w=nk(names[i]);if(map[w]!==undefined&&map[w]!==null&&map[w]!==""){return map[w]}}
+return undefined}
+var FUELMAP={e:"e",essence:"e",gasoline:"e",petrol:"e",sp95:"e",sp98:"e",d:"d",diesel:"d",gazole:"d",h:"h",hybride:"h",hybrid:"h",hev:"h",p:"p",phev:"p",plugin:"p",pluginhybrid:"p",rechargeable:"p",hybriderechargeable:"p",b:"b",ev:"b",bev:"b",electrique:"b",electric:"b",g:"g",gpl:"g",lpg:"g",cng:"g"};
+function fuelNorm(v){var k=nk(v);if(FUELMAP[k]){return FUELMAP[k]}if(FU[k]){return k}
+if(k.indexOf("recharge")>-1){return "p"}if(k.indexOf("electr")>-1||k==="ev"||k==="bev"){return "b"}if(k.indexOf("hybr")>-1){return "h"}
+if(k.indexOf("dies")>-1||k==="gazole"){return "d"}if(k.indexOf("gpl")>-1||k==="lpg"){return "g"}return "e"}
+var SEVMAP={critique:"critique",critical:"critique",majeure:"majeure",major:"majeure",moderee:"modérée",modere:"modérée",moderate:"modérée",moyenne:"modérée",mineure:"mineure",minor:"mineure",info:"info",information:"info",note:"info",faible:"mineure"};
+function sevNorm(v){var k=nk(v);if(SEVMAP[k]){return SEVMAP[k]}if(SV[v]){return v}if(SV[k]){return k}return "modérée"}
+var COLL={};
+[["brands",["brands","marques","manufacturers","constructeurs","makers"]],
+["models",["models","modeles","vehicles","vehicules","cars","autos"]],
+["engines",["engines","engine","motorisations","motorisation","moteurs","moteur","powertrains","motorizations"]],
+["faults",["faults","fault","pannes","panne","fiches","fiche","failures","defects","problemes"]],
+["tsb",["tsb","tsbs","bulletins","bulletinstechniques","campaigns","campagnes","rappels","rappel","recalls"]],
+["maint",["maint","maintenance","plans","plan","entretien","revisions","revision","services","plansentretien"]]]
+.forEach(function(p){p[1].forEach(function(k){COLL[nk(k)]=p[0]})});
+var IGNOREKEYS={counts:1,domains:1,domaines:1,categories:1,taxonomy:1,meta:1,metadata:1,app:1,exportversion:1,exportedat:1,version:1,name:1,title:1};
+function detectKind(r){if(!r||typeof r!=="object"){return null}
+if(pick(r,["hp","power","puissance","ch","puissance_ch","kw","puissance_kw"])!==undefined||pick(r,["code_moteur","engine_code","motor_code"])!==undefined){return "engines"}
+if(pick(r,["items","operations","ops","interventions","revision_ops"])!==undefined||pick(r,["huile","oil"])!==undefined){return "maint"}
+if(pick(r,["ref","reference","numero","bulletin"])!==undefined&&pick(r,["date","date_revision","published"])!==undefined){return "tsb"}
+if(pick(r,["sev","severity","severite","gravite","criticite"])!==undefined){return "faults"}
+if(pick(r,["segment","carrosserie"])!==undefined||(pick(r,["marque","brand","make"])!==undefined&&pick(r,["modele","model","nom","name"])!==undefined&&pick(r,["puissance","hp"])===undefined)){return "models"}
+if(pick(r,["pays","country"])!==undefined){return "brands"}
+return null}
+function classifyBundle(data){
+var groups={},ignored=[];
+function consider(key,arr){if(IGNOREKEYS[key]){ignored.push(key);return}
+var k=COLL[key]||null;if(!k&&arr.length){k=detectKind(arr[0])}
+if(!k){ignored.push(key);return}
+if(!groups[k]){groups[k]=[]}groups[k]=groups[k].concat(arr)}
+(function scan(obj){if(!obj||typeof obj!=="object"){return}
+if(Array.isArray(obj)){return}
+Object.keys(obj).forEach(function(k){var v=obj[k],key=nk(k);
+if(Array.isArray(v)){if(v.length){consider(key,v)}}
+else if(v&&typeof v==="object"){scan(v)}})})(data);
+return {groups:groups,ignored:ignored}}
+var yr=function(a,b){a=num(a,2017);b=num(b,YMAX);if(a>b){var t=a;a=b;b=t}return [clamp(Math.round(a),1990,2040),clamp(Math.round(b),1990,2040)]};
+var dateNorm=function(v){var s=String(v==null?"":v).trim(),m=s.match(/^(\d{4})[-\/](\d{1,2})/);if(m){return m[1]+"-"+String(+m[2]).padStart(2,"0")}m=s.match(/^(\d{4})$/);if(m){return m[1]+"-01"}return "2026-01"};
+var fluid=function(v){if(!v){return null}if(Array.isArray(v)){return [String(v[0]||""),num(v[1]),String(v[2]||"")]}
+if(typeof v==="object"){return [String(pick(v,["spec","specification","norme","ref","label"])||""),num(pick(v,["cap","capacite","capacity","l","litres"])),String(pick(v,["note","commentaire"])||"")]}
+return [String(v),0,""]};
+var distNorm=function(v){if(!v){return null}if(Array.isArray(v)){return [String(v[0]||""),num(v[1]),num(v[2]),String(v[3]||"")]}
+if(typeof v==="object"){return [String(pick(v,["type","libelle","label"])||"Chaîne"),num(pick(v,["km","kilometrage"])),num(pick(v,["mo","mois","months"])),String(pick(v,["note"])||"")]}
+return [String(v),0,0,""]};
+var opsNorm=function(v){if(!Array.isArray(v)){return []}return v.map(function(it){if(Array.isArray(it)){return [String(it[0]||""),num(it[1]),num(it[2])]}
+return [String(pick(it,["op","operation","label","nom","name","designation","libelle"])||""),num(pick(it,["km","kilometrage","interval_km","every_km"])),num(pick(it,["mo","mois","months","interval_mois"]))]}).filter(function(x){return x[0]})};
+function mapRecord(rec,kind){
+if(Array.isArray(rec)){return mapTuple(rec,kind)}
+if(!rec||typeof rec!=="object"){throw "enregistrement non objet"}
+if(kind==="brands"){var n=pick(rec,["n","name","nom","label","marque","brand","manufacturer","constructeur","libelle","make"]);if(!n){throw "nom manquant"}
+return {id:String(pick(rec,["id","identifiant","uid","key"])||("B-"+slug(n))).trim(),n:String(n).trim(),pays:String(pick(rec,["pays","country","origine","nation"])||"—"),grp:String(pick(rec,["grp","group","groupe","alliance","parent"])||"—")}}
+if(kind==="models"){var mn=pick(rec,["n","name","nom","model","modele","label","title","vehicule","car","designation"]);if(!mn){throw "nom manquant"}
+var br=pick(rec,["b","brand","marque","manufacturer","constructeur","make"]);if(br===undefined||br===null||br===""){throw "marque manquante"}
+return {id:String(pick(rec,["id","identifiant","uid","key"])||("M-"+slug(br)+"-"+slug(mn))).trim(),b:String(br).trim(),bRaw:String(br).trim(),n:String(mn).trim(),y:yr(pick(rec,["y0","year_from","debut","annee_debut","from","start","annee"]),pick(rec,["y1","year_to","fin","annee_fin","to","end"])),seg:String(pick(rec,["seg","segment","category","categorie","carrosserie","body","type"])||"Compacte")}}
+if(kind==="engines"){var code=pick(rec,["code","code_moteur","engine_code","motor_code","ref_moteur","motor"]);if(!code){throw "code manquant"}
+var fam=pick(rec,["fam","family","famille","motor_family","plateforme","platform"]);if(!fam){throw "famille manquante"}
+var lab=pick(rec,["label","name","nom","designation","libelle","intitule","version"]);if(!lab){throw "libellé manquant"}
+var fu=fuelNorm(pick(rec,["fuel","energie","carburant","type","energy","motorisation_type"]));
+var hp=num(pick(rec,["hp","power","puissance","ch","chevaux","hp_ch","puissance_ch"]));var kw=num(pick(rec,["kw","power_kw","puissance_kw"]));
+if(!hp&&kw){hp=Math.round(kw*1.3596)}
+if(!(hp>0&&hp<=3000)){throw "puissance invalide"}
+var mr=split(pick(rec,["m","models","modeles","modele","model","vehicle","vehicule","auto","model_id","modele_id"]));
+if(!mr.length){var mb=pick(rec,["marque","brand","make"]),mo=pick(rec,["modele","model","vehicule"]);
+if(mb&&mo){mr=[String(mb)+" "+String(mo)]}else if(mo){mr=[String(mo)]}}
+if(!mr.length){throw "aucun modèle lié"}
+return {id:String(pick(rec,["id","identifiant","uid","key"])||"").trim(),m:[],mRaw:mr,code:String(code).trim(),fam:String(fam).trim(),label:String(lab).trim(),fuel:fu,disp:num(pick(rec,["disp","displacement","cylindree","cm3","capacity"])),hp:Math.round(hp),nm:num(pick(rec,["nm","torque","couple"])),kw:Math.round(hp*.7355),y:yr(pick(rec,["y0","year_from","debut","annee_debut","from"]),pick(rec,["y1","year_to","fin","annee_fin","to"])),gb:String(pick(rec,["gb","box","boite","transmission","gearbox","bvm"])||"BVM").trim(),norm:String(pick(rec,["norm","norme","euro"])||(fu==="b"?"ZE":"Euro 6")),cyl:String(pick(rec,["cyl","architecture","cylindres"])||(fu==="b"?"ÉLEC":"L4")),asp:String(pick(rec,["asp","suralimentation","aspiration"])||"Turbo"),inj:String(pick(rec,["inj","injection"])||(fu==="b"?"—":(fu==="d"?"Common Rail":"Injection directe"))),note:String(pick(rec,["note","commentaire"])||"")}}
+if(kind==="faults"){var t=pick(rec,["t","title","titre","name","nom","intitule","libelle","panne","designation"]);if(!t){throw "titre manquant"}
+var c0=num(pick(rec,["cost0","cout_min","cost_min","prix_min"])),c1=num(pick(rec,["cost1","cout_max","cost_max","prix_max"]),c0);
+return {id:String(pick(rec,["id","identifiant","uid","key"])||"").trim(),t:String(t).trim(),fam:split(pick(rec,["fam","families","familles","family","moteurs","engines"])),sev:sevNorm(pick(rec,["sev","severity","severite","gravite","criticite"])),freq:(FQ[pick(rec,["freq","frequency","frequence"])]?pick(rec,["freq","frequency","frequence"]):"moyenne"),y:yr(pick(rec,["y0","year_from","debut"]),pick(rec,["y1","year_to","fin"])),km:[num(pick(rec,["km0","km_min","kmmin","from_km"])),num(pick(rec,["km1","km_max","kmmax","to_km"]))],sym:split(String(pick(rec,["sym","symptoms","symptomes"])||"").replace(/\n/g,"|")),cause:String(pick(rec,["cause","origine"])||""),fix:String(pick(rec,["fix","solution","action","reparation","repair"])||""),cost:[c0,Math.max(c0,c1)],m:[],gb:[],e:[],fuel:(pick(rec,["fuel","energie"])?fuelNorm(pick(rec,["fuel","energie"])):""),status:String(pick(rec,["status","statut","etat"])||"Surveillance")}}
+if(kind==="tsb"){var tr=pick(rec,["ref","reference","ref_tsb","numero","number"]);if(!tr){throw "référence manquante"}
+var tt=pick(rec,["t","title","titre","name","nom","objet"]);if(!tt){throw "titre manquant"}
+return {id:String(pick(rec,["id","identifiant","uid","key"])||"").trim(),ref:String(tr).trim(),b:split(pick(rec,["b","brands","marques","constructeurs"])),bRaw:split(pick(rec,["b","brands","marques","constructeurs"])),fam:split(pick(rec,["fam","families","familles","moteurs"])),t:String(tt).trim(),date:dateNorm(pick(rec,["date","date_revision","published","publication","annee"])),cat:String(pick(rec,["cat","category","categorie","type"])||"Moteur"),sev:sevNorm(pick(rec,["sev","severity","severite","gravite"])),sum:String(pick(rec,["sum","summary","resume","synthese","description"])||""),act:String(pick(rec,["act","action","actions","procedure","repair"])||""),m:[],gb:[]}}
+if(kind==="maint"){var pn=pick(rec,["name","nom","titre","title","plan","designation"]);if(!pn){throw "nom manquant"}
+var it=opsNorm(pick(rec,["items","operations","ops","services","interventions","revision_ops"]));if(!it.length){throw "aucune opération"}
+return {id:String(pick(rec,["id","identifiant","uid","key"])||"").trim(),name:String(pn).trim(),fam:split(pick(rec,["fam","families","familles","moteurs","engines"])),fuel:(pick(rec,["fuel","energie"])?fuelNorm(pick(rec,["fuel","energie"])):""),oil:fluid(pick(rec,["oil","huile","lubrifiant"])),dist:distNorm(pick(rec,["dist","distribution","courroie","chaine"])),base:[15000,12],items:it,note:String(pick(rec,["note","commentaire"])||""),extra:pick(rec,["extra","specs","fluides","fluids"])||null}}
+throw "type inconnu"}
+function mapTuple(a,kind){
+if(kind==="brands"){return {id:String(a[0]||uid("B")),n:String(a[1]||""),pays:String(a[2]||"—"),grp:String(a[3]||"—")}}
+if(kind==="models"){return {id:String(a[0]||uid("M")),b:String(a[1]||""),bRaw:String(a[1]||""),n:String(a[2]||""),y:yr(a[3],a[4]),seg:String(a[5]||"Compacte")}}
+if(kind==="engines"){var f=fuelNorm(a[4]);return {id:"",m:[],mRaw:split(a[0]),code:String(a[1]||""),fam:String(a[2]||""),label:String(a[3]||""),fuel:f,disp:num(a[5]),hp:num(a[6]),nm:num(a[7]),kw:Math.round(num(a[6])*.7355),y:yr(a[8],a[9]),gb:String(a[10]||"BVM"),norm:(f==="b"?"ZE":"Euro 6"),cyl:(f==="b"?"ÉLEC":"L4"),asp:"Turbo",inj:(f==="b"?"—":(f==="d"?"Common Rail":"Injection directe")),note:""}}
+if(kind==="faults"){return {id:"",t:String(a[0]||""),fam:split(a[1]),sev:sevNorm(a[2]),freq:(FQ[a[3]]?a[3]:"moyenne"),y:yr(a[4],a[5]),km:[num(a[6]),num(a[7])],sym:split(a[8]),cause:String(a[9]||""),fix:String(a[10]||""),cost:[num(a[11]),num(a[12])],m:[],gb:[],e:[],fuel:(a[14]?fuelNorm(a[14]):""),status:String(a[13]||"Surveillance")}}
+if(kind==="tsb"){return {id:"",ref:String(a[0]||""),b:split(a[1]),bRaw:split(a[1]),fam:split(a[2]),t:String(a[3]||""),date:dateNorm(a[4]),cat:String(a[5]||"Moteur"),sev:sevNorm(a[6]),sum:String(a[7]||""),act:String(a[8]||""),m:[],gb:[]}}
+if(kind==="maint"){return {id:String(a[0]||uid("P")),name:String(a[1]||""),fam:split(a[2]),oil:fluid(a[3]),dist:distNorm(a[4]),items:opsNorm(a[5]),note:String(a[6]||""),fuel:(a[7]?fuelNorm(a[7]):""),extra:a[8]||null,base:[15000,12]}}
+throw "type inconnu"}
+function resolveAll(groups){
+var warn=[],drop=[],bIdx={},bName={},mIdx={},mName={},autoB=0,autoM=0,newB=[],newM=[],seen={};
+DB.brands.forEach(function(b){bIdx[b.id]=b.id;bName[nk(b.n)]=b.id});
+DB.models.forEach(function(m){mIdx[m.id]=m.id;mName[nk(m.n)]=m.id});
+function uniqId(kind,base){var id=base,i=2;while(seen[kind+":"+id]||DB[kind].some(function(x){return x.id===id})){id=base+"-"+i;i++}seen[kind+":"+id]=1;return id}
+function brandId(raw){if(raw===undefined||raw===null||raw===""){return null}var r=String(raw).trim();if(bIdx[r]){return bIdx[r]}var l=nk(r);if(bName[l]){return bName[l]}
+var id=uniqId("brands","B-"+slug(r));bIdx[id]=id;bName[l]=id;newB.push({id:id,n:r,pays:"—",grp:"—"});autoB++;warn.push("marque auto-créée : "+r);return id}
+function modelId(raw,fb){var r=String(raw==null?"":raw).trim();if(!r){return null}if(mIdx[r]){return mIdx[r]}var l=nk(r);if(mName[l]){return mName[l]}
+var bid=null,rest=r;Object.keys(bName).forEach(function(k){if(!bid&&l.indexOf(k)===0&&l.length>k.length+2){bid=bName[k];rest=r.slice(k.length).replace(/^[\s\-–—:]+/,"")}});
+bid=bid||fb||brandId("Import");var id=uniqId("models","M-"+slug(rest||r));mIdx[id]=id;mName[nk(rest||r)]=id;newM.push({id:id,b:bid,n:rest||r,y:[2017,YMAX],seg:"Compacte"});autoM++;warn.push("modèle auto-créé : "+(rest||r));return id}
+var out={brands:[],models:[],engines:[],faults:[],tsb:[],maint:[]};
+(groups.brands||[]).forEach(function(r){r.id=r.id||uniqId("brands","B-"+slug(r.n));if(!bIdx[r.id]){bIdx[r.id]=r.id}bName[nk(r.n)]=bName[nk(r.n)]||r.id;out.brands.push(r)});
+(groups.models||[]).forEach(function(r){var b=brandId(r.bRaw!==undefined?r.bRaw:r.b);if(!b){drop.push("models : "+r.n+" (marque introuvable)");return}
+r.b=b;r.id=r.id||uniqId("models","M-"+slug(b)+"-"+slug(r.n));mIdx[r.id]=r.id;mName[nk(r.n)]=mName[nk(r.n)]||r.id;out.models.push(r)});
+(groups.engines||[]).forEach(function(r){var ms=(r.mRaw||[]).map(function(x){return modelId(x,null)}).filter(Boolean);
+if(!ms.length){drop.push("engines : "+r.label+" (aucun modèle résoluble)");return}
+r.m=ms;delete r.mRaw;r.id=r.id||uniqId("engines","E-"+slug(r.code)+"-"+slug(r.label));out.engines.push(r)});
+(groups.faults||[]).forEach(function(r){r.id=r.id||uniqId("faults","F-"+slug(r.t));out.faults.push(r)});
+(groups.tsb||[]).forEach(function(r){var bs=(r.bRaw||r.b||[]).map(brandId).filter(Boolean);r.b=bs;delete r.bRaw;r.id=r.id||uniqId("tsb","T-"+slug(r.ref));out.tsb.push(r)});
+(groups.maint||[]).forEach(function(r){r.id=r.id||uniqId("maint","P-"+slug(r.name));out.maint.push(r)});
+out.brands=newB.concat(out.brands);out.models=newM.concat(out.models);
+return {out:out,warn:warn,drop:drop,autoB:autoB,autoM:autoM}}
+var KEYFN={brands:function(x){return nk(x.n)},models:function(x){return nk(x.b+"|"+x.n)},engines:function(x){return nk(x.code+"|"+x.fam+"|"+x.label+"|"+x.hp)},faults:function(x){return nk(x.t)},tsb:function(x){return nk(x.ref||x.t)},maint:function(x){return nk(x.name)}};
+function mergeInto(ex,rec){Object.keys(rec).forEach(function(k){var v=rec[k];if(v===undefined||v===null||v===""){return}
+if(Array.isArray(v)){if(v.length){ex[k]=v}}else{ex[k]=v}})}
+function upsert(kind,rec){var arr=DB[kind],ex=null;
+if(rec.id){ex=arr.filter(function(x){return x.id===rec.id})[0]}
+if(!ex){var k=KEYFN[kind](rec);ex=arr.filter(function(x){return KEYFN[kind](x)===k})[0]}
+if(ex){mergeInto(ex,rec);return "upd"}
+if(!rec.id||arr.some(function(x){return x.id===rec.id})){rec.id=uid(kind.charAt(0).toUpperCase())}
+arr.push(rec);return "add"}
+var IMPORT=null;
+function openImport(tg){if(!isAdm()){return needAdm()}IMPORT=null;
+openModal('<div class="mh">'+ic("ul")+"<h3>Import universel — fusion à la base actuelle</h3><button class='tb' data-act='mclose'>"+ic("x")+"</button></div><div class='mb2'><div class='fr f2'><div><label class='lb'>Cible</label><select class='sel' id='impTarget'><option value='auto'>Détection auto par contenu / bundle externe</option>"+FILES.map(function(f){return "<option value='"+f[0]+"' "+(tg===f[0]?"selected":"")+">"+f[1]+"</option>"}).join("")+"</select></div><div><label class='lb'>Mode</label><select class='sel' id='impMode'><option value='merge'>Fusionner (upsert id + clé naturelle)</option><option value='replace'>Remplacer le fichier (hors marques/modèles)</option></select></div></div>"+
+'<div class="dz" id="dz" style="margin-top:13px" data-act="dzPick">'+ic("ul")+"<div><b>Déposer un .json / .csv / base.js</b> ou cliquer</div><div class='dim mono' style='font-size:10px;margin-top:4px'>BUNDLES EXTERNES ACCEPTÉS (wrapper app / counts / data) · CLASSIFICATION PAR CONTENU · AUCUNE ÉCRITURE AVANT ANALYSE</div></div><input type='file' id='impFile' accept='.json,.csv,.txt,.js' style='display:none'>"+
+'<div style="margin-top:12px"><label class="lb">…ou coller les données (JSON bundle / tableau / CSV / base.js)</label><textarea class="inp mono" id="impText" rows="6"></textarea><div class="dim mono" style="font-size:10px;margin-top:5px">Exemple bundle : {"app":"Auto Diagnostic Pro","counts":{…},"marques":[…],"modeles":[…],"motorisations":[…],"fiches":[…],"revisions":[…]}</div></div>'+
+'<details style="margin-top:10px"><summary class="dim" style="cursor:pointer;font-size:12px">Champs reconnus & modèles CSV</summary><div class="dim" style="font-size:11.5px;margin-top:8px">Alias : code/code_moteur · famille/fam · puissance/hp/ch/puissance_ch · couple/nm · energie/carburant/fuel · annee_debut/from · modeles/vehicle/m · severite/gravite/criticite · symptomes · solution/fix · cout_min · reference/ref · resume/summary · operations/items/interventions · huile/oil. Marques & modèles absents créés automatiquement. '+Object.keys(CSVH).map(function(k){return '<div style="margin-top:5px"><span class="mono" style="color:#25D4EE">'+k+"</span> <button class='btn xs ghost' data-act='csvTpl' data-k='"+k+"'>Modèle CSV</button></div>"}).join("")+"</div></details><div id='impReport'></div></div>"+
+'<div class="mf"><button class="btn ghost" data-act="mclose">Fermer</button><button class="btn ghost" data-act="impAnalyze">'+ic("check")+"Analyser</button><button class='btn pri' id='impApply' data-act='impApply' disabled>"+ic("ul")+"Fusionner à la base</button></div>","wide")}
+function analyzeImport(){var text=$("#impText").value.trim(),tg=$("#impTarget").value,md=$("#impMode").value,rep=$("#impReport");
+if(!text){rep.innerHTML='<div class="rep rj">Aucune donnée à analyser.</div>';beep("err");return}
+text=text.replace(/^\s*window\.MECADATA_BASE\s*=\s*/,"").replace(/;\s*$/,"");
+var data=null,csv=false;
+try{data=JSON.parse(text)}catch(e){csv=true;try{data=parseCSV(text)}catch(e2){rep.innerHTML='<div class="rep rj">JSON invalide : '+esc(e.message)+"</div>";beep("err");return}}
+if(data&&Array.isArray(data.brands)&&Array.isArray(data.brands[0])){data=expandBase(data)}
+var groups={},rej=[],ignored=[];
+try{
+if(!csv&&data&&!Array.isArray(data)&&typeof data==="object"){var cl=classifyBundle(data);groups=cl.groups;ignored=cl.ignored;
+if(!Object.keys(groups).length){var kk=(tg==="auto"?detectKind(data):tg);if(kk){groups[kk]=Array.isArray(data)?data:[data]}}}
+else if(Array.isArray(data)){var k2=(tg==="auto"?detectKind(data[0]||{}):tg);if(!k2){throw "format non reconnu — précisez la cible."}groups[k2]=data}
+else{throw "format non reconnu — précisez la cible."}
+}catch(e){rep.innerHTML='<div class="rep rj">'+esc(e)+"</div>";beep("err");return}
+if(!Object.keys(groups).length){rep.innerHTML='<div class="rep rj">Aucune collection reconnue (marques / modèles / motorisations / fiches / tsb / révisions). Vérifiez que le collage contient bien des tableaux.</div>';beep("err");return}
+var mapped={};
+Object.keys(groups).forEach(function(k){mapped[k]=[];groups[k].forEach(function(rec,idx){
+try{mapped[k].push(mapRecord(rec,k))}catch(err){rej.push(k+"["+idx+"] : "+err)}})});
+var R=resolveAll(mapped);
+var ok=0;Object.keys(R.out).forEach(function(k){ok+=R.out[k].length});
+IMPORT={mode:md,R:R};
+rep.innerHTML='<div class="rep"><b class="ok">'+ok+" enregistrement(s) prêt(s) à fusionner</b> · <b class='rj'>"+(rej.length+R.drop.length)+" rejeté(s)</b> · <b class='wn'>"+R.warn.length+" auto-création(s)</b> — mode "+(md==="merge"?"FUSION":"REMPLACEMENT (hors marques/modèles)")+
+Object.keys(R.out).map(function(k){return R.out[k].length?'<div class="mono" style="font-size:10.5px;margin-top:5px;color:#25D4EE">'+k+".json ← "+R.out[k].length+"</div>":""}).join("")+
+(ignored.length?'<p class="wn" style="margin-top:8px">Métadonnées ignorées : '+ignored.slice(0,6).join(", ")+"</p>":"")+
+(R.autoB||R.autoM?'<p class="wn" style="margin-top:8px">Référentiel complété : '+R.autoB+" marque(s), "+R.autoM+" modèle(s) créé(s) depuis la source.</p>":"")+
+(rej.length?'<ul>'+rej.slice(0,10).map(function(r){return '<li class="rj">'+esc(r)+"</li>"}).join("")+(rej.length>10?"<li>… +"+(rej.length-10)+"</li>":"")+"</ul>":"")+
+(R.drop.length?'<ul>'+R.drop.slice(0,8).map(function(r){return '<li class="rj">'+esc(r)+"</li>"}).join("")+"</ul>":"")+
+(R.warn.length?'<ul>'+R.warn.slice(0,8).map(function(r){return '<li class="wn">'+esc(r)+"</li>"}).join("")+(R.warn.length>8?"<li>… +"+(R.warn.length-8)+"</li>":"")+"</ul>":"")+"</div>";
+$("#impApply").disabled=(ok===0);beep(ok?"ok":"err")}
+function applyImport(){if(!IMPORT||!IMPORT.R){return}snapshot("import fusion");var ins=0,upd=0;
+["brands","models","engines","faults","tsb","maint"].forEach(function(k){var list=IMPORT.R.out[k]||[];
+if(IMPORT.mode==="replace"&&k!=="brands"&&k!=="models"){DB[k]=list;ins+=list.length;return}
+list.forEach(function(rec){if(upsert(k,rec)==="add"){ins++}else{upd++}})});
+var n=ins+upd;IMPORT=null;closeModal();mutate("imp","Fusion base externe : "+ins+" ajouts, "+upd+" mises à jour");
+toast("ok","Fusion appliquée",n+" enregistrement(s) — base : "+fmt(META.counts.e)+" motorisations · "+fmt(META.counts.b)+" marques · "+fmt(META.counts.m)+" modèles · "+fmt(META.counts.f)+" fiches · "+fmt(META.counts.p)+" révisions.",true);beep("imp")}
+function openIntegrity(){var g=META.integ;openModal('<div class="mh">'+ic("check")+"<h3>Intégrité des fichiers croisés</h3><button class='tb' data-act='mclose'>"+ic("x")+"</button></div><div class='mb2'><div class='rep' style='max-height:none'><b class='"+(g.ok?"ok":"rj")+"'>"+(g.ok?"BASE INTÈGRE":"ERREURS")+"</b> — score "+g.pct+"% · "+fmt(META.links)+" liaisons · "+fmt(META.corr)+" corrélations"+
+(g.err.length?'<ul>'+g.err.slice(0,30).map(function(e){return '<li class="rj">'+esc(e)+"</li>"}).join("")+"</ul>":'<p class="ok" style="margin-top:8px">Aucune référence orpheline, aucun id dupliqué.</p>')+
+(g.warn.length?'<p class="wn" style="margin-top:9px">'+g.warn.length+" avertissement(s)</p><ul>"+g.warn.slice(0,15).map(function(w){return '<li class="wn">'+esc(w)+"</li>"}).join("")+"</ul>":"")+"</div></div><div class='mf'><button class='btn ghost' data-act='autoFix'>"+ic("tool")+"Auto-réparation</button><button class='btn pri' data-act='mclose'>Fermer</button></div>")}
+function openFileView(k){var a=DB[k],ks=a[0]?Object.keys(a[0]):[];
+openModal('<div class="mh">'+ic("file")+"<h3>"+k+".json ("+fmt(a.length)+")</h3><button class='tb' data-act='mclose'>"+ic("x")+"</button></div><div class='mb2'><div class='tw'><table class='t'><thead><tr>"+ks.map(function(x){return "<th>"+esc(x)+"</th>"}).join("")+"</tr></thead><tbody>"+
+a.slice(0,60).map(function(x){return "<tr>"+ks.map(function(key){var v=x[key];if(Array.isArray(v)){v=v.join("; ")}if(v&&typeof v==="object"){v=JSON.stringify(v)}return '<td class="mono" style="font-size:10.5px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(v)+"</td>"}).join("")+"</tr>"}).join("")+
+"</tbody></table></div></div><div class='mf'><button class='btn ghost' data-act='fileExp' data-k='"+k+"'>"+ic("dl")+"JSON</button><button class='btn pri' data-act='mclose'>Fermer</button></div>","wide")}
+function exportBaseJs(){var c={meta:{v:"7.0"},brands:DB.brands.map(function(b){return [b.id,b.n,b.pays,b.grp]}),models:DB.models.map(function(m){return [m.id,m.b,m.n,m.y[0],m.y[1],m.seg]}),
+engines:DB.engines.map(function(e){return [e.m[0],e.code,e.fam,e.label,e.fuel,e.disp,e.hp,e.nm,e.y[0],e.y[1],e.gb]}),
+faults:DB.faults.map(function(f){return [f.t,(f.fam||[]).join(";"),f.sev,f.freq,f.y[0],f.y[1],f.km[0],f.km[1],(f.sym||[]).join("|"),f.cause,f.fix,f.cost[0],f.cost[1],f.status,f.fuel||""]}),
+tsb:DB.tsb.map(function(t){return [t.ref,(t.b||[]).join(";"),(t.fam||[]).join(";"),t.t,t.date,t.cat,t.sev,t.sum,t.act]}),
+maint:DB.maint.map(function(p){return [p.id,p.name,(p.fam||[]).join(";"),p.oil,p.dist,p.items,p.note,p.fuel||"",p.extra]})};
+download("base.js","window.MECADATA_BASE = "+JSON.stringify(c)+";","text/javascript");toast("ok","base.js exporté","État courant figé comme base usine.");beep("ok");audit("exp","Export base.js")}
+var famList=function(){var s={};DB.engines.forEach(function(e){s[e.fam]=1});return '<datalist id="famL">'+Object.keys(s).map(function(f){return '<option value="'+esc(f)+'">'}).join("")+"</datalist>"};
+function openEngForm(id){if(!isAdm()){return needAdm()}var e=id?DB.engines.filter(function(x){return x.id===id})[0]:null;
+var ck=DB.models.map(function(m){var b=brandById(m.b);return '<label class="mchk" style="display:flex;gap:7px;align-items:center;padding:4px 6px;font-size:12px"><input type="checkbox" name="m" value="'+m.id+'" '+(e&&e.m.indexOf(m.id)>-1?"checked":"")+"><span>"+esc(b?b.n:"")+" <b>"+esc(m.n)+"</b></span></label>"}).join("");
+openModal('<div class="mh">'+ic("piston")+"<h3>"+(e?"Modifier":"Nouvelle")+" motorisation</h3><button class='tb' data-act='mclose'>"+ic("x")+"</button></div><form data-form='eng' data-id='"+(e?e.id:"")+"'><div class='mb2'><div class='fr f2'>"+
+'<div><label class="lb">Libellé *</label><input class="inp" name="label" required value="'+esc(e?e.label:"")+'"></div><div><label class="lb">Code *</label><input class="inp mono" name="code" required value="'+esc(e?e.code:"")+'"></div>'+
+'<div><label class="lb">Famille *</label><input class="inp mono" name="fam" list="famL" required value="'+esc(e?e.fam:"")+'"></div><div><label class="lb">Énergie</label><select class="sel" name="fuel">'+Object.keys(FU).map(function(k){return '<option value="'+k+'" '+(e&&e.fuel===k?"selected":"")+">"+FU[k].l+"</option>"}).join("")+"</select></div>"+
+'<div><label class="lb">Cylindrée</label><input class="inp mono" type="number" name="disp" value="'+(e?e.disp:0)+'"></div><div><label class="lb">Puissance ch *</label><input class="inp mono" type="number" name="hp" required value="'+(e?e.hp:100)+'"></div>'+
+'<div><label class="lb">Couple Nm</label><input class="inp mono" type="number" name="nm" value="'+(e?e.nm:200)+'"></div><div><label class="lb">Boîte</label><input class="inp mono" name="gb" value="'+esc(e?e.gb:"BVM6")+'"></div>'+
+'<div><label class="lb">Année début</label><input class="inp mono" type="number" name="y0" value="'+(e?e.y[0]:2017)+'"></div><div><label class="lb">Année fin</label><input class="inp mono" type="number" name="y1" value="'+(e?e.y[1]:YMAX)+'"></div>'+
+'<div><label class="lb">Norme</label><input class="inp" name="norm" value="'+esc(e?e.norm:"Euro 6d")+'"></div><div><label class="lb">Architecture</label><input class="inp" name="cyl" value="'+esc(e?e.cyl:"L4")+'"></div></div>'+
+'<div style="margin-top:12px"><label class="lb">Modèles liés *</label><input class="inp" id="mFilter" placeholder="Filtrer…" style="margin-bottom:6px"><div style="max-height:180px;overflow:auto;border:1px solid var(--line);border-radius:9px;padding:5px">'+ck+"</div></div>"+famList()+
+"</div><div class='mf'><button type='button' class='btn ghost' data-act='mclose'>Annuler</button><button class='btn pri' type='submit'>"+ic("save")+"Enregistrer</button></div></form>","wide")}
+function openFaultForm(id){if(!isAdm()){return needAdm()}var f=id?DB.faults.filter(function(x){return x.id===id})[0]:null;
+openModal('<div class="mh">'+ic("alert")+"<h3>"+(f?"Modifier":"Nouvelle")+" panne</h3><button class='tb' data-act='mclose'>"+ic("x")+"</button></div><form data-form='fault' data-id='"+(f?f.id:"")+"'><div class='mb2'><div class='fr'>"+
+'<div><label class="lb">Titre *</label><input class="inp" name="t" required value="'+esc(f?f.t:"")+'"></div><div class="fr f3"><div><label class="lb">Sévérité</label><select class="sel" name="sev">'+Object.keys(SV).map(function(s){return "<option "+(f&&f.sev===s?"selected":"")+">"+s+"</option>"}).join("")+"</select></div><div><label class='lb'>Fréquence</label><select class='sel' name='freq'>"+Object.keys(FQ).map(function(s){return "<option "+(f&&f.freq===s?"selected":"")+">"+s+"</option>"}).join("")+"</select></div><div><label class='lb'>Statut</label><input class='inp' name='status' value='"+esc(f?f.status:"Surveillance")+"'></div></div>"+
+'<div><label class="lb">Familles (virgules)</label><input class="inp mono" name="fam" list="famL" value="'+esc(f?(f.fam||[]).join(", "):"")+'"></div>'+
+'<div class="fr f4"><div><label class="lb">Année début</label><input class="inp mono" type="number" name="y0" value="'+(f?f.y[0]:2017)+'"></div><div><label class="lb">Année fin</label><input class="inp mono" type="number" name="y1" value="'+(f?f.y[1]:YMAX)+'"></div><div><label class="lb">Km début</label><input class="inp mono" type="number" name="k0" value="'+(f?f.km[0]:30000)+'"></div><div><label class="lb">Km fin</label><input class="inp mono" type="number" name="k1" value="'+(f?f.km[1]:150000)+'"></div></div>'+
+'<div><label class="lb">Symptômes (un par ligne)</label><textarea class="inp" name="sym" rows="3">'+esc(f?(f.sym||[]).join("\n"):"")+'</textarea></div><div><label class="lb">Cause</label><textarea class="inp" name="cause" rows="2">'+esc(f?f.cause:"")+'</textarea></div><div><label class="lb">Action</label><textarea class="inp" name="fix" rows="2">'+esc(f?f.fix:"")+'</textarea></div>'+
+'<div class="fr f3"><div><label class="lb">Coût min</label><input class="inp mono" type="number" name="c0" value="'+(f?f.cost[0]:0)+'"></div><div><label class="lb">Coût max</label><input class="inp mono" type="number" name="c1" value="'+(f?f.cost[1]:0)+'"></div><div><label class="lb">Énergie cible</label><select class="sel" name="fuel"><option value="">—</option>'+Object.keys(FU).map(function(k){return '<option value="'+k+'" '+(f&&f.fuel===k?"selected":"")+">"+FU[k].l+"</option>"}).join("")+"</select></div></div>"+famList()+
+"</div></div><div class='mf'><button type='button' class='btn ghost' data-act='mclose'>Annuler</button><button class='btn pri' type='submit'>"+ic("save")+"Enregistrer</button></div></form>","wide")}
+function openTsbForm(id){if(!isAdm()){return needAdm()}var t=id?DB.tsb.filter(function(x){return x.id===id})[0]:null;
+openModal('<div class="mh">'+ic("file")+"<h3>"+(t?"Modifier":"Nouveau")+" TSB / rappel</h3><button class='tb' data-act='mclose'>"+ic("x")+"</button></div><form data-form='tsb' data-id='"+(t?t.id:"")+"'><div class='mb2'><div class='fr'>"+
+'<div class="fr f2"><div><label class="lb">Référence *</label><input class="inp mono" name="ref" required value="'+esc(t?t.ref:"")+'"></div><div><label class="lb">Date</label><input class="inp mono" type="month" name="date" value="'+esc(t?t.date:"2026-01")+'"></div></div>'+
+'<div><label class="lb">Titre *</label><input class="inp" name="t" required value="'+esc(t?t.t:"")+'"></div><div class="fr f2"><div><label class="lb">Catégorie</label><select class="sel" name="cat">'+["Distribution","Moteur","Antipollution","Transmission","Rappel","Charge","Hybridation","Logiciel","Entretien"].map(function(c){return "<option "+(t&&t.cat===c?"selected":"")+">"+c+"</option>"}).join("")+"</select></div><div><label class='lb'>Gravité</label><select class='sel' name='sev'>"+Object.keys(SV).map(function(s){return "<option "+(t&&t.sev===s?"selected":"")+">"+s+"</option>"}).join("")+"</select></div></div>"+
+'<div><label class="lb">Familles</label><input class="inp mono" name="fam" list="famL" value="'+esc(t?(t.fam||[]).join(", "):"")+'"></div><div><label class="lb">Marques</label><div style="max-height:130px;overflow:auto;border:1px solid var(--line);border-radius:9px;padding:6px;display:grid;grid-template-columns:1fr 1fr;gap:2px">'+DB.brands.map(function(b){return '<label style="display:flex;gap:6px;align-items:center;font-size:12px"><input type="checkbox" name="b" value="'+b.id+'" '+(t&&(t.b||[]).indexOf(b.id)>-1?"checked":"")+">"+esc(b.n)+"</label>"}).join("")+"</div></div>"+
+'<div><label class="lb">Synthèse</label><textarea class="inp" name="sum" rows="2">'+esc(t?t.sum:"")+'</textarea></div><div><label class="lb">Action</label><textarea class="inp" name="act" rows="3">'+esc(t?t.act:"")+'</textarea></div>'+famList()+
+"</div></div><div class='mf'><button type='button' class='btn ghost' data-act='mclose'>Annuler</button><button class='btn pri' type='submit'>"+ic("save")+"Enregistrer</button></div></form>","wide")}
+function planRow(it,i){return '<div class="gcard" draggable="true" data-drag="planrow" data-i="'+i+'" style="margin-bottom:6px;padding:7px 9px"><span class="dh">'+ic("drag","width:14px;height:14px")+"</span><input class='inp' name='op' value='"+esc(it[0])+"' placeholder='Opération' style='flex:2;padding:6px 9px'><input class='inp mono' name='okm' type='number' value='"+it[1]+"' style='width:92px;padding:6px 9px'><input class='inp mono' name='omo' type='number' value='"+it[2]+"' style='width:74px;padding:6px 9px'><button type='button' class='btn xs ghost' data-act='planRowUp' data-i='"+i+"'>"+ic("up","width:11px;height:11px")+"</button><button type='button' class='btn xs dgr' data-act='planRowDel' data-i='"+i+"'>"+ic("x","width:11px;height:11px")+"</button></div>"}
+var readPlanRows=function(){return $$("#planRows .gcard").map(function(r){return [r.querySelector("[name=op]").value.trim(),+r.querySelector("[name=okm]").value||0,+r.querySelector("[name=omo]").value||0]}).filter(function(x){return x[0]})};
+function openPlanEditor(id){if(!isAdm()){return needAdm()}var p=DB.maint.filter(function(x){return x.id===id})[0];if(!p){return}
+openModal('<div class="mh">'+ic("wrench")+"<h3>"+esc(p.name)+"</h3><button class='tb' data-act='mclose'>"+ic("x")+"</button></div><form data-form='plan' data-id='"+p.id+"'><div class='mb2'>"+
+'<div class="fr f2"><div><label class="lb">Nom</label><input class="inp" name="name" value="'+esc(p.name)+'"></div><div><label class="lb">Familles</label><input class="inp mono" name="fam" value="'+esc((p.fam||[]).join(", "))+'"></div></div>'+
+'<div class="fr f3" style="margin-top:12px"><div><label class="lb">Huile spec</label><input class="inp" name="ospec" value="'+esc(p.oil?p.oil[0]:"")+'"></div><div><label class="lb">Capacité L</label><input class="inp mono" type="number" step="0.1" name="ocap" value="'+(p.oil?p.oil[1]:0)+'"></div><div><label class="lb">Note huile</label><input class="inp" name="onote" value="'+esc(p.oil?p.oil[2]:"")+'"></div></div>'+
+'<div class="fr f4" style="margin-top:12px"><div><label class="lb">Distribution</label><input class="inp" name="dtype" value="'+esc(p.dist?p.dist[0]:"")+'"></div><div><label class="lb">Km</label><input class="inp mono" type="number" name="dkm" value="'+(p.dist?p.dist[1]:0)+'"></div><div><label class="lb">Mois</label><input class="inp mono" type="number" name="dmo" value="'+(p.dist?p.dist[2]:0)+'"></div><div><label class="lb">Note</label><input class="inp" name="dnote" value="'+esc(p.dist?p.dist[3]:"")+'"></div></div>'+
+'<div style="margin-top:14px"><label class="lb">Opérations (glisser pour réordonner)</label><div id="planRows">'+p.items.map(planRow).join("")+"</div><button type='button' class='btn xs ghost' data-act='planAddRow' style='margin-top:8px'>"+ic("plus","width:12px;height:12px")+"Ajouter</button></div>"+
+'<div style="margin-top:12px"><label class="lb">Note du plan</label><input class="inp" name="note" value="'+esc(p.note||"")+'"></div></div><div class="mf"><button type="button" class="btn ghost" data-act="mclose">Annuler</button><button class="btn pri" type="submit">'+ic("save")+"Enregistrer</button></div></form>","wide")}
+function runTests(){var T=[],add=function(n,ok,i,s){T.push({n:n,ok:!!ok,info:i||"",soft:!!s})};
+var s0={b:SEED.brands.length,m:SEED.models.length,e:SEED.engines.length,f:SEED.faults.length,t:SEED.tsb.length,p:SEED.maint.length};
+add("Base usine embarquée",!!window.MECADATA_BASE&&s0.e>0,"window.MECADATA_BASE "+(window.MECADATA_BASE?"chargée":"ABSENTE"));
+add("Marques (FR/EU/US/Asie/JP/CN)",DB.brands.length>=Math.min(60,s0.b),DB.brands.length+" marques");
+add("Modèles réels 2017→2027",DB.models.length>=Math.min(80,s0.m),DB.models.length+" modèles");
+add("Motorisations réelles",DB.engines.length>=Math.min(80,s0.e),DB.engines.length+" motorisations");
+add("Pannes connues",DB.faults.length>=Math.min(30,s0.f),DB.faults.length+" fiches");
+add("Bulletins techniques / TSB",DB.tsb.length>=Math.min(30,s0.t),DB.tsb.length+" bulletins");
+add("Campagnes de rappel",DB.tsb.filter(isRecall).length>=Math.min(15,SEED.tsb.filter(isRecall).length),DB.tsb.filter(isRecall).length+" rappels");
+add("Plans d'entretien",DB.maint.length>=Math.min(10,s0.p),DB.maint.length+" plans");
+var orph=0;DB.engines.forEach(function(e){e.m.forEach(function(i){if(!modelById(i)){orph++}})});add("Références moteurs → modèles",orph===0,orph+" orphelin(s)");
+var ob=0;DB.models.forEach(function(m){if(!brandById(m.b)){ob++}});add("Références modèles → marques",ob===0,ob+" orphelin(s)");
+var du=0;FILES.forEach(function(f){var s={};DB[f[0]].forEach(function(x){if(s[x.id]){du++}s[x.id]=1})});add("Unicité des identifiants",du===0,du+" doublon(s)");
+var bad=0;DB.faults.forEach(function(f){if(!SV[f.sev]){bad++}});DB.engines.forEach(function(e){if(!FU[e.fuel]){bad++}});add("Énumérations sévérité / énergie",bad===0,bad+" valeur(s) invalide(s)");
+var np=0;DB.engines.forEach(function(e){if(!planFor(e)){np++}});add("Plan d'entretien par moteur",np===0,np+" moteur(s) sans plan");
+var nc=0;DB.engines.forEach(function(e){if(!faultsFor(e).length){nc++}});add("Couverture des corrélations",nc===0,nc+" moteur(s) sans panne corrélée",true);
+add("Familles inter-marques",META.counts.inter>0,META.counts.inter+" familles partagées");
+add("Intégrité référentielle",META.integ.ok,META.integ.err.length+" erreur(s), "+META.integ.warn.length+" avertissement(s)");
+var dm=["#view","#rail","#top","#dr","#md","#ts","#bgc"].filter(function(s){return !$(s)});add("Éléments DOM critiques",dm.length===0,dm.length?dm.join(", ")+" manquant(s)":"7/7 présents");
+var cv=document.createElement("canvas"),cx=safe("tctx",function(){return cv.getContext("2d")},null);add("Contexte canvas 2D",!!cx,cx?"disponible":"INDISPONIBLE — fonds désactivés",true);
+add("Path2D",hasP2D,hasP2D?"disponible":"absent — repli engrenages actif",true);
+add("requestAnimationFrame",typeof requestAnimationFrame==="function","boucle d'animation");
+add("Stockage persistant",STORE.local,STORE.local?"localStorage actif":"mode mémoire (WebView / file://)",true);
+add("Stockage de session",STORE.session,STORE.session?"sessionStorage actif":"mémoire — admin non persistant",true);
+add("AudioContext",!!(window.AudioContext||window.webkitAudioContext),"effets sonores",true);
+var vw=[["bord",vBord],["explorer",vExplorer],["tech",vTech],["entretien",vEntretien],["studio",vStudio],["donnees",vDonnees],["diagnostic",vDiag]],vb=[];
+vw.forEach(function(v){try{var h=v[1]();if(typeof h!=="string"||h.length<1){vb.push(v[0]+" (vide)")}}catch(e){vb.push(v[0]+" ("+e.message+")");logErr("test vue "+v[0],e)}});
+add("Rendu des 7 vues",vb.length===0,vb.length?vb.join(", "):"7/7 rendues sans exception");
+if(cx){var sb=[];WP.MODES.forEach(function(m){try{var tg={W:320,H:180,scale:1};tg.st=WP.mk(tg);var P2=clone(WP.P);P2.mode=m[0];WP.draw(cx,320,180,1.2,P2,tg.st,WP.TH.diag,1)}catch(e){sb.push(m[0]);logErr("test scène "+m[0],e)}});add("Dessin des 8 scènes",sb.length===0,sb.length?sb.join(", "):"8/8 scènes OK",true)}else{add("Dessin des 8 scènes",true,"canvas indisponible — non bloquant",true)}
+var pl=DB.maint[0],rw=pl?dueRows(pl,60000,2021,1):[];add("Calculateur d'échéances",rw.length>3,rw.length+" opérations calculées");
+var pe=DB.maint.filter(function(p){return p.extra}).length;add("Catalogue liquides / couples / pressions",pe>=Math.min(8,SEED.maint.filter(function(p){return p.extra}).length),pe+" plans enrichis");
+var nok=false,bok=false,uok=false,fok=false;
+try{mapRecord({code_moteur:"DV5RUCd",famille:"DV5",designation:"1.5 BlueHDi 130",energie:"diesel",puissance:130,couple:300,annee_debut:2019,annee_fin:2027,modeles:"peu-208b"},"engines");nok=true}catch(e){}
+try{mapRecord({code:"X",energie:"zz",puissance:0},"engines");bok=false}catch(e){bok=true}
+try{var bun=classifyBundle({app:"Test",exportVersion:1,counts:{marques:1},data:{marques:[{nom:"TestMarque"}],motorisations:[{code_moteur:"T1",famille:"TF",designation:"1.0 100",energie:"essence",puissance:100,modeles:"TestModel"}],fiches:[{titre:"F1",severite:"majeure"}],revisions:[{nom:"R1",operations:[["Vidange",15000,12]]}]}});uok=!!(bun.groups.brands&&bun.groups.engines);fok=!!(bun.groups.faults&&bun.groups.maint)}catch(e){}
+add("Import : bundle externe reconnu (wrapper + alias)",uok,"unwrap data / marques / motorisations");
+add("Import : fiches & revisions mappées",fok,"fiches→pannes, revisions→plans");
+add("Import : validation acceptante (alias FR)",nok,"code_moteur / puissance / energie acceptés");
+add("Import : validation rejetante",bok,"enregistrement invalide rejeté");
+var cs=toCSV("engines"),bk=parseCSV(cs);add("Export / relecture CSV",bk.length===DB.engines.length,bk.length+"/"+DB.engines.length+" lignes relues");
+var sn=false;try{var s2=clone(DB);s2.engines.pop();sn=JSON.stringify(s2).length<JSON.stringify(DB).length}catch(e){}add("Snapshot / restauration (undo)",sn,"copie profonde fonctionnelle");
+add("Sérialisation JSON",META.size>20,META.size+" Ko");
+add("Recherche globale",DB.engines.filter(function(e){return (e.code+" "+e.label).toLowerCase().indexOf("bluehdi")>-1}).length>0,"requête « bluehdi »");
+add("Exceptions capturées",ERRORS.length===0,ERRORS.length?ERRORS.slice(-3).map(function(e){return e.m}).join(" | "):"aucune exception",true);
+TESTS=T;updateMeta();return T}
+function autoFix(){var did=[];
+if(!META.integ.ok||!DB.engines.length||DB.engines.length<SEED.engines.length){DB=clone(SEED);did.push("base usine réinjectée")}
+if(WP.fails>0||WP.P.mode==="off"){WP.P.mode="blueprint";WP.fails=0;WP.apply();did.push("moteur graphique réinitialisé")}
+if(ERRORS.length){ERRORS.length=0;did.push("journal d'exceptions purgé")}
+GARAGE=GARAGE.filter(function(i){return DB.engines.some(function(e){return e.id===i})});
+STORE.del(KEY);did.push("stockage local purgé");
+recompute();save();runTests();updateMeta();render();
+toast(did.length?"ok":"info","Auto-réparation",did.length?did.join(" · "):"Aucune action nécessaire — système sain.");beep("ok");audit("adm","Auto-réparation : "+(did.join(", ")||"rien à corriger"))}
+function vDiag(){var fl=TESTS.filter(function(t){return !t.ok&&!t.soft}).length,wn=TESTS.filter(function(t){return !t.ok&&t.soft}).length,col=fl?"#FF4D5E":(wn?"#FFAF2E":"#43E08B");
+return '<div class="vh rv"><div><span class="kick">MODULE 07 — AUTOVÉRIFICATION</span><h1>DIAGNOSTIC <i>SYSTÈME</i></h1><div class="sub">35 contrôles dynamiques : données, référentiel, DOM, rendu des 7 vues, dessin des 8 scènes, import universel, CSV, undo, catalogue. Capacités optionnelles du WebView non bloquantes.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm grn" data-act="runTests">'+ic("reset")+"Relancer</button><button class='btn sm amb' data-act='autoFix'>"+ic("tool")+"Auto-réparation</button><button class='btn sm ghost' data-act='expReport'>"+ic("dl")+"Rapport</button></div></div>"+
+'<div class="card panel rv" style="margin-bottom:14px;border-left:3px solid '+col+'"><h3>'+ic("stetho","color:"+col)+'Résultat<span class="chip" style="color:'+col+";border-color:"+col+'">'+(TESTS.length-fl)+"/"+TESTS.length+" OK</span></h3><p class='muted' style='font-size:13px'>"+(fl?'<b style="color:#FF4D5E">'+fl+" test(s) bloquant(s) en échec.</b> Lancez l'auto-réparation.":'<b style="color:#43E08B">Système entièrement opérationnel — aucun test bloquant en échec.</b>')+(wn?" "+wn+" avertissement(s) non bloquant(s) : capacités optionnelles absentes du WebView (stockage, audio, Path2D, canvas) ; l'application reste pleinement utilisable.":"")+"</p></div>"+
+'<div class="card panel rv" style="margin-bottom:14px"><h3>'+ic("info")+"Environnement</h3><div class='envg'>"+[["Navigateur",(navigator.userAgent||"").slice(0,80)],["Écran",window.innerWidth+"×"+window.innerHeight+" @"+(window.devicePixelRatio||1)+"x"],["Stockage local",STORE.local?"actif":"mémoire"],["Session",STORE.session?"active":"mémoire"],["Path2D",hasP2D?"oui":"non"],["Scène",WP.P.mode+" / "+WP.P.theme],["Base",META.size+" Ko"],["Marques / Modèles",META.counts.b+" / "+META.counts.m],["Rappels",String(META.counts.rc)],["Exceptions",String(ERRORS.length)]].map(function(x){return '<div class="sp"><span>'+esc(x[0])+"</span><b>"+esc(x[1])+"</b></div>"}).join("")+"</div></div>"+
+'<div class="card panel rv"><h3>'+ic("check")+"Détail des contrôles</h3><div class='tests'>"+TESTS.map(function(t){var c=t.ok?"#43E08B":(t.soft?"#FFAF2E":"#FF4D5E");return '<div class="tst" style="--tc:'+c+'"><span class="ti">'+(t.ok?"✓":(t.soft?"!":"×"))+'</span><div style="flex:1;min-width:0"><b>'+esc(t.n)+'</b><small>'+esc(t.info)+'</small></div></div>'}).join("")+"</div></div>"+
+(ERRORS.length?'<div class="card panel rv" style="margin-top:14px"><h3>'+ic("alert","color:#FF4D5E")+"Journal des exceptions</h3><div class='journal'>"+ERRORS.slice().reverse().map(function(e){return '<div class="jr del"><time>'+new Date(e.ts).toLocaleTimeString("fr-FR")+"</time><span>"+esc(e.m)+"</span></div>"}).join("")+"</div></div>":"")}
+var omniIdx=-1;
+function omniSearch(q){q=q.trim().toLowerCase();var b=$("#omnires");omniIdx=-1;if(q.length<2){b.classList.remove("on");b.innerHTML="";return}
+var h=[],push=function(g,l,s,a,i){h.push({g:g,l:l,s:s,a:a,i:i})};
+DB.brands.filter(function(x){return x.n.toLowerCase().indexOf(q)>-1}).slice(0,3).forEach(function(x){push("MARQUES",x.n,x.pays,"hitBrand",x.id)});
+DB.models.filter(function(x){return x.n.toLowerCase().indexOf(q)>-1}).slice(0,4).forEach(function(x){push("MODÈLES",((brandById(x.b)||{}).n||"")+" "+x.n,x.y[0]+"→"+x.y[1],"hitModel",x.id)});
+DB.engines.filter(function(x){return (x.code+" "+x.fam+" "+x.label).toLowerCase().indexOf(q)>-1}).slice(0,5).forEach(function(x){push("MOTORISATIONS",engName(x),x.code+" · "+x.hp+" ch","openEng",x.id)});
+DB.faults.filter(function(x){return x.t.toLowerCase().indexOf(q)>-1}).slice(0,4).forEach(function(x){push("PANNES",x.t,x.sev,"openFault",x.id)});
+DB.tsb.filter(function(x){return (x.t+" "+x.ref).toLowerCase().indexOf(q)>-1}).slice(0,4).forEach(function(x){push(isRecall(x)?"RAPPELS":"TSB",x.t,x.ref,"openTsb",x.id)});
+if(!h.length){b.innerHTML='<div class="grp">AUCUN RÉSULTAT</div>';b.classList.add("on");return}
+var html="",last="";h.forEach(function(x,i){if(x.g!==last){html+='<div class="grp">'+x.g+"</div>";last=x.g}
+html+='<button class="hit" data-act="'+x.a+'" data-id="'+esc(x.i)+'">'+ic(x.g==="PANNES"?"alert":(x.g==="RAPPELS"?"bell":(x.g==="TSB"?"file":(x.g==="MOTORISATIONS"?"piston":"car"))),"width:14px;height:14px;color:#25D4EE")+'<span>'+esc(x.l)+'</span><small>'+esc(x.s)+"</small></button>"});
+b.innerHTML=html;b.classList.add("on")}
+var omniClose=function(){$("#omnires").classList.remove("on");omniIdx=-1};
+var lockTries=0,lockUntil=0,lockTimer=0,dragData=null;
+document.addEventListener("click",function(ev){var el=ev.target.closest?ev.target.closest("[data-act]"):null;
+if(!el){if(!(ev.target.closest&&ev.target.closest(".omni"))){omniClose()}return}
+var act=el.dataset.act,id=el.dataset.id,stop=function(){ev.preventDefault();ev.stopPropagation()};
+if(act.indexOf("doDel")===0){var pp=act.split(":"),k={Eng:"engines",Fault:"faults",Tsb:"tsb"}[pp[1]];closeModal();snapshot("suppression");
+DB[k]=DB[k].filter(function(x){return x.id!==pp[2]});if(S.drawer&&S.drawer.id===pp[2]){closeDrawer()}mutate("del","Suppression "+k+" "+pp[2]);toast("warn","Supprimé","Annulation possible.",true);beep("del");return}
+switch(act){
+case "msearch":stop();var q=prompt("Recherche globale :");if(q){S.f.q=q;S.shown=48;location.hash="#/explorer";render()}break;
+case "snd":PREF.sound=!PREF.sound;save();updateMeta();if(PREF.sound){beep("ok")}toast("info",PREF.sound?"Son activé":"Son coupé");break;
+case "run":WP.set("run",!WP.P.run);beep("tick");break;
+case "goStudio":location.hash="#/studio";break;
+case "goAdm":location.hash="#/donnees";break;
+case "goDiag":location.hash="#/diagnostic";break;
+case "runTests":runTests();location.hash="#/diagnostic";render();var fl=TESTS.filter(function(t){return !t.ok&&!t.soft}).length;toast(fl?"err":"ok","Autovérification terminée",(TESTS.length-fl)+"/"+TESTS.length+" contrôles validés.");beep(fl?"err":"ok");break;
+case "autoFix":autoFix();break;
+case "expReport":download("mecadata_diagnostic.json",JSON.stringify({date:new Date().toISOString(),env:{ua:navigator.userAgent,screen:innerWidth+"x"+innerHeight,dpr:devicePixelRatio,storage:STORE.local,session:STORE.session,path2d:hasP2D},counts:META.counts,integrity:META.integ,tests:TESTS,errors:ERRORS},null,2));beep("ok");break;
+case "integrity":openIntegrity();break;
+case "undo":doUndo();break;
+case "mclose":closeModal();break;
+case "mscrim":if(ev.target===el){closeModal()}break;
+case "drclose":closeDrawer();break;
+case "drback":var hb=S.drawer.hist.pop();if(hb){S.drawer.type=hb.type;S.drawer.id=hb.id;S.drawer.tab=hb.tab;renderDrawer();beep("tick")}break;
+case "drtab":S.drawer.tab=el.dataset.t;renderDrawer();beep("tick");break;
+case "openEng":stop();omniClose();openDrawer("engine",id,!!S.drawer);break;
+case "openFault":stop();omniClose();openDrawer("fault",id,!!S.drawer);break;
+case "openTsb":stop();omniClose();openDrawer("tsb",id,!!S.drawer);break;
+case "hitBrand":omniClose();S.f.brand=id;S.f.q="";S.shown=48;location.hash="#/explorer";render();beep("tick");break;
+case "hitModel":omniClose();var mm=modelById(id);if(mm){S.f.brand=mm.b;S.f.q=mm.n;S.shown=48;location.hash="#/explorer";render()}beep("tick");break;
+case "pin":stop();var gi=GARAGE.indexOf(id);if(gi>-1){GARAGE.splice(gi,1);toast("info","Retiré du garage")}else{GARAGE.push(id);toast("ok","Épinglé au garage");beep("ok")}save();if(S.view==="bord"){render()}else{refreshResults()}if(S.drawer){renderDrawer()}break;
+case "garUp":case "garDn":var ii=+el.dataset.i,jj=(act==="garUp"?ii-1:ii+1);if(jj<0||jj>=GARAGE.length){break}var tt=GARAGE[ii];GARAGE[ii]=GARAGE[jj];GARAGE[jj]=tt;save();render();beep("tick");break;
+case "goPlan":stop();var ge=DB.engines.filter(function(x){return x.id===id})[0];if(ge){S.planCtx=id;var pp2=planFor(ge);S.plan=pp2?pp2.id:null;closeDrawer();location.hash="#/entretien";render()}break;
+case "clearCtx":S.planCtx=null;render();break;
+case "selPlan":S.plan=id;render();beep("tick");break;
+case "expEng":var xe=DB.engines.filter(function(x){return x.id===id})[0];if(xe){download("fiche_"+xe.code.replace(/\W+/g,"_")+".json",JSON.stringify({engine:xe,models:engModels(xe),brand:engBrand(xe),ivi:ivi(xe),faults:faultsFor(xe),tsb:tsbFor(xe),recalls:tsbFor(xe).filter(isRecall),plan:planFor(xe)},null,2));toast("ok","Fiche exportée");beep("ok")}break;
+case "expPlan":var xp=DB.maint.filter(function(x){return x.id===id})[0];if(xp){download("plan_"+xp.id+".json",JSON.stringify(xp,null,2));beep("ok")}break;
+case "expAll":download("mecadata_base_complete.json",JSON.stringify(DB,null,2));toast("ok","Base exportée");beep("ok");audit("exp","Export complet");break;
+case "expBaseJs":exportBaseJs();break;
+case "fileExp":download(el.dataset.k+".json",JSON.stringify(DB[el.dataset.k],null,2));beep("ok");break;
+case "fileCsv":download(el.dataset.k+".csv",toCSV(el.dataset.k),"text/csv");beep("ok");break;
+case "csvTpl":download("modele_"+el.dataset.k+".csv",CSVH[el.dataset.k],"text/csv");break;
+case "fileView":openFileView(el.dataset.k);break;
+case "fileImp":openImport(el.dataset.k);break;
+case "goImport":if(isAdm()){openImport("auto")}else{needAdm()}break;
+case "dzPick":$("#impFile").click();break;
+case "impAnalyze":analyzeImport();break;
+case "impApply":applyImport();break;
+case "askReset":confirmModal("Réinitialiser la base usine ?","Modifications, fusions et imports remplacés par la base 2017→2027. Annulation possible 8 s.","doReset","Réinitialiser");break;
+case "doReset":closeModal();snapshot("réinitialisation");DB=clone(SEED);GARAGE=[];mutate("del","Base usine restaurée");toast("warn","Base usine restaurée","",true);break;
+case "logout":STORE.sdel("md_adm");audit("adm","Session verrouillée");updateMeta();render();toast("info","Session verrouillée");break;
+case "fbrand":S.f.brand=(S.f.brand===el.dataset.b?"":el.dataset.b);S.shown=48;render();beep("tick");break;
+case "ffuel":var fk=el.dataset.k,fi=S.f.fuels.indexOf(fk);if(fi>-1){S.f.fuels.splice(fi,1)}else{S.f.fuels.push(fk)}S.shown=48;el.classList.toggle("on");refreshResults();beep("tick");break;
+case "resetFilters":S.f={q:"",brand:"",fuels:[],seg:"",y:[2017,YMAX],p:[0,2100],sort:"brand"};S.shown=48;render();beep("tick");break;
+case "more":S.shown+=48;refreshResults();beep("tick");break;
+case "saveView":var vn=prompt("Nom de la vue :","Vue "+(VIEWS.length+1));if(vn){VIEWS.push({name:vn.slice(0,28),f:clone(S.f)});save();render();toast("ok","Vue enregistrée");beep("ok")}break;
+case "applyView":var vv=VIEWS[+el.dataset.i];if(vv){S.f=clone(vv.f);S.shown=48;render();beep("tick")}break;
+case "delView":stop();VIEWS.splice(+el.dataset.i,1);save();render();break;
+case "techTab":S.tech.tab=el.dataset.t;S.tech.cat="";render();beep("tick");break;
+case "techSev":S.tech.sev=(S.tech.sev===el.dataset.s?"":el.dataset.s);render();beep("tick");break;
+case "admTab":S.adm.tab=el.dataset.t;S.adm.page=0;S.adm.sel=[];render();beep("tick");break;
+case "pgPrev":S.adm.page--;refreshAdm();break;
+case "pgNext":S.adm.page++;refreshAdm();break;
+case "selOne":if(el.checked){selAdd(id)}else{selDel(id)}refreshAdm();break;
+case "selAll":var ar=DB[S.adm.tab]||[],qq=S.adm.q.toLowerCase();ar.filter(function(x){return !qq||JSON.stringify(x).toLowerCase().indexOf(qq)>-1}).slice(S.adm.page*PAGE,(S.adm.page+1)*PAGE).forEach(function(x){if(el.checked){selAdd(x.id)}else{selDel(x.id)}});refreshAdm();break;
+case "bulkClear":S.adm.sel=[];refreshAdm
