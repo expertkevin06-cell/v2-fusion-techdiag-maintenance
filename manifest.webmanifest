@@ -1,0 +1,50 @@
+{
+  "id": "/mecadata-expert",
+  "name": "MECADATA // INGÉNIEUR EXPERT",
+  "short_name": "MECADATA",
+  "description": "Console technique automobile 2017-2027 : motorisations, pannes connues, campagnes de rappel, TSB, plans d'entretien, recherche prédictive et studio de fonds dynamiques.",
+  "lang": "fr-FR",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#04070D",
+  "theme_color": "#04070D",
+  "categories": ["utilities", "productivity", "business"],
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Explorateur de motorisations",
+      "short_name": "Parc",
+      "url": "./index.html#/explorer",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Pannes · TSB · Rappels",
+      "short_name": "Technique",
+      "url": "./index.html#/tech",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Plans d'entretien",
+      "short_name": "Entretien",
+      "url": "./index.html#/entretien",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Studio fond d'écran",
+      "short_name": "Studio",
+      "url": "./index.html#/studio",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
