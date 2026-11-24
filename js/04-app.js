@@ -1,6 +1,6 @@
 (function(){
 "use strict";
-window.__MD_VER="8.3";
+window.__MD_VER="8.3";window.__MD_BUILD="8.3.1";
 var $=window.MD_$,$$=window.MD_$$,esc=window.MD_esc,fmt=window.MD_fmt,clamp=window.MD_clamp,uid=window.MD_uid,clone=window.MD_clone,ov=window.MD_ov,ic=window.MD_ic,deb=window.MD_deb,split=window.MD_split,nk=window.MD_nk,slug=window.MD_slug,safe=window.MD_safe,logErr=window.MD_logErr,STORE=window.MD_STORE,download=window.MD_download,beep=window.MD_beep,toast=window.MD_toast,openModal=window.MD_openModal,closeModal=window.MD_closeModal,confirmModal=window.MD_confirmModal,modalOpenFn=window.MD_modalOpen,WP=window.MD_WP,PREF=window.MD_PREF,ERRORS=window.MD_ERRORS;
 var PWD="Kevin83600",KEY="mecadata_v83",AKEY="md_access_v83",PKEY="md_pub_v83",YMAX=2027,KMMAX=200000;
 var SEGS=window.MD_RAW.segs;
@@ -16,20 +16,44 @@ var IVL=function(v){return v>=75?["CRITIQUE","#FF4D5E"]:v>=50?["ÉLEVÉ","#FF7A3
 
 var SEED=null,DB=null,AUDIT=[],UNDO=null,TESTS=[],IVIC={},MIDX={},BIDX={},EIDX={},IMPORT=null,FIXES=0,LASTSAVE=0,DIRTY=false,PENDING=-1,ACC_OPEN=false;
 var META={counts:{},links:0,corr:0,integ:{err:[],ok:true,pct:100},size:0,byBrand:{}};
-var MODE=null,TIER=null,REG=null,CH=null,GATE_MODE=null;
+var MODE=null,TIER=null,REG=null,CH=null;
+/* portail : état de rendu mémorisé — empêche toute reconstruction pendant la saisie */
+var GATE_MODE=null,GATE_SIG=null,GATE_NAME="",GATE_RENDERED=false;
 var S={view:"bord",sel:{b:"",m:"",e:""},f:{q:"",fuel:[],y:[2017,YMAX],sort:"brand"},shown:48,
 tech:{tab:"faults",q:"",sev:"",brand:"",model:"",phase:"",dom:"",km:""},adm:{tab:"files",mega:""},
 calc:{km:60000,year:2021,sev:1},drawer:null,omni:{q:"",hits:[],idx:-1}};
 window.MD_STATE=S;
 var isAdmin=function(){return MODE==="admin";},isTier=function(){return MODE==="tier";};
 
-/* ══════ NORMALISATION ABSOLUE DES IDENTIFIANTS ══════
-   Garantit mathématiquement zéro doublon : chaque collection est réécrite
-   avec des ids strictement uniques, et toutes les références sont remappées. */
+/* ══════ CORRECTIF SAISIE : garde-fous portail ══════ */
+function gateTyping(){
+  var a=document.activeElement;
+  return !!(a&&a.closest&&a.closest("#gate")&&/^(input|textarea)$/i.test(a.tagName));
+}
+function gateSig(mode){
+  var u=tierUser();
+  return (mode||"root")+"|"+(u?(u.id+":"+u.status):"none");
+}
+function injectFixCss(){
+  if(document.getElementById("mdFixCss"))return;
+  var st=document.createElement("style");st.id="mdFixCss";
+  st.textContent="#gate{align-items:flex-start;overscroll-behavior:contain}"+
+  "#gate .gcard2{margin:auto}"+
+  "#gate input{scroll-margin:45vh}"+
+  "#gateName{caret-color:#FFD60A}"+
+  ".gwait .spin{will-change:transform}";
+  document.head.appendChild(st);
+}
+function hardenResize(){
+  if(WP.__resizeGuarded)return;WP.__resizeGuarded=true;
+  var base=WP.resize;
+  WP.resize=function(){ if(gateTyping())return; return base.call(WP); };
+}
+
+/* ══════ NORMALISATION ABSOLUE DES IDENTIFIANTS ══════ */
 function hardNormalize(D){
   var fixes=0,i,j;
   COLS.forEach(function(k){if(!Array.isArray(D[k])){D[k]=[];fixes++;}});
-  /* 1 — marques */
   var bUsed={},bMap={},nb=[];
   for(i=0;i<D.brands.length;i++){
     var b=D.brands[i];if(!b||!b.n){fixes++;continue;}
@@ -39,7 +63,6 @@ function hardNormalize(D){
   }
   D.brands=nb;
   var bSet={};for(i=0;i<nb.length;i++)bSet[nb[i].id]=1;
-  /* 2 — modèles */
   var mUsed={},mMap={},nm=[];
   for(i=0;i<D.models.length;i++){
     var m=D.models[i];if(!m||!m.n){fixes++;continue;}
@@ -56,13 +79,11 @@ function hardNormalize(D){
   }
   D.models=nm;
   var mSet={};for(i=0;i<nm.length;i++)mSet[nm[i].id]=1;
-  /* 3 — motorisations */
   var eUsed={},ne=[],eMax=0;
   for(i=0;i<D.engines.length;i++){var em=/^E(\d+)$/.exec(String(D.engines[i].id));if(em){var vv=+em[1];if(vv>eMax)eMax=vv;}}
   for(i=0;i<D.engines.length;i++){
     var e=D.engines[i];if(!e||!e.code){fixes++;continue;}
-    var refs=[],seenRef={};
-    var raw=Array.isArray(e.m)?e.m:[];
+    var refs=[],seenRef={},raw=Array.isArray(e.m)?e.m:[];
     for(j=0;j<raw.length;j++){var rr=mMap[raw[j]]||raw[j];if(mSet[rr]&&!seenRef[rr]){seenRef[rr]=1;refs.push(rr);}}
     if(!refs.length){fixes++;continue;}
     var eid=String(e.id||"").trim();
@@ -74,7 +95,6 @@ function hardNormalize(D){
       gb:String(e.gb||"BVM"),norm:String(e.norm||"Euro 6"),cyl:String(e.cyl||"L4"),asp:String(e.asp||"Turbo"),inj:String(e.inj||"—")});
   }
   D.engines=ne;
-  /* 4 — pannes */
   var fUsed={},nf=[];
   for(i=0;i<D.faults.length;i++){
     var f=D.faults[i];if(!f||!f.t){fixes++;continue;}
@@ -89,7 +109,6 @@ function hardNormalize(D){
       status:String(f.status||"Surveillance"),dom:String(f.dom||"Moteur"),fuel:""});
   }
   D.faults=nf;
-  /* 5 — TSB */
   var tUsed={},nt=[];
   for(i=0;i<D.tsb.length;i++){
     var t=D.tsb[i];if(!t||!t.t){fixes++;continue;}
@@ -103,7 +122,6 @@ function hardNormalize(D){
       sum:String(t.sum||""),act:String(t.act||""),dom:String(t.dom||t.cat||"Moteur")});
   }
   D.tsb=nt;
-  /* filet final — aucune collision possible */
   COLS.forEach(function(k){
     var used={};
     for(var a=0;a<D[k].length;a++){
@@ -114,7 +132,6 @@ function hardNormalize(D){
   });
   return fixes;
 }
-
 function nextEngId(){var mx=0;DB.engines.forEach(function(e){var m=/^E(\d+)$/.exec(String(e.id));if(m){var v=+m[1];if(v>mx)mx=v;}});return "E"+String(mx+1).padStart(4,"0");}
 function mkEng(id,mid,code,fam,label,fuel,disp,hp,nm,y0,y1,gb){
 var cyl=fuel==="b"?"ÉLEC":(disp>=6000?"W12+":(disp>3400?"V8+":(disp>2400?"6 cyl.":(disp<1100?"L3":"L4"))));
@@ -272,9 +289,7 @@ function ensureBell(){
     var ref=$("#diagb");if(ref&&ref.parentNode===top)top.insertBefore(b,ref);else top.appendChild(b);
   }
   if(!b.querySelector(".bbadge")){var s=document.createElement("span");s.className="bbadge";s.hidden=true;s.textContent="0";b.appendChild(s);}
-  if(!b.__wired){b.__wired=true;
-    b.addEventListener("click",function(ev){ev.preventDefault();ev.stopPropagation();openAccess();},true);
-  }
+  if(!b.__wired){b.__wired=true;b.addEventListener("click",function(ev){ev.preventDefault();ev.stopPropagation();openAccess();},true);}
   var na=$("#navAcc");
   if(na&&!na.__wired){na.__wired=true;na.addEventListener("click",function(ev){ev.preventDefault();ev.stopPropagation();openAccess();},true);}
 }
@@ -312,7 +327,7 @@ if(!REG.log.length)h+="<p class='dim'>Aucune activité.</p>";
 REG.log.slice(0,20).forEach(function(l){h+="<div class='jr'><time>"+new Date(l.ts).toLocaleTimeString("fr-FR")+"</time><span>"+esc(l.a)+"</span></div>";});
 return h+"</div></div>";}
 function openAccess(){
-  if(!isAdmin()){gateShow("admin");return;}
+  if(!isAdmin()){gateShow("admin",{force:true,focus:true});return;}
   regLoad();ACC_OPEN=true;
   var h="<div class='mh'>"+ic("bell","color:#FFD60A")+"<h3>Gestionnaire d'accès tiers</h3><span class='chip warn' id='accChip'>"+pendingCount()+" en attente</span><button class='tb' data-act='accClose'>"+ic("x")+"</button></div>";
   h+="<div class='mb2' id='accBody'>"+accessBody()+"</div><div class='mf'><button class='btn ghost sm' data-act='accGoAdmin'>"+ic("db")+"Module administration</button><button class='btn pri' data-act='accClose'>Fermer</button></div>";
@@ -538,7 +553,7 @@ FILES.forEach(function(f){var a=DB[f[0]],k=Math.round(JSON.stringify(a).length/1
 h+="<div class='card hov filecard'><div class='fn'>"+ic("file")+f[1]+"</div><div class='ct'>"+fmt(a.length)+" <small>entrées</small></div><div class='dim mono' style='font-size:9px'>"+k+" Ko · "+f[2]+"</div><div class='fa'><button class='btn xs ghost' data-act='fileExp' data-k='"+f[0]+"'>"+ic("dl","width:11px;height:11px")+"JSON</button><button class='btn xs amb' data-act='admTab' data-t='import'>"+ic("ul","width:11px;height:11px")+"Importer</button></div></div>";});
 h+="</div><div class='tools'><button class='btn pri sm' data-act='expAll'>"+ic("dl")+"Exporter la base</button><button class='btn ghost sm' data-act='saveNow'>"+ic("save")+"Sauvegarder</button><button class='btn ghost sm' data-act='integrity'>"+ic("check")+"Intégrité</button><button class='btn dgr sm' data-act='askReset'>"+ic("reset")+"Base usine</button></div>";
 h+="<div class='card panel'><h3>"+ic("info")+"État de la base</h3><div class='sg'>";
-[["Marques",META.counts.b],["Modèles",META.counts.m],["Motorisations",META.counts.e],["Pannes",META.counts.f],["TSB / rappels",META.counts.t],["Domaines",META.counts.dom],["Familles moteur",META.counts.fam],["Liaisons",META.links],["Corrélations",META.corr],["Intégrité",META.integ.pct+" %"],["Réparations auto",FIXES],["Poids",META.size+" Ko"]].forEach(function(r){h+="<div class='sp'><span>"+esc(r[0])+"</span><b class='hl'>"+fmt(r[1])+"</b></div>";});h+="</div></div>";}
+[["Marques",META.counts.b],["Modèles",META.counts.m],["Motorisations",META.counts.e],["Pannes",META.counts.f],["TSB / rappels",META.counts.t],["Domaines",META.counts.dom],["Familles moteur",META.counts.fam],["Liaisons",META.links],["Corrélations",META.corr],["Intégrité",META.integ.pct+" %"],["Normalisations",FIXES],["Poids",META.size+" Ko"]].forEach(function(r){h+="<div class='sp'><span>"+esc(r[0])+"</span><b class='hl'>"+fmt(r[1])+"</b></div>";});h+="</div></div>";}
 else if(A.tab==="mega"){var q=A.mega.trim().toLowerCase();
 var cands=window.MD_RAW.cand.filter(function(c){return !q||(c.brand+" "+c.model+" "+c.code+" "+c.label+" "+c.note).toLowerCase().indexOf(q)>-1;});
 h+="<div class='card panel' style='margin-bottom:12px'><h3>"+ic("spark")+"Mise à jour méga-base</h3><p class='muted' style='font-size:12px;margin-bottom:10px'>Candidats 2025-2027 : nouvelles marques, modèles commercialisés et motorisations corrélées. Intégration immédiate, diffusion sur votre accord.</p>";
@@ -559,7 +574,7 @@ else{h+="<div class='card panel'><h3>"+ic("clock")+"Journal de la base</h3><div 
 AUDIT.slice().reverse().slice(0,60).forEach(function(a){h+="<div class='jr'><time>"+new Date(a.ts).toLocaleString("fr-FR")+"</time><span class='jt'>"+esc(a.type.toUpperCase())+"</span><span>"+esc(a.msg)+"</span></div>";});h+="</div></div>";}
 return h;}
 function vDiag(){var fl=TESTS.filter(function(t){return !t.ok&&!t.soft;}).length,wn=TESTS.filter(function(t){return !t.ok&&t.soft;}).length,col=fl?"#FF4D5E":(wn?"#FFAF2E":"#43E08B"),h="";
-h+="<div class='vh'><div><span class='kick'>MODULE 07 — AUTOVÉRIFICATION</span><h1>DIAGNOSTIC <i>SYSTÈME</i></h1></div><div style='display:flex;gap:7px'><button class='btn sm grn' data-act='runTests'>"+ic("reset")+"Relancer</button>";
+h+="<div class='vh'><div><span class='kick'>MODULE 07 — AUTOVÉRIFICATION</span><h1>DIAGNOSTIC <i>SYSTÈME</i></h1><div class='sub'>Moteur v"+window.__MD_VER+" · build "+window.__MD_BUILD+" — saisie tiers stabilisée.</div></div><div style='display:flex;gap:7px'><button class='btn sm grn' data-act='runTests'>"+ic("reset")+"Relancer</button>";
 if(isAdmin())h+="<button class='btn sm amb' data-act='autoFix'>"+ic("tool")+"Auto-réparation</button>";h+="</div></div>";
 h+="<div class='card panel' style='margin-bottom:12px;border-left:3px solid "+col+"'><h3>"+ic("stetho","color:"+col)+"Résultat<span class='chip' style='color:"+col+";border-color:"+col+"'>"+(TESTS.length-fl)+"/"+TESTS.length+" OK</span></h3>";
 h+="<p class='muted'>"+(fl?"<b style='color:#FF4D5E'>"+fl+" test(s) bloquant(s).</b>":"<b style='color:#43E08B'>Système opérationnel — aucune erreur.</b>")+(wn?" "+wn+" avertissement(s) non bloquant(s).":"")+(FIXES?" <span class='mono' style='color:#43E08B'>"+FIXES+" normalisation(s) automatique(s).</span>":"")+"</p></div>";
@@ -585,7 +600,7 @@ $("#admb").innerHTML=ic(isAdmin()?"unlock":"lock");$("#admb").classList.toggle("
 $("#rtxt").textContent=isAdmin()?"Administrateur ING-3 — écriture, import et diffusion.":(isTier()?"Tiers "+tierName()+" — lecture seule, sans sauvegarde.":"Session non ouverte.");
 $("#sndb").innerHTML=ic(PREF.sound?"snd":"mute");$("#sndb").classList.toggle("on",PREF.sound);
 var na=$("#navAdmin");if(na)na.style.display=isTier()?"none":"";
-var vc=$("#verchip");if(vc)vc.textContent="v8.3";
+var vc=$("#verchip");if(vc)vc.textContent="v"+window.__MD_VER;
 bellRefresh();updStor();}
 function updStor(){var k=META.size||0,b=$("#sbar"),t=$("#stxt");if(b)b.style.width=clamp(k/8192*100,2,100)+"%";
 if(t)t.textContent=k+" Ko · "+(isAdmin()?STORE.backend()+" · "+(LASTSAVE?new Date(LASTSAVE).toLocaleTimeString("fr-FR"):"—"):"tiers : aucun stockage");}
@@ -795,6 +810,15 @@ add("Cloche d'accès tiers",!!bell&&!!bell.querySelector(".bbadge")&&!!bell.__wi
 var aOk=false;try{var ab=accessBody();aOk=ab.indexOf("RÉVOCATION")>-1&&ab.indexOf("REFUS")>-1&&ab.indexOf("ACCÈS")>-1;}catch(e){}
 add("3 cases Accès / Refus / Révocation",aOk,"gestionnaire opérationnel");
 add("API cloche exposée",typeof window.MD_openAccess==="function","window.MD_openAccess");
+/* correctif saisie : le portail ne doit jamais se reconstruire pendant la frappe */
+var gEl=$("#gate"),stable=false;
+try{
+  var before=gEl.innerHTML;
+  gateSync();gateSync();gateSync();
+  stable=(gEl.innerHTML===before);
+}catch(e){}
+add("Saisie tiers stable (anti-clignotement)",stable,"aucune reconstruction pendant la frappe — build "+window.__MD_BUILD);
+add("Mémoire du prénom",typeof GATE_NAME==="string","valeur conservée entre les rendus");
 var cv=document.createElement("canvas"),cx=safe("tctx",function(){return cv.getContext("2d");},null);
 add("Canvas 2D",!!cx,cx?"OK":"indisponible",true);
 add("Scènes studio",WP.MODES.length>=8,WP.MODES.length+" scènes");
@@ -807,7 +831,7 @@ add("Rendu des 7 vues",vb.length===0,vb.length?vb.join(", "):"7/7 rendues");
 META.integ=integrity();
 add("Intégrité référentielle",META.integ.ok,META.integ.err.length?META.integ.err.slice(0,3).join(" | "):"0 erreur — normalisation absolue active");
 add("Sauvegarde admin",!isAdmin()||LASTSAVE>0,isAdmin()?(LASTSAVE?new Date(LASTSAVE).toLocaleTimeString("fr-FR"):"en attente"):"tiers : stockage interdit");
-add("Version moteur",window.__MD_VER==="8.3","v"+window.__MD_VER);
+add("Version moteur",window.__MD_VER==="8.3","v"+window.__MD_VER+" · build "+window.__MD_BUILD);
 add("Exceptions",ERRORS.length===0,ERRORS.length?ERRORS.slice(-3).map(function(e){return e.m;}).join(" | "):"aucune",true);
 TESTS=T;updateMeta();return T;}
 function autoFix(){if(!isAdmin())return;var did=[];
@@ -817,35 +841,77 @@ if(WP.fails>0){WP.P.mode="grid";WP.fails=0;WP.apply();did.push("graphique réini
 ERRORS.length=0;did.push("journal purgé");recompute();saveNow();runTests();updateMeta();render();
 toast("ok","Auto-réparation",did.join(" · "));beep("ok");}
 
-/* ══════ PORTAIL ══════ */
-function gateHTML(mode){var h="<div class='gcard2'><h1>MECADATA <i>//</i> PORTAIL D'ACCÈS</h1><p class='gsub'>Console technique 2017→2027 — choisissez votre mode d'ouverture. Le mot de passe résiduel est effacé à chaque lancement.</p>";
-if(!mode){h+="<div class='gmodes'><div class='gmode' data-act='gateAdmin'><div class='gi'>"+ic("shield","width:26px;height:26px")+"</div><h3>ADMINISTRATEUR</h3><p>Base, import multi-formats, méga-base, cloche d'accès tiers et diffusion temps réel.</p></div>";
+/* ══════ PORTAIL — rendu stable, jamais reconstruit pendant la saisie ══════ */
+function gateHTML(mode){
+var h="<div class='gcard2'><h1>MECADATA <i>//</i> PORTAIL D'ACCÈS</h1><p class='gsub'>Console technique 2017→2027 — choisissez votre mode d'ouverture. Le mot de passe résiduel est effacé à chaque lancement.</p>";
+if(!mode){
+h+="<div class='gmodes'><div class='gmode' data-act='gateAdmin'><div class='gi'>"+ic("shield","width:26px;height:26px")+"</div><h3>ADMINISTRATEUR</h3><p>Base, import multi-formats, méga-base, cloche d'accès tiers et diffusion temps réel.</p></div>";
 h+="<div class='gmode' data-act='gateTier'><div class='gi'>"+ic("users","width:26px;height:26px")+"</div><h3>TIERS</h3><p>Consultation des fiches techniques, pannes, rappels et plans d'entretien. Studio fond d'écran. Aucune modification, aucun import, aucune sauvegarde locale.</p></div></div><p class='gnote'>Session administrateur protégée · accès tiers soumis à validation</p>";}
-else if(mode==="admin"){h+="<div class='gform'><label class='lb'>Mot de passe administrateur</label><form data-form='admin'><input class='inp mono' type='password' name='pwd' id='gatePwd' value='' placeholder='••••••••' autocomplete='new-password' style='text-align:center;letter-spacing:.2em;font-size:16px'>";
+else if(mode==="admin"){
+h+="<div class='gform'><label class='lb'>Mot de passe administrateur</label><form data-form='admin'><input class='inp mono' type='password' name='pwd' id='gatePwd' value='' placeholder='••••••••' autocomplete='new-password' autocapitalize='off' autocorrect='off' spellcheck='false' enterkeyhint='go' style='text-align:center;letter-spacing:.2em;font-size:16px'>";
 h+="<div style='display:flex;gap:8px;margin-top:11px'><button type='button' class='btn ghost' data-act='gateBack'>Retour</button><button type='submit' class='btn pri' style='flex:1'>"+ic("unlock")+"OUVRIR LA SESSION ING-3</button></div></form><p class='gnote'>Champ réinitialisé à chaque lancement — aucun mot de passe conservé.</p></div>";}
-else{var u=tierUser();
-if(u&&u.status==="granted"){h+="<div class='gform'><div class='gwait'><div class='gi' style='width:52px;height:52px;margin:0 auto 12px;display:grid;place-items:center;border-radius:15px;background:rgba(67,224,139,.14);border:1px solid rgba(67,224,139,.45);color:#43E08B'>"+ic("check","width:24px;height:24px")+"</div><h3 style='font:600 15px var(--gd)'>Accès accordé — "+esc(u.name)+"</h3><p class='muted' style='font-size:12px;margin:7px 0 13px'>Consultation en lecture seule.</p><button class='btn pri' data-act='tierEnter'>"+ic("unlock")+"ENTRER EN CONSULTATION</button><div style='margin-top:9px'><button class='btn sm ghost' data-act='gateBack'>Retour</button></div></div></div>";}
-else if(u&&u.status==="pending"){h+="<div class='gform'><div class='gwait'><div class='spin'></div><h3 style='font:600 15px var(--gd)'>Demande envoyée — "+esc(u.name)+"</h3><p class='muted' style='font-size:12px;margin-top:7px'>En attente de validation. Cet écran se met à jour automatiquement dès la décision.</p><button class='btn sm ghost' data-act='tierCancel' style='margin-top:12px'>Annuler la demande</button></div></div>";}
-else if(u){h+="<div class='gform'><div class='gwait'><h3 style='font:600 15px var(--gd);color:#FF4D5E'>Accès "+(u.status==="denied"?"refusé":"révoqué")+"</h3><p class='muted' style='font-size:12px;margin:7px 0 12px'>L'administrateur a "+(u.status==="denied"?"refusé":"révoqué")+" cet accès.</p><button class='btn sm ghost' data-act='tierReset'>Nouvelle demande</button> <button class='btn sm ghost' data-act='gateBack'>Retour</button></div></div>";}
-else{h+="<div class='gform'><label class='lb'>Votre prénom</label><form data-form='tier'><input class='inp' type='text' name='name' id='gateName' maxlength='24' placeholder='Prénom' autocomplete='off' style='text-align:center;font-size:15px'>";
-h+="<div style='display:flex;gap:8px;margin-top:11px'><button type='button' class='btn ghost' data-act='gateBack'>Retour</button><button type='submit' class='btn pri' style='flex:1'>"+ic("bell")+"DEMANDER L'ACCÈS</button></div></form><p class='gnote'>Votre prénom est transmis à l'administrateur : la demande apparaît instantanément sur sa cloche.</p></div>";}}
+else{
+var u=tierUser();
+if(u&&u.status==="granted"){
+h+="<div class='gform'><div class='gwait'><div class='gi' style='width:52px;height:52px;margin:0 auto 12px;display:grid;place-items:center;border-radius:15px;background:rgba(67,224,139,.14);border:1px solid rgba(67,224,139,.45);color:#43E08B'>"+ic("check","width:24px;height:24px")+"</div><h3 style='font:600 15px var(--gd)'>Accès accordé — "+esc(u.name)+"</h3><p class='muted' style='font-size:12px;margin:7px 0 13px'>Consultation en lecture seule.</p><button class='btn pri' data-act='tierEnter'>"+ic("unlock")+"ENTRER EN CONSULTATION</button><div style='margin-top:9px'><button class='btn sm ghost' data-act='gateBack'>Retour</button></div></div></div>";}
+else if(u&&u.status==="pending"){
+h+="<div class='gform'><div class='gwait'><div class='spin'></div><h3 style='font:600 15px var(--gd)'>Demande envoyée — "+esc(u.name)+"</h3><p class='muted' style='font-size:12px;margin-top:7px'>En attente de validation. Cet écran se met à jour automatiquement dès la décision.</p><button class='btn sm ghost' data-act='tierCancel' style='margin-top:12px'>Annuler la demande</button></div></div>";}
+else if(u){
+h+="<div class='gform'><div class='gwait'><h3 style='font:600 15px var(--gd);color:#FF4D5E'>Accès "+(u.status==="denied"?"refusé":"révoqué")+"</h3><p class='muted' style='font-size:12px;margin:7px 0 12px'>L'administrateur a "+(u.status==="denied"?"refusé":"révoqué")+" cet accès.</p><button class='btn sm ghost' data-act='tierReset'>Nouvelle demande</button> <button class='btn sm ghost' data-act='gateBack'>Retour</button></div></div>";}
+else{
+h+="<div class='gform'><label class='lb' for='gateName'>Votre prénom</label><form data-form='tier' autocomplete='off'>";
+h+="<input class='inp' type='text' name='name' id='gateName' maxlength='24' placeholder='Prénom' value='"+esc(GATE_NAME)+"' autocomplete='off' autocapitalize='words' autocorrect='off' spellcheck='false' inputmode='text' enterkeyhint='send' style='text-align:center;font-size:16px'>";
+h+="<div style='display:flex;gap:8px;margin-top:11px'><button type='button' class='btn ghost' data-act='gateBack'>Retour</button><button type='submit' class='btn pri' style='flex:1'>"+ic("bell")+"DEMANDER L'ACCÈS</button></div></form>";
+h+="<p class='gnote'>Votre prénom est transmis à l'administrateur : la demande apparaît instantanément sur sa cloche.</p></div>";}}
 return h+"</div>";}
-function gateShow(mode){GATE_MODE=mode||null;var g=$("#gate");g.classList.remove("off");g.innerHTML=gateHTML(GATE_MODE);
-if(GATE_MODE==="admin"){var p=$("#gatePwd");if(p){p.value="";setTimeout(function(){p.focus();},80);}}
-if(GATE_MODE==="tier"){var n=$("#gateName");if(n)setTimeout(function(){n.focus();},80);}}
-function gateHide(){$("#gate").classList.add("off");}
-function enterAdmin(){MODE="admin";TIER=null;gateHide();DB=clone(SEED);
+
+function gateShow(mode,opts){
+opts=opts||{};
+var g=$("#gate");if(!g)return;
+var prev=GATE_MODE;
+GATE_MODE=mode||null;
+var cur=g.querySelector("#gateName");
+if(cur&&cur.value)GATE_NAME=cur.value;
+var sig=gateSig(GATE_MODE);
+if(!opts.force&&GATE_RENDERED&&sig===GATE_SIG&&prev===GATE_MODE){g.classList.remove("off");return;}
+if(!opts.force&&gateTyping()&&sig===GATE_SIG){g.classList.remove("off");return;}
+if(gateTyping()){try{document.activeElement.blur();}catch(e){}}
+GATE_SIG=sig;GATE_RENDERED=true;
+g.classList.remove("off");
+g.innerHTML=gateHTML(GATE_MODE);
+var n=g.querySelector("#gateName");
+if(n){
+n.value=GATE_NAME;
+n.addEventListener("input",function(){GATE_NAME=n.value;});
+n.addEventListener("focus",function(){setTimeout(function(){if(document.activeElement===n){try{n.scrollIntoView({block:"center",behavior:"smooth"});}catch(e){}}},320);});
+if(opts.focus)setTimeout(function(){try{n.focus();}catch(e){}},90);
+}
+var p=g.querySelector("#gatePwd");
+if(p){p.value="";if(opts.focus)setTimeout(function(){try{p.focus();}catch(e){}},90);}
+}
+/* synchronisation passive : ne touche au DOM que si l'état du compte a changé */
+function gateSync(){
+if(MODE)return;
+if(!GATE_MODE)return;
+var g=$("#gate");if(!g||g.classList.contains("off")||!GATE_RENDERED)return;
+var sig=gateSig(GATE_MODE);
+if(sig===GATE_SIG)return;
+if(gateTyping()){var u=tierUser();if(!u||u.status==="pending")return;}
+gateShow(GATE_MODE,{force:true,focus:false});
+}
+function gateHide(){var g=$("#gate");if(g)g.classList.add("off");GATE_RENDERED=false;GATE_SIG=null;}
+function enterAdmin(){MODE="admin";TIER=null;GATE_NAME="";gateHide();DB=clone(SEED);
 var raw=STORE.get(KEY);
 if(raw)safe("load",function(){var d=JSON.parse(raw);if(d&&d.db&&d.db.engines&&d.db.engines.length){DB=d.db;AUDIT=d.audit||[];if(d.prefs)Object.keys(d.prefs).forEach(function(k){PREF[k]=d.prefs[k];});if(d.wp)Object.keys(d.wp).forEach(function(k){WP.P[k]=d.wp[k];});LASTSAVE=d.ts||0;}},null);
 recompute();WP.apply();audit("adm","Session ING-3 ouverte");saveNow();runTests();S.view="bord";location.hash="#/bord";render();
 toast("ok","Session administrateur","Cloche d'accès active en haut à droite.");beep("imp");
 var pc=pendingCount();if(pc>0)setTimeout(function(){toast("warn",pc+" demande(s) d'accès","Cliquez sur la cloche pour statuer.");},900);}
-function enterTier(){var u=tierUser();if(!u||u.status!=="granted"){gateShow("tier");return;}
-MODE="tier";gateHide();if(!applyTierSnapshot())DB=clone(SEED);
+function enterTier(){var u=tierUser();if(!u||u.status!=="granted"){gateShow("tier",{force:true});return;}
+MODE="tier";GATE_NAME="";gateHide();if(!applyTierSnapshot())DB=clone(SEED);
 recompute();WP.apply();runTests();S.view="bord";location.hash="#/bord";render();
 toast("info","Consultation tiers","Lecture seule — rév. "+(REG.rev||0)+". Aucun stockage local.");beep("ok");}
 function tierSync(){if(!isTier())return;var u=tierUser();
-if(!u||u.status!=="granted"){MODE=null;TIER=null;gateShow("tier");render();toast("err","Accès révoqué","L'administrateur a retiré cet accès.");return;}
+if(!u||u.status!=="granted"){MODE=null;TIER=null;gateShow("tier",{force:true});render();toast("err","Accès révoqué","L'administrateur a retiré cet accès.");return;}
 if(applyTierSnapshot()){recompute();updateMeta();render();toast("info","Base mise à jour","Révision "+REG.rev+" diffusée.");}}
 
 /* ══════ ÉVÉNEMENTS ══════ */
@@ -860,19 +926,19 @@ if(a==="accSet"){ev.preventDefault();setAccess(id,el.dataset.st);return;}
 if(a==="accDel"){if(!isAdmin())return;var u=null;for(var i=0;i<REG.users.length;i++)if(REG.users[i].id===id)u=REG.users[i];
 REG.users=REG.users.filter(function(x){return x.id!==id;});regLog("Suppression accès "+(u?u.name:id));regSave();updateMeta();if(S.view==="admin")render();beep("del");return;}
 if(a==="pwaIcons"){if(window.MD_ICONS){var n=window.MD_ICONS.download();toast("ok","Icônes PWA exportées",n+" PNG — déposez-les dans icons/.");beep("imp");}return;}
-if(a==="gateAdmin"){gateShow("admin");return;}
-if(a==="gateTier"){regLoad();gateShow("tier");return;}
-if(a==="gateBack"){gateShow(null);return;}
+if(a==="gateAdmin"){gateShow("admin",{force:true,focus:true});return;}
+if(a==="gateTier"){regLoad();gateShow("tier",{force:true,focus:true});return;}
+if(a==="gateBack"){GATE_NAME="";gateShow(null,{force:true});return;}
 if(a==="tierEnter"){enterTier();return;}
-if(a==="tierCancel"){REG.users=REG.users.filter(function(u2){return u2.id!==TIER;});TIER=null;regSave();gateShow("tier");return;}
-if(a==="tierReset"){TIER=null;gateShow("tier");return;}
+if(a==="tierCancel"){REG.users=REG.users.filter(function(u2){return u2.id!==TIER;});TIER=null;GATE_NAME="";regSave();gateShow("tier",{force:true,focus:true});return;}
+if(a==="tierReset"){TIER=null;GATE_NAME="";gateShow("tier",{force:true,focus:true});return;}
 if(a==="omniSeed"){var inp=$("#omni");if(inp){inp.value=el.dataset.q;S.omni.q=el.dataset.q;inp.focus();omniRender();}return;}
 if(a==="omniHit"){omniActivate(el.dataset.kind,id);return;}
 if(a==="msearch"){var q=prompt("Recherche prédictive :");if(q){var i2=$("#omni");if(i2){i2.value=q;S.omni.q=q;omniRender();i2.focus();}}return;}
 if(a==="snd"){PREF.sound=!PREF.sound;markDirty();updateMeta();if(PREF.sound)beep("ok");return;}
 if(a==="run"){WP.set("run",!WP.P.run);beep("tick");return;}
 if(a==="goStudio"){location.hash="#/studio";return;}
-if(a==="goAdmin"){if(isAdmin())location.hash="#/admin";else gateShow("admin");return;}
+if(a==="goAdmin"){if(isAdmin())location.hash="#/admin";else gateShow("admin",{force:true,focus:true});return;}
 if(a==="goDiag"){location.hash="#/diagnostic";return;}
 if(a==="goPlan"){location.hash="#/entretien";return;}
 if(a==="runTests"){runTests();location.hash="#/diagnostic";render();return;}
@@ -915,7 +981,7 @@ mutate("mega","Méga-base : "+list.length+" candidat(s)");saveNow();toast("ok","
 if(a==="megaSel"){if(!S.sel.b){toast("warn","Aucune marque sélectionnée","Choisissez une marque dans le module 2.");return;}S.adm.mega=BIDX[S.sel.b]?BIDX[S.sel.b].n:"";render();return;}
 if(a==="askReset"){if(!isAdmin())return;confirmModal("Réinitialiser la base ?","Modifications et imports remplacés par la base usine. Annulation 8 s.","doReset","Réinitialiser");return;}
 if(a==="doReset"){closeModal();snapshot("reset");DB=clone(SEED);mutate("del","Base usine restaurée");saveNow();toast("warn","Base usine restaurée","",true);return;}
-if(a==="logout"){MODE=null;TIER=null;ACC_OPEN=false;closeModal();gateShow(null);updateMeta();toast("info","Session fermée");return;}
+if(a==="logout"){MODE=null;TIER=null;ACC_OPEN=false;GATE_NAME="";closeModal();gateShow(null,{force:true});updateMeta();toast("info","Session fermée");return;}
 if(a==="stMode"){WP.set("mode",el.dataset.m);beep("tick");return;}
 if(a==="stTheme"){WP.P.useCustom=false;WP.set("theme",el.dataset.t);beep("tick");return;}
 if(a==="stPreset"){var ps=WP.PRESETS[el.dataset.n];if(ps){Object.keys(ps).forEach(function(k){WP.P[k]=ps[k];});WP.apply();WP.resize();render();toast("ok","Preset appliqué",el.dataset.n);beep("ok");}return;}
@@ -927,6 +993,7 @@ if(a==="stDir"){WP.set("dir",WP.P.dir>0?-1:1);render();return;}
 if(a==="stCustom"){WP.P.useCustom=!!el.checked;WP.drawAll();markDirty();WP.sync();return;}
 });
 document.addEventListener("input",function(ev){var t=ev.target;if(!t)return;
+if(t.id==="gateName"){GATE_NAME=t.value;return;}
 if(t.id==="omni"){S.omni.q=t.value;omniRender();return;}
 if(t.dataset&&t.dataset.c){WP.setCustom(t.dataset.c,t.value);return;}
 if(t.dataset&&t.dataset.p){var k=t.dataset.p,v=t.type==="checkbox"?t.checked:(t.tagName==="SELECT"?(k==="dir"?+t.value:t.value):+t.value);WP.set(k,v);return;}
@@ -948,13 +1015,19 @@ return;}
 document.addEventListener("submit",function(ev){var form=ev.target.closest?ev.target.closest("[data-form]"):null;if(!form)return;ev.preventDefault();
 var fd=new FormData(form);
 if(form.dataset.form==="admin"){var p=$("#gatePwd");if(p)p.value="";
-if(fd.get("pwd")===PWD)enterAdmin();else{toast("err","Mot de passe incorrect");beep("err");gateShow("admin");}return;}
-if(form.dataset.form==="tier"){var name=String(fd.get("name")||"").trim().slice(0,24);
-if(name.length<2){toast("err","Prénom requis","Au moins 2 caractères.");beep("err");return;}
+if(fd.get("pwd")===PWD)enterAdmin();else{toast("err","Mot de passe incorrect");beep("err");gateShow("admin",{force:true,focus:true});}return;}
+if(form.dataset.form==="tier"){
+var name=String(fd.get("name")||GATE_NAME||"").trim().slice(0,24);
+if(name.length<2){toast("err","Prénom requis","Saisissez au moins 2 caractères.");beep("err");
+var n=$("#gateName");if(n){try{n.focus();}catch(e){}}return;}
+try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
+GATE_NAME=name;
 regLoad();var ex=null;REG.users.forEach(function(u){if(nk(u.name)===nk(name))ex=u;});
-if(ex){TIER=ex.id;if(ex.status==="granted"){enterTier();return;}if(ex.status==="pending"){gateShow("tier");return;}ex.status="pending";ex.ts=Date.now();ex.at=null;}
+if(ex){TIER=ex.id;if(ex.status==="granted"){enterTier();return;}
+if(ex.status!=="pending"){ex.status="pending";ex.ts=Date.now();ex.at=null;}}
 else{var u2={id:uid("U"),name:name,status:"pending",ts:Date.now(),at:null};REG.users.push(u2);TIER=u2.id;}
-regLog("Demande d'accès — "+name);regSave();gateShow("tier");
+regLog("Demande d'accès — "+name);regSave();
+gateShow("tier",{force:true});
 toast("info","Demande envoyée","La cloche de l'administrateur a été notifiée.");beep("imp");return;}
 });
 document.addEventListener("dragover",function(ev){var dz=ev.target.closest?ev.target.closest("#dz"):null;if(dz){ev.preventDefault();dz.classList.add("over");}});
@@ -977,14 +1050,17 @@ if((ev.key==="Enter"||ev.key===" ")&&ev.target.classList&&ev.target.classList.co
 });
 window.addEventListener("hashchange",function(){if(!MODE)return;route();beep("tick");});
 window.addEventListener("storage",function(ev){
-if(ev.key===AKEY){regLoad();bellRefresh();if(isTier())tierSync();else if(isAdmin()&&S.view==="admin")render();else if(GATE_MODE==="tier")gateShow("tier");}
+if(ev.key===AKEY){regLoad();bellRefresh();if(isTier())tierSync();else if(isAdmin()&&S.view==="admin")render();else gateSync();}
 if(ev.key===PKEY&&isTier())tierSync();});
 window.addEventListener("pagehide",function(){if(isAdmin())saveNow();});
 document.addEventListener("visibilitychange",function(){if(document.hidden&&isAdmin())saveNow();});
 setInterval(function(){var c=$("#clk");if(c)c.textContent=new Date().toLocaleTimeString("fr-FR");},1000);
 setInterval(function(){if(isAdmin()&&DIRTY)saveNow();},20000);
-setInterval(function(){regLoad();bellRefresh();
-if(isTier())tierSync();else if(!MODE&&GATE_MODE==="tier")gateShow("tier");
+/* boucle temps réel : ne reconstruit JAMAIS le portail pendant la saisie */
+setInterval(function(){
+regLoad();bellRefresh();
+if(isTier()){tierSync();return;}
+if(!MODE)gateSync();
 if(isAdmin()){var pc=pendingCount();if(PENDING>=0&&pc>PENDING){toast("warn","Nouvelle demande d'accès",pc+" demande(s) en attente — cliquez la cloche.");beep("imp");if(S.view==="admin")render();}PENDING=pc;}
 },1200);
 }
@@ -992,23 +1068,25 @@ function route(){var h=(location.hash||"#/bord").replace("#/","");
 var allowed=isTier()?["bord","explorer","tech","entretien","studio","diagnostic"]:["bord","explorer","tech","entretien","studio","admin","diagnostic"];
 S.view=allowed.indexOf(h)>-1?h:"bord";render();}
 function boot(){var o=$("#boot"),done=function(){if(!o)return;o.className="off";};
-var L=[["Noyau MECADATA v8.3",12],["Normalisation absolue des identifiants",34],[DB.brands.length+" marques · "+DB.models.length+" modèles",58],[fmt(DB.engines.length)+" motorisations",78],[DB.faults.length+" pannes · "+DB.tsb.length+" TSB/rappels",92],["Cloche d'accès tiers liée",100]];
+var L=[["Noyau MECADATA v8.3 · build 8.3.1",12],["Normalisation absolue des identifiants",34],[DB.brands.length+" marques · "+DB.models.length+" modèles",58],[fmt(DB.engines.length)+" motorisations",78],[DB.faults.length+" pannes · "+DB.tsb.length+" TSB/rappels",92],["Saisie tiers stabilisée · cloche liée",100]];
 var lg=$("#bl"),i=0,step=function(){if(i>=L.length){setTimeout(done,260);return;}
 var x=L[i++],d=document.createElement("div");d.innerHTML="<b>OK</b> "+esc(x[0]);lg.appendChild(d);
 while(lg.children.length>5)lg.removeChild(lg.firstChild);$("#bbar").style.width=x[1]+"%";setTimeout(step,110);};
 setTimeout(step,120);setTimeout(done,2600);}
 function init(){
 if(!window.MD_RAW){logErr("init",new Error("MD_RAW absent"));window.__MD_READY=false;return;}
+injectFixCss();hardenResize();
 SEED=build(window.MD_RAW);FIXES+=hardNormalize(SEED);DB=clone(SEED);
 regLoad();recompute();
 STORE.idbInit().then(function(){
-  if(isAdmin())return;
-  STORE.idbGet(AKEY).then(function(raw){if(raw&&!STORE.get(AKEY)){STORE.set(AKEY,raw);regLoad();bellRefresh();}});
+if(isAdmin())return;
+STORE.idbGet(AKEY).then(function(raw){if(raw&&!STORE.get(AKEY)){STORE.set(AKEY,raw);regLoad();bellRefresh();gateSync();}});
 });
 try{if(window.BroadcastChannel){CH=new BroadcastChannel("mecadata_v83");CH.onmessage=function(ev){var m=ev.data||{};
-if(m.t==="reg"){regLoad();bellRefresh();if(isTier())tierSync();else if(isAdmin()&&S.view==="admin")render();else if(GATE_MODE==="tier")gateShow("tier");}
+if(m.t==="reg"){regLoad();bellRefresh();if(isTier())tierSync();else if(isAdmin()&&S.view==="admin")render();else gateSync();}
 if(m.t==="pub"&&isTier())tierSync();};}}catch(e){}
-WP.init();ensureBell();bind();runTests();updateMeta();boot();gateShow(null);
+WP.init();ensureBell();bind();runTests();updateMeta();boot();
+gateShow(null,{force:true});
 window.__MD_READY=true;window.__MD_SCRIPTS.app=true;
 var jf=$("#jsfail");if(jf&&jf.parentNode)jf.parentNode.removeChild(jf);
 PENDING=pendingCount();
