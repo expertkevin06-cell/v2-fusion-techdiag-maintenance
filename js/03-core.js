@@ -1,5 +1,6 @@
 (function(){
 "use strict";
+window.__MD_VER_CORE="8.3";
 if(!Object.keys)Object.keys=function(o){var a=[],k;for(k in o)if(Object.prototype.hasOwnProperty.call(o,k))a.push(k);return a;};
 if(!Array.prototype.includes)Array.prototype.includes=function(v){return this.indexOf(v)>-1;};
 if(!String.prototype.padStart)String.prototype.padStart=function(n,p){var s=String(this);p=String(p||" ");while(s.length<n)s=p+s;return s.slice(-Math.max(n,s.length));};
@@ -24,36 +25,49 @@ window.addEventListener("error",function(e){logErr("window",e.error||e.message);
 window.addEventListener("unhandledrejection",function(e){logErr("promise",e.reason);});
 function safe(w,f,fb){try{return f();}catch(e){logErr(w,e);return fb;}}
 
-/* ── STOCKAGE MULTI-COUCHES : local → session → window.name → mémoire ── */
-var MEM={};
+/* ══ STOCKAGE 5 COUCHES : local → session → window.name → IndexedDB → mémoire ══ */
+var MEM={},IDB={db:null,ok:false,cache:{}};
 var STORE={local:false,session:false,nameOK:false,
 probe:function(){
 try{localStorage.setItem("__m","1");localStorage.removeItem("__m");this.local=true;}catch(e){this.local=false;}
 try{sessionStorage.setItem("__m","1");sessionStorage.removeItem("__m");this.session=true;}catch(e){this.session=false;}
 try{window.name=window.name||"";this.nameOK=true;}catch(e){this.nameOK=false;}},
+idbInit:function(){var s=this;return new Promise(function(res){
+try{if(!window.indexedDB){res(false);return;}
+var rq=indexedDB.open("mecadata_kv",1);
+rq.onupgradeneeded=function(){var d=rq.result;if(!d.objectStoreNames.contains("kv"))d.createObjectStore("kv");};
+rq.onsuccess=function(){IDB.db=rq.result;IDB.ok=true;res(true);};
+rq.onerror=function(){res(false);};rq.onblocked=function(){res(false);};
+setTimeout(function(){if(!IDB.ok)res(false);},1800);}catch(e){res(false);}});},
+idbSet:function(k,v){if(!IDB.ok)return;try{IDB.db.transaction("kv","readwrite").objectStore("kv").put(v,k);IDB.cache[k]=v;}catch(e){}},
+idbGet:function(k){return new Promise(function(res){if(!IDB.ok){res(IDB.cache[k]||null);return;}
+try{var r=IDB.db.transaction("kv","readonly").objectStore("kv").get(k);r.onsuccess=function(){res(r.result||null);};r.onerror=function(){res(null);};}catch(e){res(null);}});},
 nread:function(k){try{var c=window.name||"";if(c.indexOf("MDENV:")===0){var env=JSON.parse(c.slice(6));return env[k]===undefined?null:env[k];}}catch(e){}return null;},
 nwrite:function(k,v){try{var env={},c=window.name||"";if(c.indexOf("MDENV:")===0){try{env=JSON.parse(c.slice(6));}catch(e){env={};}}
-if(v===null)delete env[k];else env[k]=v;var s=JSON.stringify(env);if(s.length<1600000)window.name="MDENV:"+s;}catch(e){}},
+if(v===null)delete env[k];else env[k]=v;var s=JSON.stringify(env);if(s.length<1500000)window.name="MDENV:"+s;}catch(e){}},
 get:function(k){var v=null;
 if(this.local){try{v=localStorage.getItem(k);}catch(e){this.local=false;}}
 if(v==null&&this.session){try{v=sessionStorage.getItem(k);}catch(e){this.session=false;}}
 if(v==null&&this.nameOK)v=this.nread(k);
+if(v==null&&IDB.cache[k]!==undefined)v=IDB.cache[k];
 if(v==null&&MEM[k]!==undefined)v=MEM[k];
 return v;},
-set:function(k,v){MEM[k]=v;var ok=false;
+set:function(k,v){MEM[k]=v;IDB.cache[k]=v;var ok=false;
 if(this.local){try{localStorage.setItem(k,v);ok=true;}catch(e){this.local=false;}}
 if(this.session){try{sessionStorage.setItem(k,v);ok=true;}catch(e){this.session=false;}}
-if(this.nameOK)this.nwrite(k,v);
-return ok||this.nameOK;},
-del:function(k){delete MEM[k];
+if(this.nameOK){this.nwrite(k,v);ok=true;}
+this.idbSet(k,v);
+return ok;},
+del:function(k){delete MEM[k];delete IDB.cache[k];
 if(this.local){try{localStorage.removeItem(k);}catch(e){}}
 if(this.session){try{sessionStorage.removeItem(k);}catch(e){}}
-if(this.nameOK)this.nwrite(k,null);},
+if(this.nameOK)this.nwrite(k,null);
+if(IDB.ok){try{IDB.db.transaction("kv","readwrite").objectStore("kv").delete(k);}catch(e){}}},
 sget:function(k){if(this.session){try{return sessionStorage.getItem(k);}catch(e){}}return MEM["s:"+k]||null;},
 sset:function(k,v){if(this.session){try{sessionStorage.setItem(k,v);return;}catch(e){}}MEM["s:"+k]=v;},
 sdel:function(k){if(this.session){try{sessionStorage.removeItem(k);}catch(e){}}delete MEM["s:"+k];},
-backend:function(){return this.local?"localStorage":(this.session?"sessionStorage":(this.nameOK?"window.name":"mémoire"));},
-any:function(){return !!(this.local||this.session||this.nameOK);}};
+backend:function(){var a=[];if(this.local)a.push("localStorage");if(this.session)a.push("session");if(this.nameOK)a.push("name");if(IDB.ok)a.push("IndexedDB");return a.length?a.join(" + "):"mémoire";},
+any:function(){return !!(this.local||this.session||this.nameOK||IDB.ok);}};
 STORE.probe();
 
 function download(n,c,m){safe("dl",function(){var b=new Blob([c],{type:m||"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},700);},null);}
@@ -76,29 +90,13 @@ function openModal(html,cls){var r=$("#md");r.innerHTML="<div class='ms' data-ac
 function closeModal(){var r=$("#md");if(!r.innerHTML)return;r.classList.remove("on");modalOpen=false;if(!window.MD_STATE||!window.MD_STATE.drawer)document.body.classList.remove("lock");setTimeout(function(){if(!modalOpen)r.innerHTML="";},220);beep("close");}
 function confirmModal(t,m,a,l){openModal("<div class='mh'>"+ic("alert","color:#FFAF2E")+"<h3>"+esc(t)+"</h3><button class='tb' data-act='mclose'>"+ic("x")+"</button></div><div class='mb2'><p class='muted'>"+esc(m)+"</p></div><div class='mf'><button class='btn ghost' data-act='mclose'>Annuler</button><button class='btn dgr' data-act='"+a+"'>"+esc(l||"Confirmer")+"</button></div>","slim");}
 
-/* ── STUDIO : 8 scènes animées, palette pilotable ── */
+/* ══ STUDIO 8 SCÈNES ══ */
 function hsl(h,s,l){s/=100;l/=100;var k=function(n){return (n+h/30)%12;},a=s*Math.min(l,1-l),f=function(n){var v=l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));return Math.round(255*v).toString(16).padStart(2,"0");};return "#"+f(0)+f(8)+f(4);}
 var WP={
-P:{mode:"nebula",theme:"diag",useCustom:false,custom:{bg:"#04070D",a:"#FFD60A",b:"#25D4EE",c:"#E45CFF",d:"#43E08B"},
-density:64,count:150,speed:100,turb:38,scale:66,glow:60,blur:0,stroke:1.4,drift:40,dir:1,quality:"std",format:"free",
-grid:true,grain:true,scan:true,vig:true,run:true,bg:true},
-TH:{diag:{n:"Diagnostic",bg:"#04070D",a:"#FFD60A",b:"#25D4EE",c:"#E45CFF",d:"#43E08B"},
-torque:{n:"Couple",bg:"#0B0603",a:"#FFAF2E",b:"#FF7A3D",c:"#FF4D5E",d:"#FFD98A"},
-acid:{n:"Acide",bg:"#040A06",a:"#A8E63C",b:"#43E08B",c:"#25D4EE",d:"#E4FF7A"},
-plasma:{n:"Plasma",bg:"#08040F",a:"#E45CFF",b:"#8F7CFF",c:"#25D4EE",d:"#FF6FB1"},
-ocean:{n:"Océan",bg:"#02080C",a:"#19B8A6",b:"#4D8DFF",c:"#25D4EE",d:"#7CE8D0"},
-steel:{n:"Acier",bg:"#070A0E",a:"#9FB2C8",b:"#5F7288",c:"#25D4EE",d:"#E6EEF9"},
-ember:{n:"Braise",bg:"#0A0405",a:"#FF4D5E",b:"#FF7A3D",c:"#FFAF2E",d:"#FFC9A8"},
-violet:{n:"Violet",bg:"#06040F",a:"#8F7CFF",b:"#E45CFF",c:"#4D8DFF",d:"#C9BFFF"}},
+P:{mode:"nebula",theme:"diag",useCustom:false,custom:{bg:"#04070D",a:"#FFD60A",b:"#25D4EE",c:"#E45CFF",d:"#43E08B"},density:64,count:150,speed:100,turb:38,scale:66,glow:60,blur:0,stroke:1.4,drift:40,dir:1,quality:"std",format:"free",grid:true,grain:true,scan:true,vig:true,run:true,bg:true},
+TH:{diag:{n:"Diagnostic",bg:"#04070D",a:"#FFD60A",b:"#25D4EE",c:"#E45CFF",d:"#43E08B"},torque:{n:"Couple",bg:"#0B0603",a:"#FFAF2E",b:"#FF7A3D",c:"#FF4D5E",d:"#FFD98A"},acid:{n:"Acide",bg:"#040A06",a:"#A8E63C",b:"#43E08B",c:"#25D4EE",d:"#E4FF7A"},plasma:{n:"Plasma",bg:"#08040F",a:"#E45CFF",b:"#8F7CFF",c:"#25D4EE",d:"#FF6FB1"},ocean:{n:"Océan",bg:"#02080C",a:"#19B8A6",b:"#4D8DFF",c:"#25D4EE",d:"#7CE8D0"},steel:{n:"Acier",bg:"#070A0E",a:"#9FB2C8",b:"#5F7288",c:"#25D4EE",d:"#E6EEF9"},ember:{n:"Braise",bg:"#0A0405",a:"#FF4D5E",b:"#FF7A3D",c:"#FFAF2E",d:"#FFC9A8"},violet:{n:"Violet",bg:"#06040F",a:"#8F7CFF",b:"#E45CFF",c:"#4D8DFF",d:"#C9BFFF"}},
 MODES:[["nebula","NEBULA"],["aurora","AURORA"],["flux","FLUX"],["grid","GRILLE"],["radar","RADAR"],["scope","SCOPE"],["gears","MÉCA"],["tunnel","TUNNEL"]],
-PRESETS:{"Nebula or":{mode:"nebula",theme:"diag",density:66,count:160,speed:80,turb:40,scale:70,glow:66,stroke:1.4,drift:42,dir:1},
-"Braise lente":{mode:"aurora",theme:"ember",density:72,count:120,speed:45,turb:26,scale:88,glow:74,stroke:1.2,drift:24,dir:1},
-"Tunnel acide":{mode:"tunnel",theme:"acid",density:60,count:140,speed:140,turb:30,scale:60,glow:62,stroke:1.6,drift:30,dir:1},
-"Radar atelier":{mode:"radar",theme:"acid",density:60,count:110,speed:85,turb:30,scale:70,glow:70,stroke:1.6,drift:30,dir:1},
-"Scope 4 cyl":{mode:"scope",theme:"acid",density:66,count:100,speed:130,turb:52,scale:60,glow:66,stroke:1.6,drift:18,dir:1},
-"Méca couple":{mode:"gears",theme:"torque",density:60,count:90,speed:80,turb:24,scale:74,glow:52,stroke:1.6,drift:22,dir:1},
-"Grille acier":{mode:"grid",theme:"steel",density:55,count:80,speed:60,turb:20,scale:48,glow:34,stroke:1.2,drift:26,dir:1},
-"Flux océan":{mode:"flux",theme:"ocean",density:68,count:170,speed:110,turb:48,scale:64,glow:58,stroke:1.2,drift:34,dir:1}},
+PRESETS:{"Nebula or":{mode:"nebula",theme:"diag",density:66,count:160,speed:80,turb:40,scale:70,glow:66,stroke:1.4,drift:42,dir:1},"Braise lente":{mode:"aurora",theme:"ember",density:72,count:120,speed:45,turb:26,scale:88,glow:74,stroke:1.2,drift:24,dir:1},"Tunnel acide":{mode:"tunnel",theme:"acid",density:60,count:140,speed:140,turb:30,scale:60,glow:62,stroke:1.6,drift:30,dir:1},"Radar atelier":{mode:"radar",theme:"acid",density:60,count:110,speed:85,turb:30,scale:70,glow:70,stroke:1.6,drift:30,dir:1},"Scope 4 cyl":{mode:"scope",theme:"acid",density:66,count:100,speed:130,turb:52,scale:60,glow:66,stroke:1.6,drift:18,dir:1},"Méca couple":{mode:"gears",theme:"torque",density:60,count:90,speed:80,turb:24,scale:74,glow:52,stroke:1.6,drift:22,dir:1},"Grille acier":{mode:"grid",theme:"steel",density:55,count:80,speed:60,turb:20,scale:48,glow:34,stroke:1.2,drift:26,dir:1},"Flux océan":{mode:"flux",theme:"ocean",density:68,count:170,speed:110,turb:48,scale:64,glow:58,stroke:1.2,drift:34,dir:1}},
 targets:[],raf:0,t:0,last:0,running:false,fails:0,
 pal:function(){if(this.P.useCustom){var c=this.P.custom;return {n:"Personnalisée",bg:c.bg,a:c.a,b:c.b,c:c.c,d:c.d};}return this.TH[this.P.theme]||this.TH.diag;},
 init:function(){var cv=$("#bgc");if(cv){var cx=safe("ctx",function(){return cv.getContext("2d");},null);if(cx)this.targets.push({cv:cv,ctx:cx,scale:0.5,W:0,H:0,st:null,key:""});}
