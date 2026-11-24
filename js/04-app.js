@@ -1,6 +1,6 @@
 (function(){
 "use strict";
-window.__MD_VER="8.4";window.__MD_BUILD="8.4";
+window.__MD_VER="8.4";window.__MD_BUILD="8.4";window.__MD_FIX="8.5-notif";
 var $=window.MD_$,$$=window.MD_$$,esc=window.MD_esc,fmt=window.MD_fmt,clamp=window.MD_clamp,uid=window.MD_uid,clone=window.MD_clone,ov=window.MD_ov,ic=window.MD_ic,deb=window.MD_deb,split=window.MD_split,nk=window.MD_nk,slug=window.MD_slug,safe=window.MD_safe,logErr=window.MD_logErr,STORE=window.MD_STORE,download=window.MD_download,beep=window.MD_beep,toast=window.MD_toast,openModal=window.MD_openModal,closeModal=window.MD_closeModal,confirmModal=window.MD_confirmModal,modalOpenFn=window.MD_modalOpen,WP=window.MD_WP,PREF=window.MD_PREF,ERRORS=window.MD_ERRORS;
 var PWD="Kevin83600",KEY="mecadata_v84",OLDKEY="mecadata_v83",AKEY="md_access_v83",PKEY="md_pub_v83",YMAX=2027,KMMAX=200000;
 var SEGS=window.MD_RAW.segs;
@@ -14,24 +14,34 @@ function nfreq(v){var k=nk(v),m={elevee:"élevée",high:"élevée",moyenne:"moye
 function nfuel(v){var k=nk(v),m={e:"e",essence:"e",petrol:"e",d:"d",diesel:"d",h:"h",hybride:"h",hybrid:"h",p:"p",phev:"p",rechargeable:"p",b:"b",ev:"b",electrique:"b",electric:"b",g:"g",gpl:"g"};return m[k]||(FU[k]?k:"e");}
 var IVL=function(v){return v>=75?["CRITIQUE","#FF4D5E"]:v>=50?["ÉLEVÉ","#FF7A3D"]:v>=25?["MODÉRÉ","#FFAF2E"]:["FAIBLE","#43E08B"];};
 
-var SEED=null,DB=null,AUDIT=[],UNDO=null,TESTS=[],IVIC={},MIDX={},BIDX={},EIDX={},IMPORT=null,FIXES=0,LASTSAVE=0,DIRTY=false,PENDING=-1,ACC_OPEN=false,AUTOFILL=0;
+var SEED=null,DB=null,AUDIT=[],UNDO=null,TESTS=[],IVIC={},MIDX={},BIDX={},EIDX={},IMPORT=null,FIXES=0,LASTSAVE=0,DIRTY=false,ACC_OPEN=false,AUTOFILL=0;
 var META={counts:{},links:0,corr:0,integ:{err:[],ok:true,pct:100},size:0,byBrand:{}};
-var MODE=null,TIER=null,REG=null,CH=null;
-var GATE_MODE=null,GATE_SIG=null,GATE_NAME="",GATE_RENDERED=false;
+var MODE=null,TIER=null,CH=null;
+var REG={users:[],live:false,rev:0,log:[],seen:[],tomb:[]};
+var GATE_MODE=null,GATE_SIG=null,GATE_NAME="",GATE_RENDERED=false,GATE_CODE="";
 var S={view:"bord",sel:{b:"",m:"",e:""},f:{q:"",fuel:[],y:[2017,YMAX],sort:"brand"},shown:48,
-tech:{tab:"faults",q:"",sev:"",brand:"",model:"",phase:"",dom:"",km:""},adm:{tab:"files",mega:""},
+tech:{tab:"faults",q:"",sev:"",brand:"",model:"",phase:"",dom:"",km:""},adm:{tab:"files",mega:"",code:""},
 calc:{km:60000,year:2021,sev:1},drawer:null,omni:{q:"",hits:[],idx:-1}};
 window.MD_STATE=S;
 var isAdmin=function(){return MODE==="admin";},isTier=function(){return MODE==="tier";};
 
 function gateTyping(){var a=document.activeElement;return !!(a&&a.closest&&a.closest("#gate")&&/^(input|textarea)$/i.test(a.tagName));}
-function gateSig(mode){var u=tierUser();return (mode||"root")+"|"+(u?(u.id+":"+u.status):"none");}
+function gateSig(mode){var u=tierUser();return (mode||"root")+"|"+(u?(u.id+":"+u.status+":"+GATE_CODE):"none");}
 function hardenResize(){if(WP.__resizeGuarded)return;WP.__resizeGuarded=true;var base=WP.resize;WP.resize=function(){if(gateTyping())return;return base.call(WP);};}
+function injectNotifCss(){
+  if(document.getElementById("mdNotifCss"))return;
+  var st=document.createElement("style");st.id="mdNotifCss";
+  st.textContent=".reqbanner{border:1px solid rgba(255,77,94,.55);background:linear-gradient(120deg,rgba(255,77,94,.14),rgba(255,214,10,.08));border-radius:12px;padding:11px 14px;margin-bottom:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;animation:reqIn .35s}"+
+  "@keyframes reqIn{from{opacity:0;transform:translateY(-8px)}}"+
+  ".reqbanner b{font:600 13px var(--gd);color:#FFB3BA}.reqbanner .rn{font:400 11px var(--gm);color:var(--t2)}"+
+  ".reqpulse{width:9px;height:9px;border-radius:50%;background:#FF4D5E;box-shadow:0 0 0 0 rgba(255,77,94,.7);animation:rp 1.4s infinite}"+
+  "@keyframes rp{70%{box-shadow:0 0 0 9px rgba(255,77,94,0)}100%{box-shadow:0 0 0 0 rgba(255,77,94,0)}}"+
+  ".codebox{font:500 11px var(--gm);color:#FFD60A;background:rgba(255,214,10,.07);border:1px dashed var(--ln2);border-radius:9px;padding:9px 11px;word-break:break-all;margin-top:9px;user-select:all;-webkit-user-select:all}"+
+  ".newtag{font:700 8px var(--gm);letter-spacing:.1em;color:#fff;background:#FF4D5E;border-radius:8px;padding:2px 6px}";
+  document.head.appendChild(st);
+}
 
-/* ══════════ COUVERTURE EXHAUSTIVE — correctif définitif ══════════
-   Tout modèle reçoit au moins une motorisation. Stratégie en cascade :
-   même marque + segment + période + phase → même marque → même segment
-   → n'importe quelle motorisation. Idempotent, jamais bloquant. */
+/* ══════════ COUVERTURE EXHAUSTIVE ══════════ */
 function ensureCoverage(D){
   if(!D||!Array.isArray(D.models)||!Array.isArray(D.engines))return 0;
   if(!D.models.length||!D.engines.length)return 0;
@@ -46,8 +56,7 @@ function ensureCoverage(D){
   }
   var added=0;
   for(i=0;i<D.models.length;i++){
-    var mo=D.models[i];
-    if(covered[mo.id])continue;
+    var mo=D.models[i];if(covered[mo.id])continue;
     var pools=[byBrand[mo.b],bySeg[mo.seg],D.engines],pool=null;
     for(var p=0;p<pools.length;p++){if(pools[p]&&pools[p].length){pool=pools[p];break;}}
     if(!pool)continue;
@@ -214,16 +223,138 @@ DB.faults.forEach(function(f){links+=f.fam.length;doms[f.dom]=1;});DB.tsb.forEac
 META={counts:{b:DB.brands.length,m:DB.models.length,e:DB.engines.length,f:DB.faults.length,t:DB.tsb.length,rc:DB.tsb.filter(isRecall).length,fam:Object.keys(fams).length,dom:Object.keys(doms).length},
 links:links,corr:corr,integ:integrity(),size:Math.round(JSON.stringify(DB).length/1024),byBrand:bb};}
 
-/* ══════════ ACCÈS ══════════ */
-function regLoad(){var raw=STORE.get(AKEY),r=null;if(raw)safe("reg",function(){r=JSON.parse(raw);},null);if(!r||!r.users)r={users:[],live:false,rev:0,log:[]};REG=r;return r;}
-function regSave(){STORE.set(AKEY,JSON.stringify(REG));bcast({t:"reg"});bellRefresh();}
+/* ══════════════════════════════════════════════════════════════
+   REGISTRE D'ACCÈS DURABLE — fusion sans perte, multi-couches
+   ══════════════════════════════════════════════════════════════ */
+function regNorm(r){
+  if(!r||typeof r!=="object")r={};
+  return {users:Array.isArray(r.users)?r.users.filter(function(u){return u&&u.id&&u.name;}):[],
+    live:!!r.live,rev:+r.rev||0,
+    log:Array.isArray(r.log)?r.log:[],
+    seen:Array.isArray(r.seen)?r.seen:[],
+    tomb:Array.isArray(r.tomb)?r.tomb:[]};
+}
+function regMerge(a,b){
+  a=regNorm(a);b=regNorm(b);
+  var base=(b.rev>=a.rev)?b:a,map={};
+  function add(u){
+    if(!u||!u.id)return;
+    var e=map[u.id];
+    if(!e){map[u.id]=u;return;}
+    var ea=+(e.at||e.ts||0),ua=+(u.at||u.ts||0);
+    if(ua>=ea)map[u.id]=u;
+  }
+  a.users.forEach(add);b.users.forEach(add);
+  var tomb={};a.tomb.concat(b.tomb).forEach(function(id){tomb[id]=1;});
+  var users=Object.keys(map).map(function(k){return map[k];}).filter(function(u){return !tomb[u.id];});
+  users.sort(function(x,y){return (+x.ts||0)-(+y.ts||0);});
+  var lk={},log=[];
+  a.log.concat(b.log).forEach(function(l){if(!l)return;var k=(l.ts||0)+"|"+(l.a||"");if(!lk[k]){lk[k]=1;log.push(l);}});
+  log.sort(function(x,y){return (y.ts||0)-(x.ts||0);});
+  if(log.length>120)log=log.slice(0,120);
+  var sk={};a.seen.concat(b.seen).forEach(function(id){sk[id]=1;});
+  return {users:users,live:base.live,rev:Math.max(a.rev,b.rev),log:log,seen:Object.keys(sk),tomb:Object.keys(tomb)};
+}
+function regRead(){
+  var out=regNorm(null),raw=STORE.get(AKEY);
+  if(raw)safe("regparse",function(){out=regMerge(out,JSON.parse(raw));},null);
+  try{if(STORE.idbCache&&STORE.idbCache[AKEY])out=regMerge(out,JSON.parse(STORE.idbCache[AKEY]));}catch(e){}
+  return out;
+}
+function regLoad(){REG=regMerge(REG,regRead());return REG;}
+function regSave(){
+  REG.rev=(+REG.rev||0)+1;
+  var s=JSON.stringify(REG);
+  STORE.set(AKEY,s);
+  try{if(STORE.idbSet)STORE.idbSet(AKEY,s);}catch(e){}
+  bcast({t:"reg",rev:REG.rev});
+  bellRefresh();
+}
 function bcast(m){try{if(CH)CH.postMessage(m);}catch(e){}}
-function regLog(a){REG.log.unshift({ts:Date.now(),a:a});if(REG.log.length>80)REG.log.pop();}
+function regLog(a){REG.log.unshift({ts:Date.now(),a:a});if(REG.log.length>120)REG.log.pop();}
 function pendingCount(){return REG.users.filter(function(u){return u.status==="pending";}).length;}
 function tierUser(){if(!TIER)return null;for(var i=0;i<REG.users.length;i++)if(REG.users[i].id===TIER)return REG.users[i];return null;}
 function tierName(){var u=tierUser();return u?u.name:"";}
 function applyTierSnapshot(){var raw=STORE.get(PKEY);if(!raw)return false;
 return safe("pub",function(){var d=JSON.parse(raw);if(d&&d.db&&d.db.engines&&d.db.engines.length){DB=d.db;recompute();return true;}return false;},false);}
+
+/* ══════ NOTIFICATIONS — remontée garantie ══════ */
+function osNotify(title,body){
+  safe("osnotify",function(){
+    try{if(window.Android&&typeof window.Android.notify==="function"){window.Android.notify(String(title),String(body));return;}}catch(e){}
+    try{if(window.Android&&typeof window.Android.postNotification==="function"){window.Android.postNotification(String(title),String(body));return;}}catch(e){}
+    try{if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.notify){window.webkit.messageHandlers.notify.postMessage({title:String(title),body:String(body)});return;}}catch(e){}
+    try{
+      if(typeof Notification!=="undefined"){
+        if(Notification.permission==="granted"){new Notification(String(title),{body:String(body),icon:"icons/icon-192.png",tag:"md-access"});return;}
+        if(Notification.permission!=="denied"&&Notification.requestPermission){
+          Notification.requestPermission().then(function(p){if(p==="granted"){try{new Notification(String(title),{body:String(body),icon:"icons/icon-192.png",tag:"md-access"});}catch(e){}}});
+        }
+      }
+    }catch(e){}
+  },null);
+}
+function notifyPending(){
+  if(!isAdmin())return 0;
+  var news=REG.users.filter(function(u){return u.status==="pending"&&REG.seen.indexOf(u.id)<0;});
+  if(!news.length)return 0;
+  news.forEach(function(u){if(REG.seen.indexOf(u.id)<0)REG.seen.push(u.id);});
+  regSave();
+  var names=news.map(function(u){return u.name;}).join(", ");
+  toast("warn",news.length+" nouvelle(s) demande(s) d'accès",names+" — cliquez la cloche pour statuer.");
+  beep("imp");
+  osNotify("MECADATA — demande d'accès tiers",names+" demande l'accès à la console.");
+  regLog("Notification admin — "+names);
+  if(S.view==="admin")render();else updateMeta();
+  return news.length;
+}
+function reqBannerHTML(){
+  var pc=pendingCount();
+  if(!isAdmin()||!pc)return "";
+  var news=REG.users.filter(function(u){return u.status==="pending";});
+  var names=news.slice(0,3).map(function(u){return u.name;}).join(", ")+(news.length>3?" +"+(news.length-3):"");
+  return "<div class='reqbanner'><span class='reqpulse'></span>"+ic("bell","width:17px;height:17px;color:#FF4D5E")+
+  "<b>"+pc+" demande(s) d'accès en attente</b><span class='rn'>"+esc(names)+"</span>"+
+  "<button class='btn sm amb' data-act='openAccess' style='margin-left:auto'>"+ic("users")+"Ouvrir le gestionnaire</button></div>";
+}
+function copyText(t){
+  safe("copy",function(){
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t);return;}
+    var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";
+    document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();
+  },null);
+}
+function b64e(o){try{return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}catch(e){return "";}}
+function b64d(s){try{s=String(s||"").trim().replace(/^[A-Z0-9]+-/,"").replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";return JSON.parse(decodeURIComponent(escape(atob(s))));}catch(e){return null;}}
+function reqCode(u){return "MDR1-"+b64e({i:u.id,n:u.name,t:u.ts});}
+function grantCode(u){return "MDA1-"+b64e({i:u.id,n:u.name,s:u.status,a:u.at||Date.now()});}
+function importReqCode(code){
+  var d=b64d(code);
+  if(!d||!d.i||!d.n)return false;
+  regLoad();
+  var ex=null;REG.users.forEach(function(u){if(u.id===d.i)ex=u;});
+  if(ex){if(ex.status!=="pending"){ex.status="pending";ex.at=null;}ex.ts=d.t||ex.ts||Date.now();}
+  else REG.users.push({id:String(d.i),name:String(d.n).slice(0,24),status:"pending",ts:+d.t||Date.now(),at:null});
+  REG.tomb=REG.tomb.filter(function(x){return x!==d.i;});
+  REG.seen=REG.seen.filter(function(x){return x!==d.i;});
+  regLog("Demande importée par code — "+d.n);
+  regSave();notifyPending();
+  return true;
+}
+function importGrantCode(code){
+  var d=b64d(code);
+  if(!d||!d.i||!d.n||!d.s)return false;
+  regLoad();
+  var ex=null;REG.users.forEach(function(u){if(u.id===d.i)ex=u;});
+  var rec={id:String(d.i),name:String(d.n).slice(0,24),status:String(d.s),ts:Date.now(),at:+d.a||Date.now()};
+  if(ex){ex.status=rec.status;ex.at=rec.at;}else REG.users.push(rec);
+  REG.tomb=REG.tomb.filter(function(x){return x!==rec.id;});
+  TIER=rec.id;GATE_NAME=rec.name;GATE_CODE="";
+  regLog("Code d'accord appliqué — "+rec.name+" ("+rec.status+")");
+  regSave();
+  return rec.status==="granted";
+}
+
 var ACC_STATES=[["granted","g","ACCÈS"],["denied","d","REFUS"],["revoked","r","RÉVOCATION"]];
 function accBoxesHTML(u,legend){
 var h="<div class='"+(legend?"acclegend":"accboxes")+"'>";
@@ -234,15 +365,21 @@ if(legend){h+=" aria-disabled='true' tabindex='-1'";}
 else{h+=" data-act='accSet' data-id='"+esc(u.id)+"' data-st='"+o[0]+"' role='checkbox' aria-checked='"+on+"'";}
 h+="><span class='bx'>"+(on?"✓":"")+"</span><span class='lbl'>"+o[2]+"</span></button>";});
 return h+"</div>";}
-function setAccess(id,st){if(!isAdmin())return;var u=null,i;
-for(i=0;i<REG.users.length;i++)if(REG.users[i].id===id)u=REG.users[i];
-if(!u)return;
-u.status=st;u.at=Date.now();
-regLog((st==="granted"?"ACCÈS accordé":(st==="denied"?"REFUS":"RÉVOCATION"))+" — "+u.name);
-if(st==="granted"&&!STORE.get(PKEY))publish(true);
-regSave();updateMeta();if(S.view==="admin")render();
-toast(st==="granted"?"ok":(st==="denied"?"warn":"err"),st==="granted"?"Accès accordé":(st==="denied"?"Accès refusé":"Accès révoqué"),u.name+" — décision appliquée en temps réel.");
-beep(st==="granted"?"ok":"del");}
+function setAccess(id,st){
+  if(!isAdmin())return;
+  regLoad();
+  var u=null,i;
+  for(i=0;i<REG.users.length;i++)if(REG.users[i].id===id)u=REG.users[i];
+  if(!u)return;
+  u.status=st;u.at=Date.now();
+  regLog((st==="granted"?"ACCÈS accordé":(st==="denied"?"REFUS":"RÉVOCATION"))+" — "+u.name);
+  if(st==="granted"&&!STORE.get(PKEY))publish(true);
+  regSave();
+  osNotify("MECADATA — décision d'accès",u.name+" : "+(st==="granted"?"accès accordé":(st==="denied"?"refusé":"révoqué")));
+  updateMeta();if(S.view==="admin")render();
+  toast(st==="granted"?"ok":(st==="denied"?"warn":"err"),st==="granted"?"Accès accordé":(st==="denied"?"Accès refusé":"Accès révoqué"),u.name+" — décision appliquée en temps réel.");
+  beep(st==="granted"?"ok":"del");
+}
 
 /* ══════════ PLAN 200 000 km ══════════ */
 function svcFor(e){var L=window.MD_RAW.svc,i,j;
@@ -292,7 +429,7 @@ function markDirty(){if(!isAdmin())return;DIRTY=true;save();}
 function audit(t,m){AUDIT.push({ts:Date.now(),type:t,msg:m});if(AUDIT.length>120)AUDIT=AUDIT.slice(-120);}
 function snapshot(l){UNDO={label:l,db:clone(DB)};}
 function doUndo(){if(!UNDO)return;DB=UNDO.db;var l=UNDO.label;UNDO=null;mutate("imp","Annulation : "+l);toast("ok","Action annulée");}
-function publish(auto){if(!isAdmin())return;REG.rev=(REG.rev||0)+1;STORE.set(PKEY,JSON.stringify({ts:Date.now(),rev:REG.rev,db:DB}));
+function publish(auto){if(!isAdmin())return;REG.rev=(REG.rev||0);STORE.set(PKEY,JSON.stringify({ts:Date.now(),rev:REG.rev,db:DB}));
 regLog("Diffusion rév. "+REG.rev+(auto?" (auto)":""));regSave();bcast({t:"pub",rev:REG.rev});
 if(!auto)toast("ok","Diffusé aux tiers","Révision "+REG.rev+" — "+fmt(META.counts.e)+" motorisations.");}
 function mutate(t,m){recompute();audit(t,m);markDirty();if(REG.live&&isAdmin())publish(true);updateMeta();render();if(S.drawer)renderDrawer();}
@@ -349,10 +486,15 @@ function bellRefresh(){
   if(ACC_OPEN){var body=$("#accBody");if(body)body.innerHTML=accessBody();var chip=$("#accChip");if(chip)chip.textContent=pc+" en attente";}
   var b2=$("#accBody2");if(b2&&S.view==="admin"&&S.adm.tab==="access")b2.innerHTML=accessBody();
 }
-function accessBody(){var h="",pc=pendingCount();
-h+="<div class='banner' style='margin-bottom:12px'>"+ic("bcast","width:15px;height:15px;color:#FFD60A")+"<b>"+pc+" demande(s) en attente</b><span class='dim' style='font-size:11px'>Cochez une case : la décision s'applique immédiatement et le tiers est notifié en temps réel.</span></div>";
+function accessBody(){
+var h="",pc=pendingCount();
+h+="<div class='banner' style='margin-bottom:12px'>"+ic("bcast","width:15px;height:15px;color:#FFD60A")+"<b>"+pc+" demande(s) en attente</b><span class='dim' style='font-size:11px'>Cochez une case : la décision s'applique immédiatement et le tiers est notifié.</span>";
+h+="<button class='btn xs ghost' data-act='notifTest' style='margin-left:auto'>"+ic("bell","width:11px;height:11px")+"Tester la notification</button></div>";
+h+="<div class='card panel' style='margin-bottom:12px'><h3>"+ic("ul")+"Recevoir une demande par code<span class='chip'>autre appareil</span></h3>";
+h+="<p class='muted' style='font-size:11.5px;margin-bottom:8px'>Si le tiers utilise un autre téléphone ou une autre installation, il obtient un code de demande. Collez-le ici : la demande apparaît immédiatement dans la liste.</p>";
+h+="<div style='display:flex;gap:7px;flex-wrap:wrap'><input class='inp mono' id='admCode' placeholder='MDR1-…' value='"+esc(S.adm.code)+"' style='flex:1;min-width:200px'><button class='btn sm pri' data-act='admCodeAdd'>"+ic("plus")+"Ajouter la demande</button></div></div>";
 if(!REG.users.length){
-h+="<div class='accempty'>"+ic("users","width:26px;height:26px")+"<p style='margin-top:8px'>Aucune demande d'accès pour le moment.</p><p class='dim' style='font-size:11.5px;margin-top:5px'>Le tiers ouvre l'application, choisit « Tiers » et saisit son prénom : la demande apparaît ici instantanément.</p>";
+h+="<div class='accempty'>"+ic("users","width:26px;height:26px")+"<p style='margin-top:8px'>Aucune demande d'accès pour le moment.</p><p class='dim' style='font-size:11.5px;margin-top:5px'>Le tiers ouvre l'application, choisit « Tiers » et saisit son prénom : la demande remonte ici instantanément.</p>";
 h+="<p class='lb' style='margin-top:14px'>Les 3 décisions disponibles</p>"+accBoxesHTML({id:"__legend__",status:"pending"},true)+"</div>";
 return h;}
 var ord={pending:0,granted:1,denied:2,revoked:3};
@@ -363,19 +505,22 @@ h+="<div class='accrow"+(u.status==="pending"?" pending":"")+"'><div class='ah'>
 h+="<span class='am'>demande "+new Date(u.ts).toLocaleString("fr-FR")+"</span>";
 if(u.at)h+="<span class='am'>· décision "+new Date(u.at).toLocaleTimeString("fr-FR")+"</span>";
 h+="<button class='btn xs ghost' data-act='accDel' data-id='"+u.id+"' style='margin-left:auto'>"+ic("trash","width:11px;height:11px")+"</button></div>";
-h+=accBoxesHTML(u,false)+"</div>";});
+h+=accBoxesHTML(u,false);
+if(u.status==="granted"){h+="<div class='codebox'>"+esc(grantCode(u))+"</div><button class='btn xs ghost' data-act='copyGrant' data-id='"+u.id+"' style='margin-top:6px'>"+ic("dl","width:11px;height:11px")+"Copier le code d'accord</button>";}
+h+="</div>";});
 h+="<div class='card panel' style='margin-top:12px'><h3>"+ic("clock")+"Journal des décisions</h3><div class='journal'>";
 if(!REG.log.length)h+="<p class='dim'>Aucune activité.</p>";
-REG.log.slice(0,20).forEach(function(l){h+="<div class='jr'><time>"+new Date(l.ts).toLocaleTimeString("fr-FR")+"</time><span>"+esc(l.a)+"</span></div>";});
+REG.log.slice(0,25).forEach(function(l){h+="<div class='jr'><time>"+new Date(l.ts).toLocaleTimeString("fr-FR")+"</time><span>"+esc(l.a)+"</span></div>";});
 return h+"</div></div>";}
 function openAccess(){
   if(!isAdmin()){gateShow("admin",{force:true,focus:true});return;}
-  regLoad();ACC_OPEN=true;
+  regLoad();notifyPending();ACC_OPEN=true;
   var h="<div class='mh'>"+ic("bell","color:#FFD60A")+"<h3>Gestionnaire d'accès tiers</h3><span class='chip warn' id='accChip'>"+pendingCount()+" en attente</span><button class='tb' data-act='accClose'>"+ic("x")+"</button></div>";
   h+="<div class='mb2' id='accBody'>"+accessBody()+"</div><div class='mf'><button class='btn ghost sm' data-act='accGoAdmin'>"+ic("db")+"Module administration</button><button class='btn pri' data-act='accClose'>Fermer</button></div>";
   openModal(h,"wide");beep("open");
 }
 window.MD_openAccess=openAccess;
+window.MD_notifyPending=function(){regLoad();return notifyPending();};
 
 /* ══════════ RECHERCHE ══════════ */
 var SYN={puretech:["eb2"],hdi:["dv5","dw10"],bluehdi:["dv5","dw10"],tsi:["ea211","ea888","dpca"],tdi:["ea288","dsua"],tce:["h4dt","h5ht","hr12"],dci:["k9k","m9r","r9m"],courroie:["courroie","distribution"],chaine:["chaine","aac"],adblue:["adblue","scr","nox"],scr:["scr","nox"],egr:["egr"],fap:["fap","dpf"],turbo:["turbo"],rappel:["rappel"],tsb:["tsb","bulletin"],panne:["panne"],eat8:["eat8"],dsg:["dq200","dq381"],zf8:["zf8"],frein:["frein","freinage"],clim:["clim"],batterie:["batterie","12v"],ecran:["ecran","bsi"]};
@@ -616,11 +761,12 @@ else{h+="<div class='card panel'><h3>"+ic("clock")+"Journal de la base</h3><div 
 AUDIT.slice().reverse().slice(0,60).forEach(function(a){h+="<div class='jr'><time>"+new Date(a.ts).toLocaleString("fr-FR")+"</time><span class='jt'>"+esc(a.type.toUpperCase())+"</span><span>"+esc(a.msg)+"</span></div>";});h+="</div></div>";}
 return h;}
 function vDiag(){var fl=TESTS.filter(function(t){return !t.ok&&!t.soft;}).length,wn=TESTS.filter(function(t){return !t.ok&&t.soft;}).length,col=fl?"#FF4D5E":(wn?"#FFAF2E":"#43E08B"),h="";
-h+="<div class='vh'><div><span class='kick'>MODULE 07 — AUTOVÉRIFICATION</span><h1>DIAGNOSTIC <i>SYSTÈME</i></h1><div class='sub'>Moteur v"+window.__MD_VER+" — couverture exhaustive & gestionnaire 3 décisions.</div></div><div style='display:flex;gap:7px'><button class='btn sm grn' data-act='runTests'>"+ic("reset")+"Relancer</button>";
+h+="<div class='vh'><div><span class='kick'>MODULE 07 — AUTOVÉRIFICATION</span><h1>DIAGNOSTIC <i>SYSTÈME</i></h1><div class='sub'>Moteur v"+window.__MD_VER+" · correctif "+window.__MD_FIX+" — remontée de demande garantie.</div></div><div style='display:flex;gap:7px;flex-wrap:wrap'><button class='btn sm grn' data-act='runTests'>"+ic("reset")+"Relancer</button>";
 if(isAdmin())h+="<button class='btn sm amb' data-act='autoFix'>"+ic("tool")+"Auto-réparation</button>";
+h+="<button class='btn sm ghost' data-act='notifTest'>"+ic("bell")+"Tester la notification</button>";
 h+="<button class='btn sm ghost' data-act='forceFresh'>"+ic("reset")+"Recharger sans cache</button></div></div>";
 h+="<div class='card panel' style='margin-bottom:12px;border-left:3px solid "+col+"'><h3>"+ic("stetho","color:"+col)+"Résultat<span class='chip' style='color:"+col+";border-color:"+col+"'>"+(TESTS.length-fl)+"/"+TESTS.length+" OK</span></h3>";
-h+="<p class='muted'>"+(fl?"<b style='color:#FF4D5E'>"+fl+" test(s) bloquant(s).</b>":"<b style='color:#43E08B'>Système opérationnel — aucune erreur.</b>")+(wn?" "+wn+" avertissement(s) non bloquant(s).":"")+(AUTOFILL?" <span class='mono' style='color:#43E08B'>"+AUTOFILL+" motorisation(s) appariée(s) automatiquement.</span>":"")+"</p></div>";
+h+="<p class='muted'>"+(fl?"<b style='color:#FF4D5E'>"+fl+" test(s) bloquant(s).</b>":"<b style='color:#43E08B'>Système opérationnel — aucune erreur.</b>")+(wn?" "+wn+" avertissement(s) non bloquant(s).":"")+(AUTOFILL?" <span class='mono' style='color:#43E08B'>"+AUTOFILL+" motorisation(s) appariée(s).</span>":"")+"</p></div>";
 h+="<div class='card panel'><h3>"+ic("check")+"Détail des contrôles</h3><div class='tests'>";
 TESTS.forEach(function(t){var c=t.ok?"#43E08B":(t.soft?"#FFAF2E":"#FF4D5E");
 h+="<div class='tst' style='--tc:"+c+"'><span class='ti'>"+(t.ok?"OK":(t.soft?"!":"X"))+"</span><div style='flex:1'><b>"+esc(t.n)+"</b><small>"+esc(t.info)+"</small></div></div>";});
@@ -629,7 +775,7 @@ function render(){var v=S.view,m=$("#view");if(v!=="studio")WP.detach();
 $$(".nv[data-v],#tabs a").forEach(function(a){a.classList.toggle("on",a.dataset.v===v);});
 var h="";try{h=v==="bord"?vBord():v==="explorer"?vExplorer():v==="tech"?vTech():v==="entretien"?vEntretien():v==="studio"?vStudio():v==="admin"?vAdmin():vDiag();}
 catch(e){logErr("render "+v,e);h="<div class='card panel'><h3>"+ic("alert")+"Erreur de rendu</h3><p class='muted'>"+esc(e.message)+"</p></div>";}
-m.innerHTML=h;mountAnim(m);updateMeta();
+m.innerHTML=reqBannerHTML()+h;mountAnim(m);updateMeta();
 if(v==="studio"){var cv=$("#pv");if(cv){WP.attach(cv);WP.fx();WP.sync();}}}
 function updateMeta(){var c=META.counts;
 $("#nEng").textContent=fmt(c.e);$("#nTech").textContent=fmt(c.f+c.t);$("#nPlan").textContent=fmt(c.dom);
@@ -640,7 +786,7 @@ $("#stTest").textContent=TESTS.length?((TESTS.length-fl)+"/"+TESTS.length):"—"
 $("#diagb").classList.toggle("on",TESTS.length>0&&fl===0);
 $("#ichip").className="chip "+(META.integ.ok?"ok":"bad");$("#itxt").textContent=META.integ.ok?"INTÈGRE":"ERREURS "+META.integ.err.length;
 $("#admb").innerHTML=ic(isAdmin()?"unlock":"lock");$("#admb").classList.toggle("on",isAdmin());
-$("#rtxt").textContent=isAdmin()?"Administrateur ING-3 — écriture, import et diffusion.":(isTier()?"Tiers "+tierName()+" — lecture seule, sans sauvegarde.":"Session non ouverte.");
+$("#rtxt").textContent=isAdmin()?"Administrateur ING-3 — "+pendingCount()+" demande(s) en attente.":(isTier()?"Tiers "+tierName()+" — lecture seule, sans sauvegarde.":"Session non ouverte.");
 $("#sndb").innerHTML=ic(PREF.sound?"snd":"mute");$("#sndb").classList.toggle("on",PREF.sound);
 var na=$("#navAdmin");if(na)na.style.display=isTier()?"none":"";
 var vc=$("#verchip");if(vc)vc.textContent="v"+window.__MD_VER;
@@ -866,14 +1012,27 @@ var onG=accBoxesHTML({id:"p",status:"granted"},false).indexOf("accbox g on")>-1;
 var onD=accBoxesHTML({id:"p",status:"denied"},false).indexOf("accbox d on")>-1;
 var onR=accBoxesHTML({id:"p",status:"revoked"},false).indexOf("accbox r on")>-1;
 aOk=hasG&&hasD&&hasR&&onG&&onD&&onR&&typeof setAccess==="function"&&ACC_STATES.length===3;
-aInfo=aOk?"3 décisions actives · états exclusifs vérifiés · application temps réel":("manquant : "+[hasG?"":"accès",hasD?"":"refus",hasR?"":"révocation",onG&&onD&&onR?"":"états"].filter(Boolean).join(", "));
+aInfo=aOk?"3 décisions actives · états exclusifs vérifiés · application temps réel":"élément manquant";
 }catch(e){aInfo="erreur : "+e.message;}
 add("3 cases Accès / Refus / Révocation",aOk,aInfo);
+/* remontée de demande : chaîne complète vérifiée */
+var nOk=false,nInfo="";
+try{
+  var probe={id:"__probe_req__",name:"Probe",status:"pending",ts:Date.now(),at:null};
+  var merged=regMerge(REG,{users:[probe],rev:REG.rev+1});
+  var found=merged.users.some(function(u){return u.id==="__probe_req__";});
+  var pc=merged.users.filter(function(u){return u.status==="pending";}).length;
+  var code=reqCode(probe),dec=b64d(code);
+  var round=dec&&dec.i===probe.id&&dec.n===probe.name;
+  nOk=found&&pc>0&&round&&typeof notifyPending==="function"&&typeof osNotify==="function"&&reqBannerHTML!==undefined;
+  nInfo=nOk?"registre fusionné · code aller-retour OK · toast + badge + bannière + son":"chaîne incomplète";
+}catch(e){nInfo="erreur : "+e.message;}
+add("Remontée demande tiers",nOk,nInfo);
+add("Registre durable (fusion)",typeof regMerge==="function"&&typeof regRead==="function","aucune perte lors des relectures");
 add("API cloche exposée",typeof window.MD_openAccess==="function","window.MD_openAccess");
 var gEl=$("#gate"),stable=false;
 try{var before=gEl.innerHTML;gateSync();gateSync();gateSync();stable=(gEl.innerHTML===before);}catch(e){}
 add("Saisie tiers stable",stable,"aucune reconstruction pendant la frappe");
-add("Mémoire du prénom",typeof GATE_NAME==="string","valeur conservée entre les rendus");
 var cv=document.createElement("canvas"),cx=safe("tctx",function(){return cv.getContext("2d");},null);
 add("Canvas 2D",!!cx,cx?"OK":"indisponible",true);
 add("Scènes studio",WP.MODES.length>=8,WP.MODES.length+" scènes");
@@ -886,7 +1045,7 @@ add("Rendu des 7 vues",vb.length===0,vb.length?vb.join(", "):"7/7 rendues");
 META.integ=integrity();
 add("Intégrité référentielle",META.integ.ok,META.integ.err.length?META.integ.err.slice(0,3).join(" | "):"0 erreur — normalisation + couverture exhaustive");
 add("Sauvegarde admin",!isAdmin()||LASTSAVE>0,isAdmin()?(LASTSAVE?new Date(LASTSAVE).toLocaleTimeString("fr-FR"):"en attente"):"tiers : stockage interdit");
-add("Version moteur",window.__MD_VER==="8.4","v"+window.__MD_VER);
+add("Version moteur",window.__MD_VER==="8.4","v"+window.__MD_VER+" · "+window.__MD_FIX);
 add("Exceptions",ERRORS.length===0,ERRORS.length?ERRORS.slice(-3).map(function(e){return e.m;}).join(" | "):"aucune",true);
 TESTS=T;updateMeta();return T;}
 function autoFix(){if(!isAdmin())return;var did=[];
@@ -902,7 +1061,9 @@ function gateHTML(mode){
 var h="<div class='gcard2'><h1>MECADATA <i>//</i> PORTAIL D'ACCÈS</h1><p class='gsub'>Console technique 2017→2027 — choisissez votre mode d'ouverture. Le mot de passe résiduel est effacé à chaque lancement.</p>";
 if(!mode){
 h+="<div class='gmodes'><div class='gmode' data-act='gateAdmin'><div class='gi'>"+ic("shield","width:26px;height:26px")+"</div><h3>ADMINISTRATEUR</h3><p>Base, import multi-formats, méga-base, cloche d'accès tiers et diffusion temps réel.</p></div>";
-h+="<div class='gmode' data-act='gateTier'><div class='gi'>"+ic("users","width:26px;height:26px")+"</div><h3>TIERS</h3><p>Consultation des fiches techniques, pannes, rappels et plans d'entretien. Studio fond d'écran. Aucune modification, aucun import, aucune sauvegarde locale.</p></div></div><p class='gnote'>Session administrateur protégée · accès tiers soumis à validation</p>";}
+h+="<div class='gmode' data-act='gateTier'><div class='gi'>"+ic("users","width:26px;height:26px")+"</div><h3>TIERS</h3><p>Consultation des fiches techniques, pannes, rappels et plans d'entretien. Studio fond d'écran. Aucune modification, aucun import, aucune sauvegarde locale.</p></div></div>";
+h+="<div class='gform'><label class='lb'>Vous avez reçu un code d'accord ?</label><div style='display:flex;gap:7px;flex-wrap:wrap'><input class='inp mono' id='tierGrant' placeholder='MDA1-…' value='"+esc(GATE_CODE)+"' style='flex:1;min-width:200px'><button class='btn sm grn' data-act='tierGrantApply'>"+ic("unlock")+"Appliquer</button></div>";
+h+="<p class='gnote'>Session administrateur protégée · accès tiers soumis à validation</p></div>";}
 else if(mode==="admin"){
 h+="<div class='gform'><label class='lb'>Mot de passe administrateur</label><form data-form='admin'><input class='inp mono' type='password' name='pwd' id='gatePwd' value='' placeholder='••••••••' autocomplete='new-password' autocapitalize='off' autocorrect='off' spellcheck='false' enterkeyhint='go' style='text-align:center;letter-spacing:.2em;font-size:16px'>";
 h+="<div style='display:flex;gap:8px;margin-top:11px'><button type='button' class='btn ghost' data-act='gateBack'>Retour</button><button type='submit' class='btn pri' style='flex:1'>"+ic("unlock")+"OUVRIR LA SESSION ING-3</button></div></form><p class='gnote'>Champ réinitialisé à chaque lancement — aucun mot de passe conservé.</p></div>";}
@@ -911,22 +1072,28 @@ var u=tierUser();
 if(u&&u.status==="granted"){
 h+="<div class='gform'><div class='gwait'><div class='gi' style='width:52px;height:52px;margin:0 auto 12px;display:grid;place-items:center;border-radius:15px;background:rgba(67,224,139,.14);border:1px solid rgba(67,224,139,.45);color:#43E08B'>"+ic("check","width:24px;height:24px")+"</div><h3 style='font:600 15px var(--gd)'>Accès accordé — "+esc(u.name)+"</h3><p class='muted' style='font-size:12px;margin:7px 0 13px'>Consultation en lecture seule.</p><button class='btn pri' data-act='tierEnter'>"+ic("unlock")+"ENTRER EN CONSULTATION</button><div style='margin-top:9px'><button class='btn sm ghost' data-act='gateBack'>Retour</button></div></div></div>";}
 else if(u&&u.status==="pending"){
-h+="<div class='gform'><div class='gwait'><div class='spin'></div><h3 style='font:600 15px var(--gd)'>Demande envoyée — "+esc(u.name)+"</h3><p class='muted' style='font-size:12px;margin-top:7px'>En attente de validation. Cet écran se met à jour automatiquement dès la décision.</p><button class='btn sm ghost' data-act='tierCancel' style='margin-top:12px'>Annuler la demande</button></div></div>";}
+h+="<div class='gform'><div class='gwait'><div class='spin'></div><h3 style='font:600 15px var(--gd)'>Demande transmise — "+esc(u.name)+"</h3>";
+h+="<p class='muted' style='font-size:12px;margin-top:7px'>L'administrateur a reçu la notification. Cet écran se met à jour dès sa décision.</p>";
+h+="<div class='codebox'>"+esc(reqCode(u))+"</div>";
+h+="<p class='gnote'>Si l'administrateur est sur un autre appareil, transmettez-lui ce code : il le colle dans le gestionnaire d'accès.</p>";
+h+="<div style='display:flex;gap:7px;justify-content:center;margin-top:11px;flex-wrap:wrap'><button class='btn sm ghost' data-act='copyReq'>"+ic("dl")+"Copier le code</button><button class='btn sm ghost' data-act='tierPing'>"+ic("bell")+"Renvoyer la notification</button><button class='btn sm ghost' data-act='tierCancel'>Annuler</button></div>";
+h+="<label class='lb' style='margin-top:14px'>Code d'accord reçu</label><div style='display:flex;gap:7px;flex-wrap:wrap'><input class='inp mono' id='tierGrant' placeholder='MDA1-…' value='"+esc(GATE_CODE)+"' style='flex:1;min-width:180px'><button class='btn sm grn' data-act='tierGrantApply'>"+ic("unlock")+"Appliquer</button></div>";
+h+="</div></div>";}
 else if(u){
 h+="<div class='gform'><div class='gwait'><h3 style='font:600 15px var(--gd);color:#FF4D5E'>Accès "+(u.status==="denied"?"refusé":"révoqué")+"</h3><p class='muted' style='font-size:12px;margin:7px 0 12px'>L'administrateur a "+(u.status==="denied"?"refusé":"révoqué")+" cet accès.</p><button class='btn sm ghost' data-act='tierReset'>Nouvelle demande</button> <button class='btn sm ghost' data-act='gateBack'>Retour</button></div></div>";}
 else{
 h+="<div class='gform'><label class='lb' for='gateName'>Votre prénom</label><form data-form='tier' autocomplete='off'>";
 h+="<input class='inp' type='text' name='name' id='gateName' maxlength='24' placeholder='Prénom' value='"+esc(GATE_NAME)+"' autocomplete='off' autocapitalize='words' autocorrect='off' spellcheck='false' inputmode='text' enterkeyhint='send' style='text-align:center;font-size:16px'>";
 h+="<div style='display:flex;gap:8px;margin-top:11px'><button type='button' class='btn ghost' data-act='gateBack'>Retour</button><button type='submit' class='btn pri' style='flex:1'>"+ic("bell")+"DEMANDER L'ACCÈS</button></div></form>";
-h+="<p class='gnote'>Votre prénom est transmis à l'administrateur : la demande apparaît instantanément sur sa cloche.</p></div>";}}
+h+="<p class='gnote'>La demande est enregistrée durablement et notifiée à l'administrateur (cloche, badge, bannière, son).</p></div>";}}
 return h+"</div>";}
 function gateShow(mode,opts){
 opts=opts||{};
 var g=$("#gate");if(!g)return;
 var prev=GATE_MODE;
 GATE_MODE=mode||null;
-var cur=g.querySelector("#gateName");
-if(cur&&cur.value)GATE_NAME=cur.value;
+var cur=g.querySelector("#gateName");if(cur&&cur.value)GATE_NAME=cur.value;
+var cg=g.querySelector("#tierGrant");if(cg&&cg.value)GATE_CODE=cg.value;
 var sig=gateSig(GATE_MODE);
 if(!opts.force&&GATE_RENDERED&&sig===GATE_SIG&&prev===GATE_MODE){g.classList.remove("off");return;}
 if(!opts.force&&gateTyping()&&sig===GATE_SIG){g.classList.remove("off");return;}
@@ -939,12 +1106,14 @@ if(n){n.value=GATE_NAME;
 n.addEventListener("input",function(){GATE_NAME=n.value;});
 n.addEventListener("focus",function(){setTimeout(function(){if(document.activeElement===n){try{n.scrollIntoView({block:"center",behavior:"smooth"});}catch(e){}}},320);});
 if(opts.focus)setTimeout(function(){try{n.focus();}catch(e){}},90);}
+var c2=g.querySelector("#tierGrant");
+if(c2){c2.value=GATE_CODE;c2.addEventListener("input",function(){GATE_CODE=c2.value;});}
 var p=g.querySelector("#gatePwd");
 if(p){p.value="";if(opts.focus)setTimeout(function(){try{p.focus();}catch(e){}},90);}
 }
 function gateSync(){
 if(MODE)return;
-if(!GATE_MODE)return;
+if(!GATE_MODE&&GATE_RENDERED)return;
 var g=$("#gate");if(!g||g.classList.contains("off")||!GATE_RENDERED)return;
 var sig=gateSig(GATE_MODE);
 if(sig===GATE_SIG)return;
@@ -963,13 +1132,14 @@ if(d.wp)Object.keys(d.wp).forEach(function(k){WP.P[k]=d.wp[k];});
 LASTSAVE=d.ts||0;}},null);
 FIXES+=hardNormalize(DB);
 var c=ensureCoverage(DB);
-if(migrated||c){audit("adm","Migration base "+(migrated?"v8.3 → ":"")+"v8.4 · "+c+" motorisation(s) appariée(s)");}
+if(migrated||c)audit("adm","Migration base v8.4 · "+c+" motorisation(s) appariée(s)");
 }
 function enterAdmin(){MODE="admin";TIER=null;GATE_NAME="";gateHide();
 loadAdminDb();
-recompute();WP.apply();audit("adm","Session ING-3 ouverte");saveNow();runTests();S.view="bord";location.hash="#/bord";render();
+recompute();WP.apply();audit("adm","Session ING-3 ouverte");saveNow();
+regLoad();runTests();S.view="bord";location.hash="#/bord";render();
 toast("ok","Session administrateur","Cloche d'accès active en haut à droite.");beep("imp");
-var pc=pendingCount();if(pc>0)setTimeout(function(){toast("warn",pc+" demande(s) d'accès","Cliquez sur la cloche pour statuer.");},900);}
+setTimeout(function(){regLoad();var n=notifyPending();if(!n&&pendingCount()>0){toast("warn",pendingCount()+" demande(s) en attente","Cliquez la cloche pour statuer.");beep("imp");}},700);}
 function enterTier(){var u=tierUser();if(!u||u.status!=="granted"){gateShow("tier",{force:true});return;}
 MODE="tier";GATE_NAME="";gateHide();if(!applyTierSnapshot())DB=clone(SEED);
 recompute();WP.apply();runTests();S.view="bord";location.hash="#/bord";render();
@@ -987,15 +1157,35 @@ if(a==="openAccess"){ev.preventDefault();ev.stopPropagation();openAccess();retur
 if(a==="accClose"){ACC_OPEN=false;closeModal();return;}
 if(a==="accGoAdmin"){ACC_OPEN=false;closeModal();S.adm.tab="access";location.hash="#/admin";render();return;}
 if(a==="accSet"){ev.preventDefault();setAccess(id,el.dataset.st);return;}
-if(a==="accDel"){if(!isAdmin())return;var u=null;for(var i=0;i<REG.users.length;i++)if(REG.users[i].id===id)u=REG.users[i];
-REG.users=REG.users.filter(function(x){return x.id!==id;});regLog("Suppression accès "+(u?u.name:id));regSave();updateMeta();if(S.view==="admin")render();beep("del");return;}
+if(a==="accDel"){if(!isAdmin())return;regLoad();var u=null;for(var i=0;i<REG.users.length;i++)if(REG.users[i].id===id)u=REG.users[i];
+REG.users=REG.users.filter(function(x){return x.id!==id;});if(REG.tomb.indexOf(id)<0)REG.tomb.push(id);
+regLog("Suppression accès "+(u?u.name:id));regSave();updateMeta();if(S.view==="admin")render();beep("del");return;}
+if(a==="admCodeAdd"){var f=$("#admCode"),v=f?f.value.trim():"";
+if(!v){toast("err","Code vide","Collez le code MDR1- fourni par le tiers.");beep("err");return;}
+if(importReqCode(v)){S.adm.code="";toast("ok","Demande importée","La demande apparaît dans la liste.");beep("imp");if(ACC_OPEN){var b=$("#accBody");if(b)b.innerHTML=accessBody();}if(S.view==="admin")render();}
+else{toast("err","Code invalide","Format attendu : MDR1-…");beep("err");}return;}
+if(a==="copyGrant"){regLoad();var u2=null;for(var j=0;j<REG.users.length;j++)if(REG.users[j].id===id)u2=REG.users[j];
+if(u2){copyText(grantCode(u2));toast("ok","Code d'accord copié","Transmettez-le au tiers.");beep("ok");}return;}
+if(a==="copyReq"){var u3=tierUser();if(u3){copyText(reqCode(u3));toast("ok","Code de demande copié","Transmettez-le à l'administrateur.");beep("ok");}return;}
+if(a==="tierPing"){regLoad();regSave();bcast({t:"reg",rev:REG.rev,force:true});
+var u4=tierUser();if(u4){REG.seen=REG.seen.filter(function(x){return x!==u4.id;});regSave();}
+toast("info","Notification renvoyée","L'administrateur est re-notifié.");beep("imp");return;}
+if(a==="tierGrantApply"){var g2=$("#tierGrant"),v2=g2?g2.value.trim():GATE_CODE;
+if(!v2){toast("err","Code vide","Collez le code MDA1- reçu.");beep("err");return;}
+if(importGrantCode(v2)){GATE_CODE="";enterTier();}
+else{regLoad();gateShow("tier",{force:true});toast("warn","Code appliqué","Statut non accordé — voir l'écran.");beep("err");}return;}
+if(a==="notifTest"){regLoad();
+var pc=pendingCount();
+if(pc){REG.users.forEach(function(u){if(u.status==="pending")REG.seen=REG.seen.filter(function(x){return x!==u.id;});});regSave();notifyPending();}
+else{toast("info","Test de notification","Aucune demande en attente — notification de démonstration.");beep("imp");osNotify("MECADATA — test","La chaîne de notification fonctionne.");}
+return;}
 if(a==="forceFresh"){if(window.__MD_FRESH)window.__MD_FRESH();else location.reload(true);return;}
 if(a==="pwaIcons"){if(window.MD_ICONS){var n=window.MD_ICONS.download();toast("ok","Icônes PWA exportées",n+" PNG — déposez-les dans icons/.");beep("imp");}return;}
 if(a==="gateAdmin"){gateShow("admin",{force:true,focus:true});return;}
 if(a==="gateTier"){regLoad();gateShow("tier",{force:true,focus:true});return;}
-if(a==="gateBack"){GATE_NAME="";gateShow(null,{force:true});return;}
+if(a==="gateBack"){GATE_NAME="";GATE_CODE="";gateShow(null,{force:true});return;}
 if(a==="tierEnter"){enterTier();return;}
-if(a==="tierCancel"){REG.users=REG.users.filter(function(u2){return u2.id!==TIER;});TIER=null;GATE_NAME="";regSave();gateShow("tier",{force:true,focus:true});return;}
+if(a==="tierCancel"){regLoad();REG.users=REG.users.filter(function(u5){return u5.id!==TIER;});if(TIER&&REG.tomb.indexOf(TIER)<0)REG.tomb.push(TIER);TIER=null;GATE_NAME="";regSave();gateShow("tier",{force:true,focus:true});return;}
 if(a==="tierReset"){TIER=null;GATE_NAME="";gateShow("tier",{force:true,focus:true});return;}
 if(a==="omniSeed"){var inp=$("#omni");if(inp){inp.value=el.dataset.q;S.omni.q=el.dataset.q;inp.focus();omniRender();}return;}
 if(a==="omniHit"){omniActivate(el.dataset.kind,id);return;}
@@ -1010,7 +1200,7 @@ if(a==="runTests"){runTests();location.hash="#/diagnostic";render();return;}
 if(a==="autoFix"){autoFix();return;}
 if(a==="integrity"){var g=integrity();META.integ=g;updateMeta();
 var h="<div class='mh'>"+ic("check")+"<h3>Intégrité de la base</h3><button class='tb' data-act='mclose'>"+ic("x")+"</button></div><div class='mb2'><div class='rep' style='max-height:none'><b class='"+(g.ok?"ok":"rj")+"'>"+(g.ok?"BASE INTÈGRE":"ERREURS")+"</b> — score "+g.pct+"% · "+fmt(META.links)+" liaisons";
-if(g.err.length){h+="<ul>";g.err.slice(0,25).forEach(function(e){h+="<li class='rj'>"+esc(e)+"</li>";});h+="</ul>";}else h+="<p class='ok' style='margin-top:7px'>Aucun doublon, aucune référence orpheline, couverture motorisations 100 %, sévérités normalisées.</p>";
+if(g.err.length){h+="<ul>";g.err.slice(0,25).forEach(function(e){h+="<li class='rj'>"+esc(e)+"</li>";});h+="</ul>";}else h+="<p class='ok' style='margin-top:7px'>Aucun doublon, aucune référence orpheline, couverture motorisations 100 %.</p>";
 h+="</div></div><div class='mf'><button class='btn pri' data-act='mclose'>Fermer</button></div>";openModal(h);return;}
 if(a==="undo"){doUndo();return;}
 if(a==="mclose"){ACC_OPEN=false;closeModal();return;}
@@ -1045,7 +1235,7 @@ mutate("mega","Méga-base : "+list.length+" candidat(s)");saveNow();toast("ok","
 if(a==="megaSel"){if(!S.sel.b){toast("warn","Aucune marque sélectionnée","Choisissez une marque dans le module 2.");return;}S.adm.mega=BIDX[S.sel.b]?BIDX[S.sel.b].n:"";render();return;}
 if(a==="askReset"){if(!isAdmin())return;confirmModal("Réinitialiser la base ?","Modifications et imports remplacés par la base usine. Annulation 8 s.","doReset","Réinitialiser");return;}
 if(a==="doReset"){closeModal();snapshot("reset");DB=clone(SEED);mutate("del","Base usine restaurée");saveNow();toast("warn","Base usine restaurée","",true);return;}
-if(a==="logout"){MODE=null;TIER=null;ACC_OPEN=false;GATE_NAME="";closeModal();gateShow(null,{force:true});updateMeta();toast("info","Session fermée");return;}
+if(a==="logout"){MODE=null;TIER=null;ACC_OPEN=false;GATE_NAME="";GATE_CODE="";closeModal();gateShow(null,{force:true});updateMeta();toast("info","Session fermée");return;}
 if(a==="stMode"){WP.set("mode",el.dataset.m);beep("tick");return;}
 if(a==="stTheme"){WP.P.useCustom=false;WP.set("theme",el.dataset.t);beep("tick");return;}
 if(a==="stPreset"){var ps=WP.PRESETS[el.dataset.n];if(ps){Object.keys(ps).forEach(function(k){WP.P[k]=ps[k];});WP.apply();WP.resize();render();toast("ok","Preset appliqué",el.dataset.n);beep("ok");}return;}
@@ -1058,6 +1248,8 @@ if(a==="stCustom"){WP.P.useCustom=!!el.checked;WP.drawAll();markDirty();WP.sync(
 });
 document.addEventListener("input",function(ev){var t=ev.target;if(!t)return;
 if(t.id==="gateName"){GATE_NAME=t.value;return;}
+if(t.id==="tierGrant"){GATE_CODE=t.value;return;}
+if(t.id==="admCode"){S.adm.code=t.value;return;}
 if(t.id==="omni"){S.omni.q=t.value;omniRender();return;}
 if(t.dataset&&t.dataset.c){WP.setCustom(t.dataset.c,t.value);return;}
 if(t.dataset&&t.dataset.p){var k=t.dataset.p,v=t.type==="checkbox"?t.checked:(t.tagName==="SELECT"?(k==="dir"?+t.value:t.value):+t.value);WP.set(k,v);return;}
@@ -1086,13 +1278,22 @@ if(name.length<2){toast("err","Prénom requis","Saisissez au moins 2 caractères
 var n=$("#gateName");if(n){try{n.focus();}catch(e){}}return;}
 try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
 GATE_NAME=name;
-regLoad();var ex=null;REG.users.forEach(function(u){if(nk(u.name)===nk(name))ex=u;});
-if(ex){TIER=ex.id;if(ex.status==="granted"){enterTier();return;}
-if(ex.status!=="pending"){ex.status="pending";ex.ts=Date.now();ex.at=null;}}
+regLoad();
+var ex=null;REG.users.forEach(function(u){if(nk(u.name)===nk(name))ex=u;});
+if(ex){TIER=ex.id;
+if(ex.status==="granted"){enterTier();return;}
+if(ex.status!=="pending"){ex.status="pending";ex.ts=Date.now();ex.at=null;}
+REG.tomb=REG.tomb.filter(function(x){return x!==ex.id;});
+REG.seen=REG.seen.filter(function(x){return x!==ex.id;});}
 else{var u2={id:uid("U"),name:name,status:"pending",ts:Date.now(),at:null};REG.users.push(u2);TIER=u2.id;}
-regLog("Demande d'accès — "+name);regSave();
+regLog("Demande d'accès — "+name);
+regSave();
+bcast({t:"reg",rev:REG.rev,force:true});
 gateShow("tier",{force:true});
-toast("info","Demande envoyée","La cloche de l'administrateur a été notifiée.");beep("imp");return;}
+toast("ok","Demande transmise","Notification envoyée à l'administrateur (cloche + badge + son).");
+beep("imp");
+osNotify("MECADATA — demande d'accès",name+" demande l'accès à la console.");
+return;}
 });
 document.addEventListener("dragover",function(ev){var dz=ev.target.closest?ev.target.closest("#dz"):null;if(dz){ev.preventDefault();dz.classList.add("over");}});
 document.addEventListener("dragleave",function(ev){var dz=ev.target.closest?ev.target.closest("#dz"):null;if(dz)dz.classList.remove("over");});
@@ -1114,46 +1315,52 @@ if((ev.key==="Enter"||ev.key===" ")&&ev.target.classList&&ev.target.classList.co
 });
 window.addEventListener("hashchange",function(){if(!MODE)return;route();beep("tick");});
 window.addEventListener("storage",function(ev){
-if(ev.key===AKEY){regLoad();bellRefresh();if(isTier())tierSync();else if(isAdmin()&&S.view==="admin")render();else gateSync();}
+if(ev.key===AKEY){regLoad();bellRefresh();notifyPending();if(isTier())tierSync();else if(isAdmin()&&S.view==="admin")render();else gateSync();}
 if(ev.key===PKEY&&isTier())tierSync();});
+window.addEventListener("focus",function(){regLoad();bellRefresh();notifyPending();gateSync();});
 window.addEventListener("pagehide",function(){if(isAdmin())saveNow();});
-document.addEventListener("visibilitychange",function(){if(document.hidden&&isAdmin())saveNow();});
+document.addEventListener("visibilitychange",function(){
+if(document.hidden){if(isAdmin())saveNow();return;}
+regLoad();bellRefresh();notifyPending();if(isTier())tierSync();else gateSync();});
 setInterval(function(){var c=$("#clk");if(c)c.textContent=new Date().toLocaleTimeString("fr-FR");},1000);
 setInterval(function(){if(isAdmin()&&DIRTY)saveNow();},20000);
+/* boucle de remontée : fusion + notification, jamais de perte */
 setInterval(function(){
 regLoad();bellRefresh();
 if(isTier()){tierSync();return;}
-if(!MODE)gateSync();
-if(isAdmin()){var pc=pendingCount();if(PENDING>=0&&pc>PENDING){toast("warn","Nouvelle demande d'accès",pc+" demande(s) en attente — cliquez la cloche.");beep("imp");if(S.view==="admin")render();}PENDING=pc;}
-},1200);
+if(!MODE){gateSync();return;}
+if(isAdmin())notifyPending();
+},900);
 }
 function route(){var h=(location.hash||"#/bord").replace("#/","");
 var allowed=isTier()?["bord","explorer","tech","entretien","studio","diagnostic"]:["bord","explorer","tech","entretien","studio","admin","diagnostic"];
 S.view=allowed.indexOf(h)>-1?h:"bord";render();}
 function boot(){var o=$("#boot"),done=function(){if(!o)return;o.className="off";};
-var L=[["Noyau MECADATA v8.4",12],["Couverture exhaustive des motorisations",34],[DB.brands.length+" marques · "+DB.models.length+" modèles",58],[fmt(DB.engines.length)+" motorisations",78],[DB.faults.length+" pannes · "+DB.tsb.length+" TSB/rappels",92],["Gestionnaire 3 décisions vérifié",100]];
+var L=[["Noyau MECADATA v8.4 · "+window.__MD_FIX,12],["Couverture exhaustive des motorisations",34],[DB.brands.length+" marques · "+DB.models.length+" modèles",58],[fmt(DB.engines.length)+" motorisations",78],[DB.faults.length+" pannes · "+DB.tsb.length+" TSB/rappels",92],["Remontée de demande garantie",100]];
 var lg=$("#bl"),i=0,step=function(){if(i>=L.length){setTimeout(done,260);return;}
 var x=L[i++],d=document.createElement("div");d.innerHTML="<b>OK</b> "+esc(x[0]);lg.appendChild(d);
 while(lg.children.length>5)lg.removeChild(lg.firstChild);$("#bbar").style.width=x[1]+"%";setTimeout(step,110);};
 setTimeout(step,120);setTimeout(done,2600);}
 function init(){
 if(!window.MD_RAW){logErr("init",new Error("MD_RAW absent"));window.__MD_READY=false;return;}
-hardenResize();
+injectNotifCss();hardenResize();
 SEED=build(window.MD_RAW);FIXES+=hardNormalize(SEED);ensureCoverage(SEED);DB=clone(SEED);
 regLoad();recompute();
 STORE.idbInit().then(function(){
-if(isAdmin())return;
-STORE.idbGet(AKEY).then(function(raw){if(raw&&!STORE.get(AKEY)){STORE.set(AKEY,raw);regLoad();bellRefresh();gateSync();}});
+STORE.idbGet(AKEY).then(function(raw){
+if(!raw)return;
+safe("idbreg",function(){REG=regMerge(REG,JSON.parse(raw));bellRefresh();notifyPending();gateSync();},null);
+});
 });
 try{if(window.BroadcastChannel){CH=new BroadcastChannel("mecadata_v84");CH.onmessage=function(ev){var m=ev.data||{};
-if(m.t==="reg"){regLoad();bellRefresh();if(isTier())tierSync();else if(isAdmin()&&S.view==="admin")render();else gateSync();}
+if(m.t==="reg"){regLoad();bellRefresh();notifyPending();if(isTier())tierSync();else if(isAdmin()&&S.view==="admin")render();else gateSync();}
 if(m.t==="pub"&&isTier())tierSync();};}}catch(e){}
 WP.init();ensureBell();bind();runTests();updateMeta();boot();
 gateShow(null,{force:true});
 window.__MD_READY=true;window.__MD_SCRIPTS.app=true;
 var jf=$("#jsfail");if(jf&&jf.parentNode)jf.parentNode.removeChild(jf);
-PENDING=pendingCount();
 setTimeout(ensureBell,400);setTimeout(ensureBell,1500);
+setTimeout(function(){regLoad();bellRefresh();},600);
 }
 try{init();}catch(e){logErr("init",e);if(window.__MD_LIFT)window.__MD_LIFT();
 var v=$("#view");if(v)v.innerHTML="<div class='card panel'><h3 style='color:#FF4D5E'>Erreur d'initialisation</h3><p class='muted'>"+esc(e.message)+"</p><button class='btn pri' onclick='location.reload(true)'>Recharger</button></div>";
