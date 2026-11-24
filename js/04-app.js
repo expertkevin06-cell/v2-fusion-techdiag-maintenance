@@ -217,7 +217,262 @@ if(!STORE){
 }
 
 STORE.idbCache = STORE.idbCache || {};
+/* ══════════ SERVEUR LOCAL CHROME <-> APK ══════════ */
+var REMOTE = {
+  base: (/^https?:$/.test(location.protocol) ? location.origin : "http://127.0.0.1:7777"),
+  ok: false,
+  adminTimer: null,
+  tierTimer: null,
+  lastRev: 0,
+  dbTick: 0,
+  probing: false
+};
 
+function remoteUrl(p){
+  return REMOTE.base + p;
+}
+
+function remoteFetch(path, opts){
+  opts = opts || {};
+  return new Promise(function(resolve, reject){
+    try{
+      var xhr = new XMLHttpRequest();
+      xhr.open(opts.method || "GET", remoteUrl(path), true);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.timeout = opts.timeout || 4000;
+
+      xhr.onload = function(){
+        if(xhr.status >= 200 && xhr.status < 300){
+          try{
+            resolve(JSON.parse(xhr.responseText));
+          }catch(e){
+            reject(e);
+          }
+        }else{
+          reject(new Error("HTTP " + xhr.status));
+        }
+      };
+
+      xhr.onerror = function(){ reject(new Error("Serveur local injoignable")); };
+      xhr.ontimeout = function(){ reject(new Error("Délai dépassé")); };
+
+      xhr.send(opts.body ? JSON.stringify(opts.body) : null);
+    }catch(e){
+      reject(e);
+    }
+  });
+}
+
+function remoteProbe(){
+  if(REMOTE.probing) return Promise.resolve(REMOTE.ok);
+  REMOTE.probing = true;
+
+  return remoteFetch("/health", { timeout: 1400 })
+    .then(function(j){
+      REMOTE.ok = !!(j && j.ok);
+      return REMOTE.ok;
+    })
+    .catch(function(){
+      REMOTE.ok = false;
+      return false;
+    })
+    .then(function(v){
+      REMOTE.probing = false;
+      return v;
+    });
+}
+
+function remoteStartAdminPoll(){
+  remoteStopPoll();
+
+  REMOTE.adminTimer = setInterval(function(){
+    if(!isAdmin() || !REMOTE.ok) return;
+
+    remoteFetch("/api/registry", { timeout: 2500 })
+      .then(function(reg){
+        if(!reg) return;
+
+        var beforePending = pendingCount();
+        var beforeRev = +REG.rev || 0;
+
+        REG = regMerge(REG, reg);
+
+        var afterPending = pendingCount();
+        var afterRev = +REG.rev || 0;
+
+        if(afterRev !== beforeRev || afterPending > beforePending){
+          REMOTE.lastRev = afterRev;
+          bellRefresh();
+          notifyPending();
+          updateMeta();
+          if(S.view === "admin") render();
+        }
+      })
+      .catch(function(){
+        REMOTE.ok = false;
+        remoteStopPoll();
+        toast("warn", "Serveur local perdu", "L'application admin ne reçoit plus les demandes Chrome.");
+      });
+  }, 900);
+}
+
+function remoteStopPoll(){
+  if(REMOTE.adminTimer){
+    clearInterval(REMOTE.adminTimer);
+    REMOTE.adminTimer = null;
+  }
+  if(REMOTE.tierTimer){
+    clearInterval(REMOTE.tierTimer);
+    REMOTE.tierTimer = null;
+  }
+}
+
+function remoteCreateRequest(name){
+  return remoteFetch("/api/requests", {
+    method: "POST",
+    body: { name: name }
+  }).then(function(u){
+    TIER = u.id;
+
+    REG = regMerge(REG, {
+      users: [u],
+      rev: (+REG.rev || 0) + 1,
+      log: [{ ts: Date.now(), a: "Demande d'accès — " + u.name }],
+      seen: REG.seen,
+      tomb: REG.tomb
+    });
+
+    bellRefresh();
+    return { ok: true, user: u, already: false, remote: true };
+  });
+}
+
+function remoteDecision(id, status){
+  return remoteFetch("/api/decisions", {
+    method: "POST",
+    body: { id: id, status: status }
+  }).then(function(u){
+    REG = regMerge(REG, {
+      users: [u],
+      rev: (+REG.rev || 0) + 1,
+      log: [{
+        ts: Date.now(),
+        a: (status === "granted" ? "ACCÈS accordé" : (status === "denied" ? "REFUS" : "RÉVOCATION")) + " — " + u.name
+      }],
+      seen: REG.seen,
+      tomb: REG.tomb
+    });
+
+    bellRefresh();
+    updateMeta();
+    if(S.view === "admin") render();
+    return u;
+  });
+}
+
+function remoteGetPublished(){
+  return remoteFetch("/api/published", { timeout: 5000 })
+    .then(function(p){
+      return p && p.db ? p.db : null;
+    })
+    .catch(function(){
+      return null;
+    });
+}
+
+function remotePublishDb(){
+  if(!isAdmin() || !REMOTE.ok) return Promise.resolve(false);
+
+  return remoteFetch("/api/published", {
+    method: "POST",
+    body: {
+      ts: Date.now(),
+      rev: +REG.rev || 0,
+      db: DB
+    },
+    timeout: 8000
+  }).then(function(){
+    return true;
+  }).catch(function(){
+    REMOTE.ok = false;
+    toast("warn", "Publication serveur impossible", "La base n'a pas été diffusée au tiers Chrome.");
+    return false;
+  });
+}
+
+function remoteTierStatus(){
+  if(!TIER) return;
+
+  remoteFetch("/api/requests/" + encodeURIComponent(TIER), { timeout: 2500 })
+    .then(function(u){
+      if(!u) return;
+
+      var local = tierUser();
+      if(local && local.status === u.status) return;
+
+      REG = regMerge(REG, {
+        users: [u],
+        rev: (+REG.rev || 0) + 1
+      });
+
+      if(u.status === "granted"){
+        if(!MODE){
+          enterTier();
+        }else{
+          recompute();
+          render();
+          toast("ok", "Accès accordé", u.name + " peut consulter la base.");
+        }
+      }
+      else if(u.status === "denied" || u.status === "revoked"){
+        if(isTier()){
+          MODE = null;
+          TIER = null;
+          gateShow("tier", { force: true });
+          render();
+          toast("err", "Accès " + (u.status === "denied" ? "refusé" : "révoqué"), "L'administrateur a modifié votre accès.");
+        }else{
+          gateSync();
+        }
+      }
+      else{
+        gateSync();
+      }
+    })
+    .catch(function(){});
+}
+
+function remoteTierDbSync(){
+  if(!isTier() || !REMOTE.ok) return;
+
+  remoteGetPublished().then(function(db){
+    if(db && db.engines && db.engines.length){
+      DB = db;
+      recompute();
+      updateMeta();
+      render();
+    }
+  });
+}
+
+function remoteStartTierPoll(){
+  if(REMOTE.tierTimer) clearInterval(REMOTE.tierTimer);
+
+  REMOTE.tierTimer = setInterval(function(){
+    if(!REMOTE.ok) return;
+
+    if(TIER){
+      remoteTierStatus();
+    }
+
+    if(isTier()){
+      REMOTE.dbTick++;
+      if(REMOTE.dbTick % 5 === 0){
+        remoteTierDbSync();
+      }
+    }
+  }, 1200);
+}
 if(!toast){
   toast = function(kind, title, msg, durable){
     try{
