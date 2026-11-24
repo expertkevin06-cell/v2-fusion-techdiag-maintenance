@@ -1760,7 +1760,74 @@ function preloadIdb(){
   });
 }
 
+function createRequestLocal(name){
+  name = String(name || "").trim().slice(0, 24);
+  if(name.length < 2){
+    return { ok: false, err: "Prénom requis (2 caractères minimum)" };
+  }
+
+  regLoad();
+
+  var ex = null;
+  REG.users.forEach(function(u){
+    if(nk(u.name) === nk(name)) ex = u;
+  });
+
+  if(ex){
+    TIER = ex.id;
+
+    if(ex.status === "granted"){
+      return { ok: true, user: ex, already: true };
+    }
+
+    if(ex.status !== "pending"){
+      ex.status = "pending";
+      ex.ts = Date.now();
+      ex.at = null;
+    }
+
+    REG.tomb = REG.tomb.filter(function(x){ return x !== ex.id; });
+    REG.seen = REG.seen.filter(function(x){ return x !== ex.id; });
+  }else{
+    var u = {
+      id: uid("U"),
+      name: name,
+      status: "pending",
+      ts: Date.now(),
+      at: null
+    };
+    REG.users.push(u);
+    TIER = u.id;
+  }
+
+  regLog("Demande d'accès — " + name);
+  regSave();
+
+  return {
+    ok: true,
+    user: tierUser(),
+    already: false
+  };
+}
+
 function createRequest(name){
+  name = String(name || "").trim().slice(0, 24);
+
+  if(name.length < 2){
+    return Promise.resolve({ ok: false, err: "Prénom requis (2 caractères minimum)" });
+  }
+
+  if(REMOTE.ok){
+    return remoteCreateRequest(name)
+      .catch(function(){
+        REMOTE.ok = false;
+        remoteStopPoll();
+        return Promise.resolve(createRequestLocal(name));
+      });
+  }
+
+  return Promise.resolve(createRequestLocal(name));
+}
   name = String(name || "").trim().slice(0, 24);
   if(name.length < 2){
     return { ok: false, err: "Prénom requis (2 caractères minimum)" };
