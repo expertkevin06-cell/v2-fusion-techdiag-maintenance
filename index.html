@@ -9,7 +9,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>MECADATA // INGÉNIEUR EXPERT v8.3</title>
+<meta http-equiv="Expires" content="0">
+<title>MECADATA // INGÉNIEUR EXPERT v8.4</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
@@ -186,10 +187,13 @@ input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:#1E4
 .accbox .bx{width:17px;height:17px;border-radius:4px;border:2px solid currentColor;flex:none;display:grid;place-items:center;font:700 10px var(--gm)}
 .accbox.g{color:#43E08B}.accbox.d{color:#FFAF2E}.accbox.r{color:#FF4D5E}
 .accbox.on{background:currentColor}.accbox.on .lbl{color:#04070D}.accbox.on .bx{border-color:#04070D;background:#04070D;color:#fff}
+.acclegend{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px;opacity:.9}
+.acclegend .accbox{cursor:default;pointer-events:none}.acclegend .accbox:hover{transform:none;filter:none}
 .accempty{border:1px dashed var(--ln);border-radius:11px;padding:22px;text-align:center;color:var(--t2)}
-#gate{position:fixed;inset:0;z-index:300;background:radial-gradient(120% 90% at 50% 25%,#0A1120,#04070D 72%);display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto}
+#gate{position:fixed;inset:0;z-index:300;background:radial-gradient(120% 90% at 50% 25%,#0A1120,#04070D 72%);display:flex;align-items:flex-start;justify-content:center;padding:18px;overflow-y:auto;overscroll-behavior:contain}
 #gate.off{display:none}
-.gcard2{width:min(760px,100%);border:1px solid var(--ln2);border-radius:18px;background:rgba(9,14,26,.96);padding:26px;box-shadow:0 30px 90px rgba(0,0,0,.7)}
+#gate input{scroll-margin:45vh}#gateName{caret-color:#FFD60A}
+.gcard2{width:min(760px,100%);margin:auto;border:1px solid var(--ln2);border-radius:18px;background:rgba(9,14,26,.96);padding:26px;box-shadow:0 30px 90px rgba(0,0,0,.7)}
 .gcard2 h1{font:600 22px var(--gd);letter-spacing:.05em;text-align:center}.gcard2 h1 i{color:var(--ye);font-style:normal}
 .gsub{text-align:center;color:var(--t2);font-size:12.5px;margin:8px 0 20px}
 .gmodes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -198,15 +202,15 @@ input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:#1E4
 .gmode h3{font:600 15px var(--gd);margin-bottom:6px}.gmode p{font-size:11.5px;color:var(--t2)}
 .gform{margin-top:16px;border-top:1px solid var(--ln);padding-top:16px}
 .gnote{font:400 10px var(--gm);color:var(--t3);margin-top:9px;text-align:center}
-.gwait{text-align:center;padding:20px}.gwait .spin{width:44px;height:44px;margin:0 auto 14px;border:3px solid var(--ln);border-top-color:var(--ye);border-radius:50%;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.gwait{text-align:center;padding:20px}.gwait .spin{width:44px;height:44px;margin:0 auto 14px;border:3px solid var(--ln);border-top-color:var(--ye);border-radius:50%;animation:sp 1s linear infinite;will-change:transform}@keyframes sp{to{transform:rotate(360deg)}}
 #boot{position:fixed;inset:0;z-index:250;background:#04070D;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;padding:20px;text-align:center;transition:opacity .4s}
 #boot.off{opacity:0;visibility:hidden;pointer-events:none}
 #boot img{width:60px;height:60px;border-radius:15px;box-shadow:0 0 36px rgba(255,168,0,.45)}
 #boot h1{font:600 18px var(--gd);letter-spacing:.09em}#boot h1 i{color:var(--ye);font-style:normal}
 #boot .bb{width:min(320px,80vw);height:4px;border-radius:4px;background:#111C31;overflow:hidden}#boot .bb i{display:block;height:100%;width:0;background:var(--gb);transition:width .3s}
 #bl{font:400 10px var(--gm);color:var(--t3);width:min(330px,86vw);height:88px;overflow:hidden;display:flex;flex-direction:column;gap:3px;text-align:left}#bl b{color:var(--gr)}
-#jsfail{max-width:640px;margin:8vh auto;padding:22px;display:none}#jsfail h2{font:600 18px var(--gd);color:var(--ye);margin-bottom:9px}#jsfail p{color:var(--t2);font-size:12.5px;margin-bottom:8px}#jsfail code{font-family:var(--gm);color:var(--cy)}
-#verwarn{position:fixed;left:0;right:0;top:var(--tb);z-index:200;background:rgba(255,77,94,.16);border-bottom:1px solid rgba(255,77,94,.5);padding:9px 14px;font:500 12px var(--gd);color:#FFB3BA;display:none;align-items:center;gap:10px;flex-wrap:wrap}
+#jsfail{max-width:660px;margin:8vh auto;padding:22px;display:none}#jsfail h2{font:600 18px var(--gd);color:var(--ye);margin-bottom:9px}#jsfail p{color:var(--t2);font-size:12.5px;margin-bottom:8px}#jsfail code{font-family:var(--gm);color:var(--cy)}
+#verwarn{position:fixed;left:0;right:0;top:var(--tb);z-index:200;background:rgba(255,77,94,.18);border-bottom:1px solid rgba(255,77,94,.55);padding:9px 14px;font:500 12px var(--gd);color:#FFB3BA;display:none;align-items:center;gap:10px;flex-wrap:wrap}
 #verwarn.on{display:flex}
 #dr .sc{position:fixed;inset:0;z-index:90;background:rgba(2,5,10,.62);opacity:0;transition:.25s}#dr.on .sc{opacity:1}
 .dw{position:fixed;top:0;right:0;bottom:0;z-index:91;width:min(600px,100vw);background:rgba(8,13,23,.99);border-left:1px solid var(--ln2);transform:translateX(102%);transition:transform .3s cubic-bezier(.2,.8,.25,1);display:flex;flex-direction:column}
@@ -229,7 +233,7 @@ input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:#1E4
 @media(max-width:980px){#rail{width:56px;padding:13px 6px 30px}.nv{justify-content:center;padding:10px}.nv span,.nv em,.nv .bdg{display:none}.rfoot{display:none}.exwrap{grid-template-columns:250px 1fr}.g2{grid-template-columns:1fr}}
 @media(max-width:860px){:root{--tb:50px}#rail,#status{display:none}#tabs{display:flex}#view{padding:14px 10px 76px}.logo small,.vch,#clk,.omni{display:none}#msearch{display:grid}
 .kpis{grid-template-columns:repeat(2,1fr)}.g2,.f2,.f3,.f4,.oil,.fgrid,.gmodes{grid-template-columns:1fr}.exwrap,.stwrap{grid-template-columns:1fr}.filters,.ctrl,.stage{position:static;max-height:none}
-.eg{grid-template-columns:1fr}.dw{width:100vw;border-left:0}#ts{bottom:70px;right:8px;left:8px;max-width:none}.screen{height:240px}.crow{grid-template-columns:repeat(3,1fr)}.accboxes{grid-template-columns:1fr}}
+.eg{grid-template-columns:1fr}.dw{width:100vw;border-left:0}#ts{bottom:70px;right:8px;left:8px;max-width:none}.screen{height:240px}.crow{grid-template-columns:repeat(3,1fr)}.accboxes,.acclegend{grid-template-columns:1fr}}
 @media(min-width:861px){#msearch{display:none}}
 @media print{#top,#rail,#tabs,#status,#bgc,#boot,#gate{display:none}#view{padding:0}}
 </style>
@@ -282,11 +286,11 @@ input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:#1E4
 
 <canvas id="bgc"></canvas>
 <div id="boot"><img src="icons/icon-192.png" alt=""><h1>MECADATA <i>//</i> EXPERT</h1><div class="bb"><i id="bbar"></i></div><div id="bl"></div></div>
-<div id="verwarn"><svg class="ic"><use href="#i-alert"/></svg><span id="verwarnTxt"></span><button class="btn xs amb" onclick="location.reload(true)">RECHARGER SANS CACHE</button></div>
+<div id="verwarn"><svg class="ic"><use href="#i-alert"/></svg><span id="verwarnTxt"></span><button class="btn xs amb" id="forceFresh">RECHARGER SANS CACHE</button></div>
 
 <header id="top">
 <a class="logo" href="#/bord"><svg viewBox="0 0 512 512"><use href="#i-logo"/></svg><span><b>MECADATA <i>//</i> EXPERT</b><small>CONSOLE 2017→2027</small></span></a>
-<span class="vch" id="verchip" title="Version moteur">v8.3</span>
+<span class="vch" id="verchip" title="Version moteur">v8.4</span>
 <div class="omni"><div class="box"><svg class="ic" style="color:#61748C"><use href="#i-search"/></svg><input id="omni" type="search" placeholder="Marque, modèle, phase, code moteur, panne, rappel, TSB…" autocomplete="off"><kbd>/</kbd></div><div id="omnires"></div></div>
 <button class="tb" id="msearch" data-act="msearch" aria-label="Recherche"><svg class="ic"><use href="#i-search"/></svg></button>
 <button class="chip ok" id="ichip" data-act="integrity"><span class="dot"></span><span id="itxt">INTÈGRE</span></button>
@@ -313,7 +317,7 @@ input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:#1E4
 <div class="rfoot"><b><svg class="ic" style="width:12px;height:12px"><use href="#i-shield"/></svg>SESSION</b><p id="rtxt">—</p>
 <div class="stor">STOCKAGE<div class="sbar"><i id="sbar"></i></div><span id="stxt">—</span></div></div>
 </aside>
-<main id="view"><div id="jsfail" class="card"><h2>Moteur non démarré</h2><p>Vérifiez que les 5 fichiers JS sont dans <code>js/</code>, que JavaScript et DomStorage sont activés.</p><div id="jsfail-details" class="rep"></div><button class="btn pri" onclick="location.reload(true)">RECHARGER</button></div></main>
+<main id="view"><div id="jsfail" class="card"><h2>Moteur non démarré</h2><p>Vérifiez que les 5 fichiers JS sont dans <code>js/</code>, que JavaScript et DomStorage sont activés.</p><div id="jsfail-details" class="rep"></div><button class="btn pri" id="failReload">RECHARGER</button></div></main>
 </div>
 
 <nav id="tabs">
@@ -328,29 +332,53 @@ input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:#1E4
 <footer id="status"><span>LIAISONS <b id="stLinks">0</b></span><span>CORRÉLATIONS <b id="stCorr">0</b></span><span>INTÉGRITÉ <b id="stInt">100%</b></span><span>TESTS <b id="stTest">—</b></span><span>DIFFUSION <b id="stDiff">—</b></span><span id="stSize">— Ko</span><span class="dim">SYNTHÈSE INGÉNIEUR — CONFIRMER AU VIN</span></footer>
 <div id="gate"></div><div id="dr"></div><div id="md"></div><div id="ts"></div>
 
-<script>window.__MD_VER_EXPECT="8.3";</script>
-<script src="js/00-icons.js?v=83"></script>
-<script src="js/01-watchdog.js?v=83"></script>
-<script src="js/02-data.js?v=83"></script>
-<script src="js/03-core.js?v=83"></script>
-<script src="js/04-app.js?v=83"></script>
 <script>
+/* ══ CHARGEUR ANTI-CACHE — jeton neuf à chaque lancement, ordre strict garanti ══ */
 (function(){
-  function chk(){
-    var got=window.__MD_VER||null,w=document.getElementById("verwarn"),t=document.getElementById("verwarnTxt");
-    if(got!=="8.3"&&w&&t){
-      t.textContent="Moteur "+(got||"inconnu")+" chargé au lieu de 8.3 — fichiers JS en cache. Rechargez sans cache ou remplacez js/03-core.js et js/04-app.js.";
-      w.classList.add("on");
-    }
-    var bell=document.getElementById("bellb");
-    if(bell&&!bell.__wired){bell.__wired=true;bell.addEventListener("click",function(ev){
-      ev.preventDefault();ev.stopPropagation();
-      if(window.MD_openAccess)window.MD_openAccess();
-    },true);}
+  "use strict";
+  var EXPECT="8.4";
+  window.__MD_EXPECT=EXPECT;
+  var FILES=["00-icons","01-watchdog","02-data","03-core","04-app"];
+  var tok;
+  try{tok=sessionStorage.getItem("md_tok");}catch(e){tok=null;}
+  if(!tok){tok=Date.now().toString(36)+Math.random().toString(36).slice(2,6);try{sessionStorage.setItem("md_tok",tok);}catch(e){}}
+  window.__MD_TOK=tok;
+  function fresh(){
+    try{sessionStorage.removeItem("md_tok");}catch(e){}
+    var u=location.pathname+"?fresh="+Date.now()+(location.hash||"");
+    location.replace(u);
+  }
+  window.__MD_FRESH=fresh;
+  var fb=document.getElementById("failReload");if(fb)fb.addEventListener("click",fresh);
+  var ff=document.getElementById("forceFresh");if(ff)ff.addEventListener("click",fresh);
+  function fail(name){
+    var p=document.getElementById("jsfail"),d=document.getElementById("jsfail-details"),b=document.getElementById("boot");
+    if(b)b.className="off";
+    if(p)p.style.display="block";
+    if(d)d.innerHTML="<b class='rj'>Fichier introuvable : js/"+name+".js</b><ul><li>Vérifiez le nom exact et le dossier js/</li><li>Puis rechargez sans cache</li></ul>";
+  }
+  function verify(){
+    var got=window.__MD_BUILD||window.__MD_VER||null;
+    var w=document.getElementById("verwarn"),t=document.getElementById("verwarnTxt");
     var chip=document.getElementById("verchip");
     if(chip)chip.textContent="v"+(got||"?");
+    if(got!==EXPECT&&w&&t){
+      t.textContent="Moteur "+(got||"inconnu")+" au lieu de "+EXPECT+" — remplacez js/04-app.js puis rechargez sans cache.";
+      w.classList.add("on");
+    }else if(w){w.classList.remove("on");}
+    var bell=document.getElementById("bellb");
+    if(bell&&!bell.__wired){bell.__wired=true;bell.addEventListener("click",function(ev){ev.preventDefault();ev.stopPropagation();if(window.MD_openAccess)window.MD_openAccess();},true);}
   }
-  setTimeout(chk,600);setTimeout(chk,2500);
+  function load(i){
+    if(i>=FILES.length){verify();setTimeout(verify,900);setTimeout(verify,2600);return;}
+    var s=document.createElement("script");
+    s.src="js/"+FILES[i]+".js?t="+tok;
+    s.async=false;
+    s.onload=function(){load(i+1);};
+    s.onerror=function(){fail(FILES[i]);load(i+1);};
+    document.body.appendChild(s);
+  }
+  load(0);
 })();
 </script>
 </body>
