@@ -1,7 +1,8 @@
 (function(){
 "use strict";
-window.__MD_VER="8.4";window.__MD_BUILD="8.4";window.__MD_FIX="8.6-prenom";
+window.__MD_VER="8.4";window.__MD_BUILD="8.4";window.__MD_FIX="8.6-sync";
 var $=window.MD_$,$$=window.MD_$$,esc=window.MD_esc,fmt=window.MD_fmt,clamp=window.MD_clamp,uid=window.MD_uid,clone=window.MD_clone,ov=window.MD_ov,ic=window.MD_ic,deb=window.MD_deb,split=window.MD_split,nk=window.MD_nk,slug=window.MD_slug,safe=window.MD_safe,logErr=window.MD_logErr,STORE=window.MD_STORE,download=window.MD_download,beep=window.MD_beep,toast=window.MD_toast,openModal=window.MD_openModal,closeModal=window.MD_closeModal,confirmModal=window.MD_confirmModal,modalOpenFn=window.MD_modalOpen,WP=window.MD_WP,PREF=window.MD_PREF,ERRORS=window.MD_ERRORS;
+STORE.idbCache=STORE.idbCache||{};
 var PWD="Kevin83600",KEY="mecadata_v84",OLDKEY="mecadata_v83",AKEY="md_access_v83",PKEY="md_pub_v83",YMAX=2027,KMMAX=200000;
 var SEGS=window.MD_RAW.segs;
 var FU={e:{l:"Essence",c:"#FFAF2E"},d:{l:"Diesel",c:"#4D8DFF"},h:{l:"Hybride",c:"#43E08B"},p:{l:"Hybride rechargeable",c:"#19B8A6"},b:{l:"Électrique",c:"#E45CFF"},g:{l:"GPL",c:"#A8E63C"}};
@@ -18,43 +19,27 @@ var SEED=null,DB=null,AUDIT=[],UNDO=null,TESTS=[],IVIC={},MIDX={},BIDX={},EIDX={
 var META={counts:{},links:0,corr:0,integ:{err:[],ok:true,pct:100},size:0,byBrand:{}};
 var MODE=null,TIER=null,CH=null;
 var REG={users:[],live:false,rev:0,log:[],seen:[],tomb:[]};
-var GATE_MODE=null,GATE_SIG=null,GATE_NAME="",GATE_RENDERED=false;
+var REG_OK=true,REG_WARNED=false;
+var GATE_MODE=null,GATE_SIG=null,GATE_NAME="",GATE_RENDERED=false,GATE_CODE="";
 var S={view:"bord",sel:{b:"",m:"",e:""},f:{q:"",fuel:[],y:[2017,YMAX],sort:"brand"},shown:48,
-tech:{tab:"faults",q:"",sev:"",brand:"",model:"",phase:"",dom:"",km:""},adm:{tab:"files",mega:""},
+tech:{tab:"faults",q:"",sev:"",brand:"",model:"",phase:"",dom:"",km:""},adm:{tab:"files",mega:"",code:""},
 calc:{km:60000,year:2021,sev:1},drawer:null,omni:{q:"",hits:[],idx:-1}};
 window.MD_STATE=S;
 var isAdmin=function(){return MODE==="admin";},isTier=function(){return MODE==="tier";};
 
 function gateTyping(){var a=document.activeElement;return !!(a&&a.closest&&a.closest("#gate")&&/^(input|textarea)$/i.test(a.tagName));}
-function gateSig(mode){var u=tierUser();return (mode||"root")+"|"+(u?(u.id+":"+u.status):"none");}
+function gateSig(mode){var u=tierUser();return (mode||"root")+"|"+(u?(u.id+":"+u.status+":"+GATE_CODE):"none");}
 function hardenResize(){if(WP.__resizeGuarded)return;WP.__resizeGuarded=true;var base=WP.resize;WP.resize=function(){if(gateTyping())return;return base.call(WP);};}
-function injectCss(){
-  if(document.getElementById("mdFixCss"))return;
-  var st=document.createElement("style");st.id="mdFixCss";
-  st.textContent=
-  ".reqbanner{border:1px solid rgba(255,77,94,.55);background:linear-gradient(120deg,rgba(255,77,94,.14),rgba(255,214,10,.08));border-radius:12px;padding:11px 14px;margin-bottom:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;animation:reqIn .35s}"+
+function injectNotifCss(){
+  if(document.getElementById("mdNotifCss"))return;
+  var st=document.createElement("style");st.id="mdNotifCss";
+  st.textContent=".reqbanner{border:1px solid rgba(255,77,94,.55);background:linear-gradient(120deg,rgba(255,77,94,.14),rgba(255,214,10,.08));border-radius:12px;padding:11px 14px;margin-bottom:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;animation:reqIn .35s}"+
   "@keyframes reqIn{from{opacity:0;transform:translateY(-8px)}}"+
   ".reqbanner b{font:600 13px var(--gd);color:#FFB3BA}.reqbanner .rn{font:400 11px var(--gm);color:var(--t2)}"+
   ".reqpulse{width:9px;height:9px;border-radius:50%;background:#FF4D5E;box-shadow:0 0 0 0 rgba(255,77,94,.7);animation:rp 1.4s infinite}"+
   "@keyframes rp{70%{box-shadow:0 0 0 9px rgba(255,77,94,0)}100%{box-shadow:0 0 0 0 rgba(255,77,94,0)}}"+
-  "#gate{background:radial-gradient(120% 90% at 50% 18%,#0B1224,#04070D 72%)}"+
-  "#gate:before{content:'';position:absolute;inset:-10%;pointer-events:none;background:radial-gradient(42% 38% at 18% 22%,rgba(255,214,10,.17),transparent 62%),radial-gradient(38% 36% at 82% 28%,rgba(37,212,238,.15),transparent 62%),radial-gradient(48% 44% at 52% 94%,rgba(228,92,255,.13),transparent 62%);animation:gAur 15s ease-in-out infinite alternate}"+
-  "@keyframes gAur{to{transform:translate3d(0,-16px,0) scale(1.07)}}"+
-  "#gate:after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.05;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E\")}"+
-  ".gcard2{position:relative;z-index:1;animation:gIn .5s cubic-bezier(.2,.8,.25,1) both}"+
-  "@keyframes gIn{from{opacity:0;transform:translateY(16px) scale(.985)}}"+
-  ".glogo{width:58px;height:58px;margin:0 auto 12px;display:block;border-radius:16px;box-shadow:0 0 36px rgba(255,168,0,.45);animation:gBolt 2.6s ease-in-out infinite}"+
-  "@keyframes gBolt{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.05);filter:brightness(1.15)}}"+
-  ".gsys{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:15px}"+
-  ".gsys span{font:400 9px var(--gm);color:var(--t2);border:1px solid var(--ln);background:rgba(12,20,36,.62);padding:3px 9px;border-radius:12px}"+
-  ".gsys span b{color:var(--ye);font-weight:600}"+
-  ".gmode{animation:gIn .5s cubic-bezier(.2,.8,.25,1) both}.gmode:nth-child(2){animation-delay:.09s}"+
-  ".tierinput{font-size:18px!important;padding:14px!important;letter-spacing:.02em}"+
-  ".waitcard{border:1px solid var(--ln2);border-radius:14px;padding:17px;background:linear-gradient(150deg,rgba(255,214,10,.08),rgba(37,212,238,.04))}"+
-  ".elapsed{font:500 11px var(--gm);color:var(--ye)}"+
-  ".gnote b{color:var(--ye)}"+
-  ".okcard{border:1px solid rgba(67,224,139,.5);border-radius:14px;padding:17px;background:linear-gradient(150deg,rgba(67,224,139,.12),rgba(25,184,166,.05))}"+
-  ".kocard{border:1px solid rgba(255,77,94,.45);border-radius:14px;padding:17px;background:linear-gradient(150deg,rgba(255,77,94,.1),rgba(255,175,46,.05))}";
+  ".codebox{font:500 11px var(--gm);color:#FFD60A;background:rgba(255,214,10,.07);border:1px dashed var(--ln2);border-radius:9px;padding:9px 11px;word-break:break-all;margin-top:9px;user-select:all;-webkit-user-select:all}"+
+  ".syncwarn{border:1px solid rgba(255,175,46,.5);background:rgba(255,175,46,.08);border-radius:10px;padding:9px 12px;font-size:11.5px;color:#FFC9A8;margin-bottom:11px}";
   document.head.appendChild(st);
 }
 
@@ -120,7 +105,7 @@ function hardNormalize(D){
       D.brands.push({id:nid,n:String(mb||"Marque importée"),pays:"—",grp:"—"});bSet[nid]=1;bMap[mb]=nid;mb=nid;fixes++;
     }
     var mid=String(m.id||("M-"+slug(mb)+"-"+slug(m.n))).trim()||("M-"+slug(mb)+"-"+slug(m.n));
-    if(mUsed[mid]){var nmid=mid,q3=2;while(mUsed[nmid])nmid=mid+"-"+(q3++);mid=nmid;fixes++;}
+    if(mUsed[mid]){var nmid=mid,q3=2;while(mUsed[nmid])nmid=mid+"~"+(q3++);mid=nmid;fixes++;}
     mUsed[mid]=1;
     var my=Array.isArray(m.y)?m.y:[2017,YMAX];
     nm.push({id:mid,b:mb,n:String(m.n),y:[+my[0]||2017,+my[1]||YMAX],seg:String(m.seg||"Compacte"),phase:+m.phase||1});
@@ -240,12 +225,17 @@ DB.faults.forEach(function(f){links+=f.fam.length;doms[f.dom]=1;});DB.tsb.forEac
 META={counts:{b:DB.brands.length,m:DB.models.length,e:DB.engines.length,f:DB.faults.length,t:DB.tsb.length,rc:DB.tsb.filter(isRecall).length,fam:Object.keys(fams).length,dom:Object.keys(doms).length},
 links:links,corr:corr,integ:integrity(),size:Math.round(JSON.stringify(DB).length/1024),byBrand:bb};}
 
-/* ══════════ REGISTRE DURABLE ══════════ */
+/* ══════════════════════════════════════════════════════════════
+   REGISTRE D'ACCÈS — fusion sans perte, écriture vérifiée,
+   miroir IndexedDB reconnecté, synchronisation manuelle.
+   ══════════════════════════════════════════════════════════════ */
 function regNorm(r){
   if(!r||typeof r!=="object")r={};
   return {users:Array.isArray(r.users)?r.users.filter(function(u){return u&&u.id&&u.name;}):[],
-    live:!!r.live,rev:+r.rev||0,log:Array.isArray(r.log)?r.log:[],
-    seen:Array.isArray(r.seen)?r.seen:[],tomb:Array.isArray(r.tomb)?r.tomb:[]};
+    live:!!r.live,rev:+r.rev||0,
+    log:Array.isArray(r.log)?r.log:[],
+    seen:Array.isArray(r.seen)?r.seen:[],
+    tomb:Array.isArray(r.tomb)?r.tomb:[]};
 }
 function regMerge(a,b){
   a=regNorm(a);b=regNorm(b);
@@ -280,8 +270,21 @@ function regSave(){
   var s=JSON.stringify(REG);
   STORE.set(AKEY,s);
   try{if(STORE.idbSet)STORE.idbSet(AKEY,s);}catch(e){}
+  try{STORE.idbCache[AKEY]=s;}catch(e){}
+  var ok=false;
+  try{
+    var back=STORE.get(AKEY);
+    if(back){var d=JSON.parse(back);ok=!!(d&&Array.isArray(d.users)&&d.users.length===REG.users.length&&d.rev===REG.rev);}
+  }catch(e){ok=false;}
+  if(!ok){
+    try{if(STORE.idbCache[AKEY]){var d2=JSON.parse(STORE.idbCache[AKEY]);ok=!!(d2&&d2.rev===REG.rev);}}catch(e){}
+  }
+  REG_OK=ok;
+  if(!ok&&!REG_WARNED){REG_WARNED=true;
+    toast("err","Stockage local indisponible","La demande est conservée en mémoire : utilisez le code ou le fichier de demande pour la transmettre.");}
   bcast({t:"reg",rev:REG.rev});
   bellRefresh();
+  return ok;
 }
 function bcast(m){try{if(CH)CH.postMessage(m);}catch(e){}}
 function regLog(a){REG.log.unshift({ts:Date.now(),a:a});if(REG.log.length>120)REG.log.pop();}
@@ -290,30 +293,28 @@ function tierUser(){if(!TIER)return null;for(var i=0;i<REG.users.length;i++)if(R
 function tierName(){var u=tierUser();return u?u.name:"";}
 function applyTierSnapshot(){var raw=STORE.get(PKEY);if(!raw)return false;
 return safe("pub",function(){var d=JSON.parse(raw);if(d&&d.db&&d.db.engines&&d.db.engines.length){DB=d.db;recompute();return true;}return false;},false);}
-
-/* ══════════ DEMANDE TIERS — PRÉNOM SEUL, AUCUN CODE ══════════ */
-function mkRequest(name){
-  return {id:uid("U"),name:String(name||"").trim().slice(0,24),status:"pending",ts:Date.now(),at:null};
+function preloadIdb(){
+  STORE.idbCache=STORE.idbCache||{};
+  [AKEY,PKEY].forEach(function(k){
+    try{STORE.idbGet(k).then(function(v){
+      if(!v)return;
+      STORE.idbCache[k]=v;
+      if(k===AKEY){safe("idbreg",function(){REG=regMerge(REG,JSON.parse(v));},null);bellRefresh();notifyPending();gateSync();}
+    });}catch(e){}
+  });
 }
-function createRequest(name){
-  name=String(name||"").trim().slice(0,24);
-  if(name.length<2)return null;
+function syncNow(silent){
   regLoad();
-  var ex=null;
-  REG.users.forEach(function(u){if(nk(u.name)===nk(name))ex=u;});
-  if(ex){
-    TIER=ex.id;
-    if(ex.status!=="pending"&&ex.status!=="granted"){ex.status="pending";ex.ts=Date.now();ex.at=null;}
-    REG.tomb=REG.tomb.filter(function(x){return x!==ex.id;});
-    REG.seen=REG.seen.filter(function(x){return x!==ex.id;});
-  }else{
-    var rec=mkRequest(name);
-    REG.users.push(rec);TIER=rec.id;
-  }
-  regLog("Demande d'accès — "+name);
-  regSave();
-  bcast({t:"reg",rev:REG.rev,force:true});
-  return tierUser();
+  try{STORE.idbGet(AKEY).then(function(raw){
+    if(raw){try{STORE.idbCache[AKEY]=raw;REG=regMerge(REG,JSON.parse(raw));}catch(e){}}
+    bellRefresh();
+    if(isAdmin()){notifyPending();if(S.view==="admin")render();}
+    gateSync();
+    if(!silent)toast("ok","Synchronisation effectuée",pendingCount()+" demande(s) en attente · registre fusionné.");
+  });}catch(e){}
+  bellRefresh();
+  if(isAdmin())notifyPending();
+  if(!silent)beep("tick");
 }
 
 /* ══════════ NOTIFICATIONS ══════════ */
@@ -355,6 +356,65 @@ function reqBannerHTML(){
   "<b>"+pc+" demande(s) d'accès en attente</b><span class='rn'>"+esc(names)+"</span>"+
   "<button class='btn sm amb' data-act='openAccess' style='margin-left:auto'>"+ic("users")+"Ouvrir le gestionnaire</button></div>";
 }
+function copyText(t){
+  safe("copy",function(){
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t);return;}
+    var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";
+    document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();
+  },null);
+}
+function b64e(o){try{return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}catch(e){return "";}}
+function b64d(s){try{s=String(s||"").trim().replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";return JSON.parse(decodeURIComponent(escape(atob(s))));}catch(e){return null;}}
+function reqCode(u){return "MDR1-"+b64e({i:u.id,n:u.name,t:u.ts});}
+function grantCode(u){return "MDA1-"+b64e({i:u.id,n:u.name,s:u.status,a:u.at||Date.now()});}
+function importReqCode(code){
+  var d=b64d(code);
+  if(!d||!d.i||!d.n)return false;
+  regLoad();
+  var ex=null;REG.users.forEach(function(u){if(u.id===d.i)ex=u;});
+  if(ex){if(ex.status!=="pending"){ex.status="pending";ex.at=null;}ex.ts=+d.t||ex.ts||Date.now();}
+  else REG.users.push({id:String(d.i),name:String(d.n).slice(0,24),status:"pending",ts:+d.t||Date.now(),at:null});
+  REG.tomb=REG.tomb.filter(function(x){return x!==d.i;});
+  REG.seen=REG.seen.filter(function(x){return x!==d.i;});
+  regLog("Demande importée par code — "+d.n);
+  regSave();notifyPending();
+  return true;
+}
+function importReqPayload(obj){
+  if(!obj||typeof obj!=="object")return false;
+  if(obj.code&&!obj.user)return importReqCode(obj.code);
+  var u=obj.user||obj;
+  if(!u||!u.id||!u.name)return false;
+  regLoad();
+  var ex=null;REG.users.forEach(function(x){if(x.id===u.id)ex=x;});
+  var rec={id:String(u.id),name:String(u.name).slice(0,24),status:"pending",ts:+u.ts||Date.now(),at:null};
+  if(ex){if(ex.status!=="pending"){ex.status="pending";ex.at=null;}ex.ts=rec.ts;}
+  else REG.users.push(rec);
+  REG.tomb=REG.tomb.filter(function(x){return x!==rec.id;});
+  REG.seen=REG.seen.filter(function(x){return x!==rec.id;});
+  regLog("Demande importée par fichier — "+rec.name);
+  regSave();notifyPending();
+  return true;
+}
+function importGrantCode(code){
+  var d=b64d(code);
+  if(!d||!d.i||!d.n||!d.s)return false;
+  regLoad();
+  var ex=null;REG.users.forEach(function(u){if(u.id===d.i)ex=u;});
+  var rec={id:String(d.i),name:String(d.n).slice(0,24),status:String(d.s),ts:Date.now(),at:+d.a||Date.now()};
+  if(ex){ex.status=rec.status;ex.at=rec.at;}else REG.users.push(rec);
+  REG.tomb=REG.tomb.filter(function(x){return x!==rec.id;});
+  TIER=rec.id;GATE_NAME=rec.name;GATE_CODE="";
+  regLog("Code d'accord appliqué — "+rec.name+" ("+rec.status+")");
+  regSave();
+  return rec.status==="granted";
+}
+function exportReqFile(){
+  var u=tierUser();if(!u){toast("err","Aucune demande active");return;}
+  download("demande-acces-"+slug(u.name)+".json",JSON.stringify({kind:"mecadata-access-request",v:1,user:u,code:reqCode(u)},null,2),"application/json");
+  toast("ok","Fichier de demande exporté","Transmettez-le à l'administrateur (mail, USB, Bluetooth).");beep("ok");
+}
+
 var ACC_STATES=[["granted","g","ACCÈS"],["denied","d","REFUS"],["revoked","r","RÉVOCATION"]];
 function accBoxesHTML(u,legend){
 var h="<div class='"+(legend?"acclegend":"accboxes")+"'>";
@@ -488,10 +548,16 @@ function bellRefresh(){
 }
 function accessBody(){
 var h="",pc=pendingCount();
-h+="<div class='banner' style='margin-bottom:12px'>"+ic("bcast","width:15px;height:15px;color:#FFD60A")+"<b>"+pc+" demande(s) en attente</b><span class='dim' style='font-size:11px'>Le tiers saisit uniquement son prénom. Cochez une case : la décision s'applique immédiatement.</span>";
-h+="<button class='btn xs ghost' data-act='notifTest' style='margin-left:auto'>"+ic("bell","width:11px;height:11px")+"Tester la notification</button></div>";
+h+="<div class='banner' style='margin-bottom:12px'>"+ic("bcast","width:15px;height:15px;color:#FFD60A")+"<b>"+pc+" demande(s) en attente</b><span class='dim' style='font-size:11px'>Cochez une case : décision immédiate, tiers notifié.</span>";
+h+="<button class='btn xs ghost' data-act='syncNow' style='margin-left:auto'>"+ic("reset","width:11px;height:11px")+"Synchroniser</button>";
+h+="<button class='btn xs ghost' data-act='notifTest'>"+ic("bell","width:11px;height:11px")+"Tester</button></div>";
+if(!REG_OK)h+="<div class='syncwarn'>"+ic("alert","width:13px;height:13px")+" Stockage local indisponible sur cet appareil : les demandes reçues par code ou fichier restent en mémoire. Utilisez « Synchroniser » après chaque import.</div>";
+h+="<div class='card panel' style='margin-bottom:12px'><h3>"+ic("ul")+"Recevoir une demande d'un autre appareil</h3>";
+h+="<p class='muted' style='font-size:11.5px;margin-bottom:8px'>Deux canaux garantis : collez le code <span class='mono'>MDR1-…</span> du tiers, ou importez son fichier <span class='mono'>demande-acces-….json</span>.</p>";
+h+="<div style='display:flex;gap:7px;flex-wrap:wrap'><input class='inp mono' id='admCode' placeholder='MDR1-…' value='"+esc(S.adm.code)+"' style='flex:1;min-width:180px'><button class='btn sm pri' data-act='admCodeAdd'>"+ic("plus")+"Ajouter par code</button></div>";
+h+="<div style='display:flex;gap:7px;flex-wrap:wrap;margin-top:8px'><button class='btn sm ghost' data-act='accFilePick'>"+ic("file")+"Importer le fichier de demande</button><input type='file' id='accFile' accept='.json,application/json' style='display:none'></div></div>";
 if(!REG.users.length){
-h+="<div class='accempty'>"+ic("users","width:26px;height:26px")+"<p style='margin-top:8px'>Aucune demande d'accès pour le moment.</p><p class='dim' style='font-size:11.5px;margin-top:5px'>Le tiers ouvre l'application, choisit « Tiers », saisit son prénom et envoie : la demande remonte ici instantanément.</p>";
+h+="<div class='accempty'>"+ic("users","width:26px;height:26px")+"<p style='margin-top:8px'>Aucune demande d'accès pour le moment.</p><p class='dim' style='font-size:11.5px;margin-top:5px'>Le tiers ouvre l'application, choisit « Tiers » et saisit son prénom : la demande remonte ici instantanément (même appareil), ou via code/fichier (autre appareil).</p>";
 h+="<p class='lb' style='margin-top:14px'>Les 3 décisions disponibles</p>"+accBoxesHTML({id:"__legend__",status:"pending"},true)+"</div>";
 return h;}
 var ord={pending:0,granted:1,denied:2,revoked:3};
@@ -502,20 +568,24 @@ h+="<div class='accrow"+(u.status==="pending"?" pending":"")+"'><div class='ah'>
 h+="<span class='am'>demande "+new Date(u.ts).toLocaleString("fr-FR")+"</span>";
 if(u.at)h+="<span class='am'>· décision "+new Date(u.at).toLocaleTimeString("fr-FR")+"</span>";
 h+="<button class='btn xs ghost' data-act='accDel' data-id='"+u.id+"' style='margin-left:auto'>"+ic("trash","width:11px;height:11px")+"</button></div>";
-h+=accBoxesHTML(u,false)+"</div>";});
+h+=accBoxesHTML(u,false);
+if(u.status==="granted"){h+="<div class='codebox'>"+esc(grantCode(u))+"</div><button class='btn xs ghost' data-act='copyGrant' data-id='"+u.id+"' style='margin-top:6px'>"+ic("dl","width:11px;height:11px")+"Copier le code d'accord</button>";}
+h+="</div>";});
 h+="<div class='card panel' style='margin-top:12px'><h3>"+ic("clock")+"Journal des décisions</h3><div class='journal'>";
 if(!REG.log.length)h+="<p class='dim'>Aucune activité.</p>";
 REG.log.slice(0,25).forEach(function(l){h+="<div class='jr'><time>"+new Date(l.ts).toLocaleTimeString("fr-FR")+"</time><span>"+esc(l.a)+"</span></div>";});
 return h+"</div></div>";}
 function openAccess(){
   if(!isAdmin()){gateShow("admin",{force:true,focus:true});return;}
-  regLoad();notifyPending();ACC_OPEN=true;
+  regLoad();ACC_OPEN=true;
   var h="<div class='mh'>"+ic("bell","color:#FFD60A")+"<h3>Gestionnaire d'accès tiers</h3><span class='chip warn' id='accChip'>"+pendingCount()+" en attente</span><button class='tb' data-act='accClose'>"+ic("x")+"</button></div>";
-  h+="<div class='mb2' id='accBody'>"+accessBody()+"</div><div class='mf'><button class='btn ghost sm' data-act='accGoAdmin'>"+ic("db")+"Module administration</button><button class='btn pri' data-act='accClose'>Fermer</button></div>";
+  h+="<div class='mb2' id='accBody'>"+accessBody()+"</div><div class='mf'><button class='btn ghost sm' data-act='syncNow'>"+ic("reset")+"Synchroniser</button><button class='btn ghost sm' data-act='accGoAdmin'>"+ic("db")+"Administration</button><button class='btn pri' data-act='accClose'>Fermer</button></div>";
   openModal(h,"wide");beep("open");
+  syncNow(true);
 }
 window.MD_openAccess=openAccess;
 window.MD_notifyPending=function(){regLoad();return notifyPending();};
+window.MD_syncAccess=function(){syncNow(false);};
 
 /* ══════════ RECHERCHE ══════════ */
 var SYN={puretech:["eb2"],hdi:["dv5","dw10"],bluehdi:["dv5","dw10"],tsi:["ea211","ea888","dpca"],tdi:["ea288","dsua"],tce:["h4dt","h5ht","hr12"],dci:["k9k","m9r","r9m"],courroie:["courroie","distribution"],chaine:["chaine","aac"],adblue:["adblue","scr","nox"],scr:["scr","nox"],egr:["egr"],fap:["fap","dpf"],turbo:["turbo"],rappel:["rappel"],tsb:["tsb","bulletin"],panne:["panne"],eat8:["eat8"],dsg:["dq200","dq381"],zf8:["zf8"],frein:["frein","freinage"],clim:["clim"],batterie:["batterie","12v"],ecran:["ecran","bsi"]};
@@ -756,10 +826,10 @@ else{h+="<div class='card panel'><h3>"+ic("clock")+"Journal de la base</h3><div 
 AUDIT.slice().reverse().slice(0,60).forEach(function(a){h+="<div class='jr'><time>"+new Date(a.ts).toLocaleString("fr-FR")+"</time><span class='jt'>"+esc(a.type.toUpperCase())+"</span><span>"+esc(a.msg)+"</span></div>";});h+="</div></div>";}
 return h;}
 function vDiag(){var fl=TESTS.filter(function(t){return !t.ok&&!t.soft;}).length,wn=TESTS.filter(function(t){return !t.ok&&t.soft;}).length,col=fl?"#FF4D5E":(wn?"#FFAF2E":"#43E08B"),h="";
-h+="<div class='vh'><div><span class='kick'>MODULE 07 — AUTOVÉRIFICATION</span><h1>DIAGNOSTIC <i>SYSTÈME</i></h1><div class='sub'>Moteur v"+window.__MD_VER+" · correctif "+window.__MD_FIX+" — demande tiers par prénom seul.</div></div><div style='display:flex;gap:7px;flex-wrap:wrap'><button class='btn sm grn' data-act='runTests'>"+ic("reset")+"Relancer</button>";
+h+="<div class='vh'><div><span class='kick'>MODULE 07 — AUTOVÉRIFICATION</span><h1>DIAGNOSTIC <i>SYSTÈME</i></h1><div class='sub'>Moteur v"+window.__MD_VER+" · correctif "+window.__MD_FIX+" — remontée de demande garantie.</div></div><div style='display:flex;gap:7px;flex-wrap:wrap'><button class='btn sm grn' data-act='runTests'>"+ic("reset")+"Relancer</button>";
 if(isAdmin())h+="<button class='btn sm amb' data-act='autoFix'>"+ic("tool")+"Auto-réparation</button>";
-h+="<button class='btn sm ghost' data-act='notifTest'>"+ic("bell")+"Tester la notification</button>";
-h+="<button class='btn sm ghost' data-act='forceFresh'>"+ic("reset")+"Recharger sans cache</button></div></div>";
+h+="<button class='btn sm ghost' data-act='syncNow'>"+ic("reset")+"Synchroniser les accès</button>";
+h+="<button class='btn sm ghost' data-act='notifTest'>"+ic("bell")+"Tester la notification</button></div></div>";
 h+="<div class='card panel' style='margin-bottom:12px;border-left:3px solid "+col+"'><h3>"+ic("stetho","color:"+col)+"Résultat<span class='chip' style='color:"+col+";border-color:"+col+"'>"+(TESTS.length-fl)+"/"+TESTS.length+" OK</span></h3>";
 h+="<p class='muted'>"+(fl?"<b style='color:#FF4D5E'>"+fl+" test(s) bloquant(s).</b>":"<b style='color:#43E08B'>Système opérationnel — aucune erreur.</b>")+(wn?" "+wn+" avertissement(s) non bloquant(s).":"")+(AUTOFILL?" <span class='mono' style='color:#43E08B'>"+AUTOFILL+" motorisation(s) appariée(s).</span>":"")+"</p></div>";
 h+="<div class='card panel'><h3>"+ic("check")+"Détail des contrôles</h3><div class='tests'>";
@@ -789,11 +859,11 @@ bellRefresh();updStor();}
 function updStor(){var k=META.size||0,b=$("#sbar"),t=$("#stxt");if(b)b.style.width=clamp(k/8192*100,2,100)+"%";
 if(t)t.textContent=k+" Ko · "+(isAdmin()?STORE.backend()+" · "+(LASTSAVE?new Date(LASTSAVE).toLocaleTimeString("fr-FR"):"—"):"tiers : aucun stockage");}
 
-/* ══════════ IMPORT ══════════ */
+/* ══════════ IMPORT BASE ══════════ */
 function pick(r,names){var i;for(i=0;i<names.length;i++){var v=r[names[i]];if(v!==undefined&&v!==null&&v!=="")return v;}
 var map={},ks=Object.keys(r);for(i=0;i<ks.length;i++)map[nk(ks[i])]=r[ks[i]];
 for(i=0;i<names.length;i++){var w=nk(names[i]);if(map[w]!==undefined&&map[w]!==null&&map[w]!=="")return map[w];}return undefined;}
-var COLL={};[["brands",["brands","marques","constructeurs","makers"]],["models",["models","modeles","vehicles","vehicules","cars"]],["engines",["engines","motorisations","moteurs","powertrains"]],["faults",["faults","pannes","fiches","defects","problemes"]],["tsb",["tsb","bulletins","campagnes","rappels","recalls"]]].forEach(function(p){p[1].forEach(function(k){COLL[nk(k)]=p[0];});});
+var COLL2={};[["brands",["brands","marques","constructeurs","makers"]],["models",["models","modeles","vehicles","vehicules","cars"]],["engines",["engines","motorisations","moteurs","powertrains"]],["faults",["faults","pannes","fiches","defects","problemes"]],["tsb",["tsb","bulletins","campagnes","rappels","recalls"]]].forEach(function(p){p[1].forEach(function(k){COLL2[nk(k)]=p[0];});});
 var IGN={counts:1,domaines:1,domains:1,categories:1,meta:1,metadata:1,app:1,exportversion:1,exportedat:1,version:1,revisions:1,plans:1,entretien:1,maintenance:1};
 function detectKind(r){if(!r||typeof r!=="object")return null;
 if(pick(r,["hp","power","puissance","ch","puissance_ch","kw"])!==undefined||pick(r,["code_moteur","engine_code"])!==undefined)return "engines";
@@ -803,7 +873,7 @@ if(pick(r,["segment","carrosserie"])!==undefined)return "models";
 if(pick(r,["marque","brand","make"])!==undefined&&pick(r,["modele","model","nom","name"])!==undefined)return "models";
 if(pick(r,["pays","country"])!==undefined)return "brands";return null;}
 function classify(data){var g={},ig=[];
-function consider(key,arr){if(IGN[key]){ig.push(key);return;}var k=COLL[key]||null;if(!k&&arr.length)k=detectKind(arr[0]);if(!k){ig.push(key);return;}if(!g[k])g[k]=[];g[k]=g[k].concat(arr);}
+function consider(key,arr){if(IGN[key]){ig.push(key);return;}var k=COLL2[key]||null;if(!k&&arr.length)k=detectKind(arr[0]);if(!k){ig.push(key);return;}if(!g[k])g[k]=[];g[k]=g[k].concat(arr);}
 (function scan(o){if(!o||typeof o!=="object"||Array.isArray(o))return;Object.keys(o).forEach(function(k){var v=o[k],key=nk(k);if(Array.isArray(v)){if(v.length)consider(key,v);}else if(v&&typeof v==="object")scan(v);});})(data);
 return {groups:g,ignored:ig};}
 function mapRec(r,kind){
@@ -1007,31 +1077,24 @@ var onG=accBoxesHTML({id:"p",status:"granted"},false).indexOf("accbox g on")>-1;
 var onD=accBoxesHTML({id:"p",status:"denied"},false).indexOf("accbox d on")>-1;
 var onR=accBoxesHTML({id:"p",status:"revoked"},false).indexOf("accbox r on")>-1;
 aOk=hasG&&hasD&&hasR&&onG&&onD&&onR&&typeof setAccess==="function"&&ACC_STATES.length===3;
-aInfo=aOk?"3 décisions actives · états exclusifs vérifiés · application temps réel":"élément manquant";
+aInfo=aOk?"3 décisions actives · états exclusifs · application temps réel":"élément manquant";
 }catch(e){aInfo="erreur : "+e.message;}
 add("3 cases Accès / Refus / Révocation",aOk,aInfo);
-/* demande tiers : prénom seul, aucun code */
-var pOk2=false,pInfo="";
-try{
-  var gh=gateHTML("tier"),gr=gateHTML(null);
-  var hasName=gh.indexOf("id='gateName'")>-1;
-  var noCode=gh.indexOf("MDA1")<0&&gh.indexOf("MDR1")<0&&gh.indexOf("tierGrant")<0&&gr.indexOf("tierGrant")<0&&gr.indexOf("code d'accord")<0;
-  var rec=mkRequest("Jean");
-  var recOk=rec.status==="pending"&&rec.name==="Jean"&&!rec.code&&!!rec.id;
-  pOk2=hasName&&noCode&&recOk&&typeof createRequest==="function";
-  pInfo=pOk2?"champ prénom unique · aucun code demandé · demande créée immédiatement":"champ prénom ou absence de code non conforme";
-}catch(e){pInfo="erreur : "+e.message;}
-add("Demande tiers par prénom seul",pOk2,pInfo);
+/* chaîne de remontée complète */
 var nOk=false,nInfo="";
 try{
   var probe={id:"__probe_req__",name:"Probe",status:"pending",ts:Date.now(),at:null};
-  var merged=regMerge(REG,{users:[probe],rev:REG.rev+1});
+  var merged=regMerge(REG,{users:[probe],rev:(+REG.rev||0)+1});
   var found=merged.users.some(function(u){return u.id==="__probe_req__";});
   var pc=merged.users.filter(function(u){return u.status==="pending";}).length;
-  nOk=found&&pc>0&&typeof notifyPending==="function"&&typeof osNotify==="function";
-  nInfo=nOk?"registre fusionné · toast + badge + bannière + son + notification système":"chaîne incomplète";
+  var code=reqCode(probe),dec=b64d(code);
+  var round=!!(dec&&dec.i===probe.id&&dec.n===probe.name);
+  var fileOk=typeof importReqPayload==="function"&&typeof exportReqFile==="function";
+  nOk=found&&pc>0&&round&&fileOk&&typeof notifyPending==="function"&&typeof syncNow==="function";
+  nInfo=nOk?"fusion registre OK · code aller-retour OK · pont fichier OK · notification active":"chaîne incomplète";
 }catch(e){nInfo="erreur : "+e.message;}
 add("Remontée demande tiers",nOk,nInfo);
+add("Persistance registre",REG_OK||STORE.any(),REG_OK?"écriture vérifiée":(STORE.backend()+" (écriture non vérifiable)"),!STORE.any());
 add("Registre durable (fusion)",typeof regMerge==="function"&&typeof regRead==="function","aucune perte lors des relectures");
 add("API cloche exposée",typeof window.MD_openAccess==="function","window.MD_openAccess");
 var gEl=$("#gate"),stable=false;
@@ -1060,61 +1123,36 @@ if(WP.fails>0){WP.P.mode="grid";WP.fails=0;WP.apply();did.push("graphique réini
 ERRORS.length=0;did.push("journal purgé");recompute();saveNow();runTests();updateMeta();render();
 toast("ok","Auto-réparation",did.join(" · "));beep("ok");}
 
-/* ══════════ PORTAIL — TIERS : PRÉNOM SEUL ══════════ */
-function elapsedText(ts){
-  var s=Math.max(0,Math.round((Date.now()-(+ts||Date.now()))/1000));
-  if(s<60)return s+" s";
-  var m=Math.floor(s/60);
-  if(m<60)return m+" min "+(s%60)+" s";
-  return Math.floor(m/60)+" h "+(m%60)+" min";
-}
+/* ══════════ PORTAIL ══════════ */
 function gateHTML(mode){
-var h="<div class='gcard2'><svg class='glogo' viewBox='0 0 512 512' aria-hidden='true'><use href='#i-logo'/></svg>";
-h+="<h1>MECADATA <i>//</i> PORTAIL D'ACCÈS</h1>";
-h+="<p class='gsub'>Console technique automobile 2017→2027 — pannes connues, campagnes de rappel, TSB et plans d'entretien jusqu'à 200 000 km.</p>";
+var h="<div class='gcard2'><h1>MECADATA <i>//</i> PORTAIL D'ACCÈS</h1><p class='gsub'>Console technique 2017→2027 — choisissez votre mode d'ouverture. Le mot de passe résiduel est effacé à chaque lancement.</p>";
 if(!mode){
-h+="<div class='gmodes'>";
-h+="<div class='gmode' data-act='gateAdmin'><div class='gi'>"+ic("shield","width:26px;height:26px")+"</div><h3>ADMINISTRATEUR</h3><p>Base complète, import multi-formats, méga-base, cloche d'accès tiers et diffusion temps réel. Mot de passe requis.</p></div>";
-h+="<div class='gmode' data-act='gateTier'><div class='gi'>"+ic("users","width:26px;height:26px")+"</div><h3>TIERS</h3><p><b style='color:#FFD60A'>Votre prénom suffit.</b> Aucun code, aucun compte. Vous consultez les fiches techniques et le studio ; l'administrateur valide votre demande.</p></div>";
-h+="</div>";
-h+="<div class='gsys'><span><b>"+fmt(META.counts.b)+"</b> marques</span><span><b>"+fmt(META.counts.m)+"</b> modèles</span><span><b>"+fmt(META.counts.e)+"</b> motorisations</span><span><b>"+fmt(META.counts.f)+"</b> pannes</span><span><b>"+fmt(META.counts.rc)+"</b> rappels</span></div>";
-h+="<p class='gnote'>Session administrateur protégée · accès tiers soumis à validation</p>";}
+h+="<div class='gmodes'><div class='gmode' data-act='gateAdmin'><div class='gi'>"+ic("shield","width:26px;height:26px")+"</div><h3>ADMINISTRATEUR</h3><p>Base, import multi-formats, méga-base, cloche d'accès tiers et diffusion temps réel.</p></div>";
+h+="<div class='gmode' data-act='gateTier'><div class='gi'>"+ic("users","width:26px;height:26px")+"</div><h3>TIERS</h3><p>Consultation des fiches techniques, pannes, rappels et plans d'entretien. Studio fond d'écran. Aucune modification, aucun import, aucune sauvegarde locale.</p></div></div>";
+h+="<div class='gform'><label class='lb'>Vous avez reçu un code d'accord ?</label><div style='display:flex;gap:7px;flex-wrap:wrap'><input class='inp mono' id='tierGrant' placeholder='MDA1-…' value='"+esc(GATE_CODE)+"' style='flex:1;min-width:200px'><button class='btn sm grn' data-act='tierGrantApply'>"+ic("unlock")+"Appliquer</button></div>";
+h+="<p class='gnote'>Session administrateur protégée · accès tiers soumis à validation</p></div>";}
 else if(mode==="admin"){
-h+="<div class='gform'><label class='lb' for='gatePwd'>Mot de passe administrateur</label><form data-form='admin'><input class='inp mono' type='password' name='pwd' id='gatePwd' value='' placeholder='••••••••' autocomplete='new-password' autocapitalize='off' autocorrect='off' spellcheck='false' enterkeyhint='go' style='text-align:center;letter-spacing:.2em;font-size:16px'>";
-h+="<div style='display:flex;gap:8px;margin-top:11px'><button type='button' class='btn ghost' data-act='gateBack'>Retour</button><button type='submit' class='btn pri' style='flex:1'>"+ic("unlock")+"OUVRIR LA SESSION ING-3</button></div></form>";
-h+="<p class='gnote'>Champ réinitialisé à chaque lancement — aucun mot de passe conservé.</p></div>";}
+h+="<div class='gform'><label class='lb'>Mot de passe administrateur</label><form data-form='admin'><input class='inp mono' type='password' name='pwd' id='gatePwd' value='' placeholder='••••••••' autocomplete='new-password' autocapitalize='off' autocorrect='off' spellcheck='false' enterkeyhint='go' style='text-align:center;letter-spacing:.2em;font-size:16px'>";
+h+="<div style='display:flex;gap:8px;margin-top:11px'><button type='button' class='btn ghost' data-act='gateBack'>Retour</button><button type='submit' class='btn pri' style='flex:1'>"+ic("unlock")+"OUVRIR LA SESSION ING-3</button></div></form><p class='gnote'>Champ réinitialisé à chaque lancement — aucun mot de passe conservé.</p></div>";}
 else{
 var u=tierUser();
 if(u&&u.status==="granted"){
-h+="<div class='gform'><div class='okcard' style='text-align:center'>";
-h+="<div class='gi' style='width:54px;height:54px;margin:0 auto 12px;display:grid;place-items:center;border-radius:16px;background:rgba(67,224,139,.16);border:1px solid rgba(67,224,139,.5);color:#43E08B'>"+ic("check","width:26px;height:26px")+"</div>";
-h+="<h3 style='font:600 16px var(--gd)'>Accès accordé — "+esc(u.name)+"</h3>";
-h+="<p class='muted' style='font-size:12px;margin:8px 0 14px'>L'administrateur a validé votre demande. Consultation en lecture seule, sans sauvegarde locale.</p>";
-h+="<button class='btn pri' data-act='tierEnter'>"+ic("unlock")+"ENTRER EN CONSULTATION</button>";
-h+="<div style='margin-top:10px'><button class='btn sm ghost' data-act='gateBack'>Retour</button></div></div></div>";}
+h+="<div class='gform'><div class='gwait'><div class='gi' style='width:52px;height:52px;margin:0 auto 12px;display:grid;place-items:center;border-radius:15px;background:rgba(67,224,139,.14);border:1px solid rgba(67,224,139,.45);color:#43E08B'>"+ic("check","width:24px;height:24px")+"</div><h3 style='font:600 15px var(--gd)'>Accès accordé — "+esc(u.name)+"</h3><p class='muted' style='font-size:12px;margin:7px 0 13px'>Consultation en lecture seule.</p><button class='btn pri' data-act='tierEnter'>"+ic("unlock")+"ENTRER EN CONSULTATION</button><div style='margin-top:9px'><button class='btn sm ghost' data-act='gateBack'>Retour</button></div></div></div>";}
 else if(u&&u.status==="pending"){
-h+="<div class='gform'><div class='waitcard' style='text-align:center'>";
-h+="<div class='spin' style='width:40px;height:40px;margin:0 auto 12px;border:3px solid rgba(96,160,255,.16);border-top-color:#FFD60A;border-radius:50%;animation:sp 1s linear infinite'></div>";
-h+="<h3 style='font:600 16px var(--gd)'>Demande envoyée — "+esc(u.name)+"</h3>";
-h+="<p class='muted' style='font-size:12px;margin-top:8px'>L'administrateur a reçu la notification sur sa cloche. Vous n'avez rien d'autre à faire : cet écran bascule automatiquement dès sa décision.</p>";
-h+="<p class='elapsed' style='margin-top:10px'>En attente depuis <span id='waitElapsed'>"+elapsedText(u.ts)+"</span></p>";
-h+="<div style='display:flex;gap:7px;justify-content:center;margin-top:13px;flex-wrap:wrap'>";
-h+="<button class='btn sm ghost' data-act='tierPing'>"+ic("bell")+"Renvoyer la notification</button>";
-h+="<button class='btn sm ghost' data-act='tierCancel'>Annuler ma demande</button>";
-h+="<button class='btn sm ghost' data-act='gateBack'>Retour</button></div>";
+h+="<div class='gform'><div class='gwait'><div class='spin'></div><h3 style='font:600 15px var(--gd)'>Demande transmise — "+esc(u.name)+"</h3>";
+h+="<p class='muted' style='font-size:12px;margin-top:7px'>Notification envoyée à l'administrateur (cloche, badge, bannière, son). Cet écran se met à jour dès sa décision.</p>";
+h+="<div class='codebox'>"+esc(reqCode(u))+"</div>";
+h+="<p class='gnote'>Même appareil : remontée automatique. Autre appareil : transmettez ce code ou le fichier ci-dessous.</p>";
+h+="<div style='display:flex;gap:7px;justify-content:center;margin-top:11px;flex-wrap:wrap'><button class='btn sm ghost' data-act='copyReq'>"+ic("dl")+"Copier le code</button><button class='btn sm ghost' data-act='exportReq'>"+ic("file")+"Exporter le fichier</button><button class='btn sm ghost' data-act='tierPing'>"+ic("bell")+"Renvoyer la notification</button><button class='btn sm ghost' data-act='tierCancel'>Annuler</button></div>";
+h+="<label class='lb' style='margin-top:14px'>Code d'accord reçu</label><div style='display:flex;gap:7px;flex-wrap:wrap'><input class='inp mono' id='tierGrant' placeholder='MDA1-…' value='"+esc(GATE_CODE)+"' style='flex:1;min-width:180px'><button class='btn sm grn' data-act='tierGrantApply'>"+ic("unlock")+"Appliquer</button></div>";
 h+="</div></div>";}
 else if(u){
-h+="<div class='gform'><div class='kocard' style='text-align:center'>";
-h+="<h3 style='font:600 16px var(--gd);color:#FF4D5E'>Accès "+(u.status==="denied"?"refusé":"révoqué")+"</h3>";
-h+="<p class='muted' style='font-size:12px;margin:8px 0 13px'>L'administrateur a "+(u.status==="denied"?"refusé":"retiré")+" l'accès de "+esc(u.name)+". Vous pouvez renvoyer une demande avec votre prénom.</p>";
-h+="<button class='btn sm pri' data-act='tierReset'>"+ic("bell")+"Refaire une demande</button> <button class='btn sm ghost' data-act='gateBack'>Retour</button>";
-h+="</div></div>";}
+h+="<div class='gform'><div class='gwait'><h3 style='font:600 15px var(--gd);color:#FF4D5E'>Accès "+(u.status==="denied"?"refusé":"révoqué")+"</h3><p class='muted' style='font-size:12px;margin:7px 0 12px'>L'administrateur a "+(u.status==="denied"?"refusé":"révoqué")+" cet accès.</p><button class='btn sm ghost' data-act='tierReset'>Nouvelle demande</button> <button class='btn sm ghost' data-act='gateBack'>Retour</button></div></div>";}
 else{
-h+="<div class='gform'><label class='lb' for='gateName'>Votre prénom</label>";
-h+="<form data-form='tier' autocomplete='off'>";
-h+="<input class='inp tierinput' type='text' name='name' id='gateName' maxlength='24' placeholder='Ex. Kevin' value='"+esc(GATE_NAME)+"' autocomplete='off' autocapitalize='words' autocorrect='off' spellcheck='false' inputmode='text' enterkeyhint='send' style='text-align:center'>";
-h+="<div style='display:flex;gap:8px;margin-top:12px'><button type='button' class='btn ghost' data-act='gateBack'>Retour</button><button type='submit' class='btn pri' style='flex:1'>"+ic("bell")+"ENVOYER MA DEMANDE</button></div></form>";
-h+="<p class='gnote'><b>Aucun code nécessaire.</b> Votre prénom suffit : la demande part directement sur la cloche de l'administrateur.</p></div>";}}
+h+="<div class='gform'><label class='lb' for='gateName'>Votre prénom</label><form data-form='tier' autocomplete='off'>";
+h+="<input class='inp' type='text' name='name' id='gateName' maxlength='24' placeholder='Prénom' value='"+esc(GATE_NAME)+"' autocomplete='off' autocapitalize='words' autocorrect='off' spellcheck='false' inputmode='text' enterkeyhint='send' style='text-align:center;font-size:16px'>";
+h+="<div style='display:flex;gap:8px;margin-top:11px'><button type='button' class='btn ghost' data-act='gateBack'>Retour</button><button type='submit' class='btn pri' style='flex:1'>"+ic("bell")+"DEMANDER L'ACCÈS</button></div></form>";
+h+="<p class='gnote'>La demande est enregistrée durablement et notifiée à l'administrateur.</p></div>";}}
 return h+"</div>";}
 function gateShow(mode,opts){
 opts=opts||{};
@@ -1122,6 +1160,7 @@ var g=$("#gate");if(!g)return;
 var prev=GATE_MODE;
 GATE_MODE=mode||null;
 var cur=g.querySelector("#gateName");if(cur&&cur.value)GATE_NAME=cur.value;
+var cg=g.querySelector("#tierGrant");if(cg&&cg.value)GATE_CODE=cg.value;
 var sig=gateSig(GATE_MODE);
 if(!opts.force&&GATE_RENDERED&&sig===GATE_SIG&&prev===GATE_MODE){g.classList.remove("off");return;}
 if(!opts.force&&gateTyping()&&sig===GATE_SIG){g.classList.remove("off");return;}
@@ -1133,20 +1172,19 @@ var n=g.querySelector("#gateName");
 if(n){n.value=GATE_NAME;
 n.addEventListener("input",function(){GATE_NAME=n.value;});
 n.addEventListener("focus",function(){setTimeout(function(){if(document.activeElement===n){try{n.scrollIntoView({block:"center",behavior:"smooth"});}catch(e){}}},320);});
-if(opts.focus)setTimeout(function(){try{n.focus();}catch(e){}},110);}
+if(opts.focus)setTimeout(function(){try{n.focus();}catch(e){}},90);}
+var c2=g.querySelector("#tierGrant");
+if(c2){c2.value=GATE_CODE;c2.addEventListener("input",function(){GATE_CODE=c2.value;});}
 var p=g.querySelector("#gatePwd");
-if(p){p.value="";if(opts.focus)setTimeout(function(){try{p.focus();}catch(e){}},110);}
+if(p){p.value="";if(opts.focus)setTimeout(function(){try{p.focus();}catch(e){}},90);}
 }
 function gateSync(){
 if(MODE)return;
+if(!GATE_MODE)return;
 var g=$("#gate");if(!g||g.classList.contains("off")||!GATE_RENDERED)return;
 var sig=gateSig(GATE_MODE);
-if(sig===GATE_SIG){
-  var we=$("#waitElapsed"),u=tierUser();
-  if(we&&u)we.textContent=elapsedText(u.ts);
-  return;
-}
-if(gateTyping()){var u2=tierUser();if(!u2||u2.status==="pending")return;}
+if(sig===GATE_SIG)return;
+if(gateTyping()){var u=tierUser();if(!u||u.status==="pending")return;}
 gateShow(GATE_MODE,{force:true,focus:false});
 }
 function gateHide(){var g=$("#gate");if(g)g.classList.add("off");GATE_RENDERED=false;GATE_SIG=null;}
@@ -1166,9 +1204,10 @@ if(migrated||c)audit("adm","Migration base v8.4 · "+c+" motorisation(s) appari�
 function enterAdmin(){MODE="admin";TIER=null;GATE_NAME="";gateHide();
 loadAdminDb();
 recompute();WP.apply();audit("adm","Session ING-3 ouverte");saveNow();
-regLoad();runTests();S.view="bord";location.hash="#/bord";render();
+regLoad();preloadIdb();runTests();S.view="bord";location.hash="#/bord";render();
 toast("ok","Session administrateur","Cloche d'accès active en haut à droite.");beep("imp");
-setTimeout(function(){regLoad();var n=notifyPending();if(!n&&pendingCount()>0){toast("warn",pendingCount()+" demande(s) en attente","Cliquez la cloche pour statuer.");beep("imp");}},700);}
+setTimeout(function(){syncNow(true);},300);
+setTimeout(function(){regLoad();var n=notifyPending();if(!n&&pendingCount()>0){toast("warn",pendingCount()+" demande(s) en attente","Cliquez la cloche pour statuer.");beep("imp");}},900);}
 function enterTier(){var u=tierUser();if(!u||u.status!=="granted"){gateShow("tier",{force:true});return;}
 MODE="tier";GATE_NAME="";gateHide();if(!applyTierSnapshot())DB=clone(SEED);
 recompute();WP.apply();runTests();S.view="bord";location.hash="#/bord";render();
@@ -1186,27 +1225,40 @@ if(a==="openAccess"){ev.preventDefault();ev.stopPropagation();openAccess();retur
 if(a==="accClose"){ACC_OPEN=false;closeModal();return;}
 if(a==="accGoAdmin"){ACC_OPEN=false;closeModal();S.adm.tab="access";location.hash="#/admin";render();return;}
 if(a==="accSet"){ev.preventDefault();setAccess(id,el.dataset.st);return;}
+if(a==="syncNow"){syncNow(false);if(S.view==="admin")render();return;}
 if(a==="accDel"){if(!isAdmin())return;regLoad();var u=null;for(var i=0;i<REG.users.length;i++)if(REG.users[i].id===id)u=REG.users[i];
 REG.users=REG.users.filter(function(x){return x.id!==id;});if(REG.tomb.indexOf(id)<0)REG.tomb.push(id);
 regLog("Suppression accès "+(u?u.name:id));regSave();updateMeta();if(S.view==="admin")render();beep("del");return;}
-if(a==="tierPing"){regLoad();var u4=tierUser();
-if(u4){REG.seen=REG.seen.filter(function(x){return x!==u4.id;});u4.ts=u4.ts||Date.now();}
+if(a==="admCodeAdd"){var f=$("#admCode"),v=f?f.value.trim():"";
+if(!v){toast("err","Code vide","Collez le code MDR1- fourni par le tiers.");beep("err");return;}
+if(importReqCode(v)){S.adm.code="";toast("ok","Demande importée","Elle apparaît dans la liste.");beep("imp");if(ACC_OPEN){var b=$("#accBody");if(b)b.innerHTML=accessBody();}if(S.view==="admin")render();}
+else{toast("err","Code invalide","Format attendu : MDR1-…");beep("err");}return;}
+if(a==="accFilePick"){var fi=$("#accFile");if(fi)fi.click();return;}
+if(a==="copyGrant"){regLoad();var u2=null;for(var j=0;j<REG.users.length;j++)if(REG.users[j].id===id)u2=REG.users[j];
+if(u2){copyText(grantCode(u2));toast("ok","Code d'accord copié","Transmettez-le au tiers.");beep("ok");}return;}
+if(a==="copyReq"){var u3=tierUser();if(u3){copyText(reqCode(u3));toast("ok","Code de demande copié","Transmettez-le à l'administrateur.");beep("ok");}return;}
+if(a==="exportReq"){exportReqFile();return;}
+if(a==="tierPing"){regLoad();var u4=tierUser();if(u4){REG.seen=REG.seen.filter(function(x){return x!==u4.id;});}
 regSave();bcast({t:"reg",rev:REG.rev,force:true});
-toast("info","Notification renvoyée","L'administrateur est re-notifié sur sa cloche.");beep("imp");return;}
+toast("info","Notification renvoyée","L'administrateur est re-notifié.");beep("imp");
+osNotify("MECADATA — relance demande",(u4?u4.name:"Un tiers")+" relance sa demande d'accès.");return;}
+if(a==="tierGrantApply"){var g2=$("#tierGrant"),v2=g2?g2.value.trim():GATE_CODE;
+if(!v2){toast("err","Code vide","Collez le code MDA1- reçu.");beep("err");return;}
+if(importGrantCode(v2)){GATE_CODE="";enterTier();}
+else{regLoad();gateShow("tier",{force:true});toast("warn","Code appliqué","Statut non accordé — voir l'écran.");beep("err");}return;}
 if(a==="notifTest"){regLoad();
 var pc=pendingCount();
 if(pc){REG.users.forEach(function(u){if(u.status==="pending")REG.seen=REG.seen.filter(function(x){return x!==u.id;});});regSave();notifyPending();}
-else{toast("info","Test de notification","Aucune demande en attente — notification de démonstration envoyée.");beep("imp");osNotify("MECADATA — test","La chaîne de notification fonctionne.");}
+else{toast("info","Test de notification","Aucune demande en attente — démonstration.");beep("imp");osNotify("MECADATA — test","La chaîne de notification fonctionne.");}
 return;}
 if(a==="forceFresh"){if(window.__MD_FRESH)window.__MD_FRESH();else location.reload(true);return;}
 if(a==="pwaIcons"){if(window.MD_ICONS){var n=window.MD_ICONS.download();toast("ok","Icônes PWA exportées",n+" PNG — déposez-les dans icons/.");beep("imp");}return;}
 if(a==="gateAdmin"){gateShow("admin",{force:true,focus:true});return;}
 if(a==="gateTier"){regLoad();gateShow("tier",{force:true,focus:true});return;}
-if(a==="gateBack"){GATE_NAME="";gateShow(null,{force:true});return;}
+if(a==="gateBack"){GATE_NAME="";GATE_CODE="";gateShow(null,{force:true});return;}
 if(a==="tierEnter"){enterTier();return;}
 if(a==="tierCancel"){regLoad();REG.users=REG.users.filter(function(u5){return u5.id!==TIER;});if(TIER&&REG.tomb.indexOf(TIER)<0)REG.tomb.push(TIER);TIER=null;GATE_NAME="";regSave();gateShow("tier",{force:true,focus:true});return;}
-if(a==="tierReset"){var old=tierUser();if(old){REG.users=REG.users.filter(function(x){return x.id!==old.id;});if(REG.tomb.indexOf(old.id)<0)REG.tomb.push(old.id);GATE_NAME=old.name;}
-TIER=null;regSave();gateShow("tier",{force:true,focus:true});return;}
+if(a==="tierReset"){TIER=null;GATE_NAME="";gateShow("tier",{force:true,focus:true});return;}
 if(a==="omniSeed"){var inp=$("#omni");if(inp){inp.value=el.dataset.q;S.omni.q=el.dataset.q;inp.focus();omniRender();}return;}
 if(a==="omniHit"){omniActivate(el.dataset.kind,id);return;}
 if(a==="msearch"){var q=prompt("Recherche prédictive :");if(q){var i2=$("#omni");if(i2){i2.value=q;S.omni.q=q;omniRender();i2.focus();}}return;}
@@ -1255,7 +1307,7 @@ mutate("mega","Méga-base : "+list.length+" candidat(s)");saveNow();toast("ok","
 if(a==="megaSel"){if(!S.sel.b){toast("warn","Aucune marque sélectionnée","Choisissez une marque dans le module 2.");return;}S.adm.mega=BIDX[S.sel.b]?BIDX[S.sel.b].n:"";render();return;}
 if(a==="askReset"){if(!isAdmin())return;confirmModal("Réinitialiser la base ?","Modifications et imports remplacés par la base usine. Annulation 8 s.","doReset","Réinitialiser");return;}
 if(a==="doReset"){closeModal();snapshot("reset");DB=clone(SEED);mutate("del","Base usine restaurée");saveNow();toast("warn","Base usine restaurée","",true);return;}
-if(a==="logout"){MODE=null;TIER=null;ACC_OPEN=false;GATE_NAME="";closeModal();gateShow(null,{force:true});updateMeta();toast("info","Session fermée");return;}
+if(a==="logout"){MODE=null;TIER=null;ACC_OPEN=false;GATE_NAME="";GATE_CODE="";closeModal();gateShow(null,{force:true});updateMeta();toast("info","Session fermée");return;}
 if(a==="stMode"){WP.set("mode",el.dataset.m);beep("tick");return;}
 if(a==="stTheme"){WP.P.useCustom=false;WP.set("theme",el.dataset.t);beep("tick");return;}
 if(a==="stPreset"){var ps=WP.PRESETS[el.dataset.n];if(ps){Object.keys(ps).forEach(function(k){WP.P[k]=ps[k];});WP.apply();WP.resize();render();toast("ok","Preset appliqué",el.dataset.n);beep("ok");}return;}
@@ -1268,6 +1320,8 @@ if(a==="stCustom"){WP.P.useCustom=!!el.checked;WP.drawAll();markDirty();WP.sync(
 });
 document.addEventListener("input",function(ev){var t=ev.target;if(!t)return;
 if(t.id==="gateName"){GATE_NAME=t.value;return;}
+if(t.id==="tierGrant"){GATE_CODE=t.value;return;}
+if(t.id==="admCode"){S.adm.code=t.value;return;}
 if(t.id==="omni"){S.omni.q=t.value;omniRender();return;}
 if(t.dataset&&t.dataset.c){WP.setCustom(t.dataset.c,t.value);return;}
 if(t.dataset&&t.dataset.p){var k=t.dataset.p,v=t.type==="checkbox"?t.checked:(t.tagName==="SELECT"?(k==="dir"?+t.value:t.value):+t.value);WP.set(k,v);return;}
@@ -1280,10 +1334,16 @@ document.addEventListener("change",function(ev){var t=ev.target;if(!t)return;
 if(t.dataset&&t.dataset.sel){var k=t.dataset.sel;S.sel[k]=t.value;if(k==="b"){S.sel.m="";S.sel.e="";}if(k==="m")S.sel.e="";S.shown=48;render();beep("tick");return;}
 if(t.dataset&&t.dataset.calc==="sev"){S.calc.sev=+t.value;var dl=$("#dueList"),e=selEngine();if(dl&&e)dl.innerHTML=dueHTML(buildPlan(e,modelOf(e),brandOf(e)));return;}
 if(t.dataset&&t.dataset.act==="liveToggle"){if(!isAdmin())return;REG.live=!!t.checked;regLog("Diffusion temps réel "+(REG.live?"activée":"désactivée"));if(REG.live)publish(true);regSave();render();return;}
-if(t.id==="impFile"&&t.files&&t.files[0]){var f=t.files[0],ext=f.name.toLowerCase().split(".").pop(),rd=new FileReader();
-if(ext==="xlsx"||ext==="ods"||ext==="zip"){rd.onload=function(){parseOffice(f.name,rd.result);};rd.readAsArrayBuffer(f);}
-else{rd.onload=function(){var ta=$("#impText");if(ta)ta.value=String(rd.result).slice(0,200000);
-try{analyzePayload(sniff(f.name,String(rd.result)),f.name);}catch(e){$("#impReport").innerHTML="<div class='rep rj'>Fichier non exploitable : "+esc(String(e))+"</div>";beep("err");}};rd.readAsText(f);}
+if(t.id==="accFile"&&t.files&&t.files[0]){var af=t.files[0],rd=new FileReader();
+rd.onload=function(){try{var obj=JSON.parse(String(rd.result));
+if(importReqPayload(obj)){toast("ok","Demande importée",(obj.user&&obj.user.name)||"Tiers");beep("imp");if(ACC_OPEN){var b=$("#accBody");if(b)b.innerHTML=accessBody();}if(S.view==="admin")render();}
+else{toast("err","Fichier non reconnu","Attendu : demande-acces-….json ou code MDR1-.");beep("err");}}
+catch(e){toast("err","Lecture impossible",String(e));beep("err");}};
+rd.readAsText(af);return;}
+if(t.id==="impFile"&&t.files&&t.files[0]){var f=t.files[0],ext=f.name.toLowerCase().split(".").pop(),rd2=new FileReader();
+if(ext==="xlsx"||ext==="ods"||ext==="zip"){rd2.onload=function(){parseOffice(f.name,rd2.result);};rd2.readAsArrayBuffer(f);}
+else{rd2.onload=function(){var ta=$("#impText");if(ta)ta.value=String(rd2.result).slice(0,200000);
+try{analyzePayload(sniff(f.name,String(rd2.result)),f.name);}catch(e){$("#impReport").innerHTML="<div class='rep rj'>Fichier non exploitable : "+esc(String(e))+"</div>";beep("err");}};rd2.readAsText(f);}
 return;}
 });
 document.addEventListener("submit",function(ev){var form=ev.target.closest?ev.target.closest("[data-form]"):null;if(!form)return;ev.preventDefault();
@@ -1292,15 +1352,24 @@ if(form.dataset.form==="admin"){var p=$("#gatePwd");if(p)p.value="";
 if(fd.get("pwd")===PWD)enterAdmin();else{toast("err","Mot de passe incorrect");beep("err");gateShow("admin",{force:true,focus:true});}return;}
 if(form.dataset.form==="tier"){
 var name=String(fd.get("name")||GATE_NAME||"").trim().slice(0,24);
-if(name.length<2){toast("err","Prénom requis","Saisissez au moins 2 caractères — aucun code n'est demandé.");beep("err");
+if(name.length<2){toast("err","Prénom requis","Saisissez au moins 2 caractères.");beep("err");
 var n=$("#gateName");if(n){try{n.focus();}catch(e){}}return;}
 try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
 GATE_NAME=name;
-var u=createRequest(name);
-if(!u){toast("err","Demande impossible","Réessayez avec votre prénom.");beep("err");return;}
-if(u.status==="granted"){enterTier();return;}
+regLoad();
+var ex=null;REG.users.forEach(function(u){if(nk(u.name)===nk(name))ex=u;});
+if(ex){TIER=ex.id;
+if(ex.status==="granted"){enterTier();return;}
+if(ex.status!=="pending"){ex.status="pending";ex.ts=Date.now();ex.at=null;}
+REG.tomb=REG.tomb.filter(function(x){return x!==ex.id;});
+REG.seen=REG.seen.filter(function(x){return x!==ex.id;});}
+else{var u2={id:uid("U"),name:name,status:"pending",ts:Date.now(),at:null};REG.users.push(u2);TIER=u2.id;}
+regLog("Demande d'accès — "+name);
+var ok=regSave();
+bcast({t:"reg",rev:REG.rev,force:true});
 gateShow("tier",{force:true});
-toast("ok","Demande envoyée","Aucun code nécessaire — l'administrateur a reçu la notification.");
+if(ok)toast("ok","Demande transmise","Notification administrateur : cloche + badge + bannière + son.");
+else toast("warn","Demande enregistrée en mémoire","Stockage local indisponible : utilisez le code ou le fichier affiché.");
 beep("imp");
 osNotify("MECADATA — demande d'accès",name+" demande l'accès à la console.");
 return;}
@@ -1345,22 +1414,16 @@ function route(){var h=(location.hash||"#/bord").replace("#/","");
 var allowed=isTier()?["bord","explorer","tech","entretien","studio","diagnostic"]:["bord","explorer","tech","entretien","studio","admin","diagnostic"];
 S.view=allowed.indexOf(h)>-1?h:"bord";render();}
 function boot(){var o=$("#boot"),done=function(){if(!o)return;o.className="off";};
-var L=[["Noyau MECADATA v8.4 · "+window.__MD_FIX,12],["Couverture exhaustive des motorisations",34],[DB.brands.length+" marques · "+DB.models.length+" modèles",58],[fmt(DB.engines.length)+" motorisations",78],[DB.faults.length+" pannes · "+DB.tsb.length+" TSB/rappels",92],["Demande tiers : prénom seul",100]];
+var L=[["Noyau MECADATA v8.4 · "+window.__MD_FIX,12],["Couverture exhaustive des motorisations",34],[DB.brands.length+" marques · "+DB.models.length+" modèles",58],[fmt(DB.engines.length)+" motorisations",78],[DB.faults.length+" pannes · "+DB.tsb.length+" TSB/rappels",92],["Remontée de demande garantie",100]];
 var lg=$("#bl"),i=0,step=function(){if(i>=L.length){setTimeout(done,260);return;}
 var x=L[i++],d=document.createElement("div");d.innerHTML="<b>OK</b> "+esc(x[0]);lg.appendChild(d);
 while(lg.children.length>5)lg.removeChild(lg.firstChild);$("#bbar").style.width=x[1]+"%";setTimeout(step,110);};
 setTimeout(step,120);setTimeout(done,2600);}
 function init(){
 if(!window.MD_RAW){logErr("init",new Error("MD_RAW absent"));window.__MD_READY=false;return;}
-injectCss();hardenResize();
+injectNotifCss();hardenResize();
 SEED=build(window.MD_RAW);FIXES+=hardNormalize(SEED);ensureCoverage(SEED);DB=clone(SEED);
-regLoad();recompute();
-STORE.idbInit().then(function(){
-STORE.idbGet(AKEY).then(function(raw){
-if(!raw)return;
-safe("idbreg",function(){REG=regMerge(REG,JSON.parse(raw));bellRefresh();notifyPending();gateSync();},null);
-});
-});
+regLoad();preloadIdb();recompute();
 try{if(window.BroadcastChannel){CH=new BroadcastChannel("mecadata_v84");CH.onmessage=function(ev){var m=ev.data||{};
 if(m.t==="reg"){regLoad();bellRefresh();notifyPending();if(isTier())tierSync();else if(isAdmin()&&S.view==="admin")render();else gateSync();}
 if(m.t==="pub"&&isTier())tierSync();};}}catch(e){}
