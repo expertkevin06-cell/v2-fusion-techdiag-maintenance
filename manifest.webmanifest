@@ -2,7 +2,7 @@
   "id": "/mecadata-expert",
   "name": "MECADATA // INGÉNIEUR EXPERT",
   "short_name": "MECADATA",
-  "description": "Console technique automobile 2017-2027 : motorisations, pannes connues, campagnes de rappel, TSB, plans d'entretien, recherche prédictive et studio de fonds dynamiques.",
+  "description": "Console technique automobile 2017-2027 : sélection marque/modèle/phase/motorisation, pannes connues détaillées, campagnes de rappel, TSB, plans d'entretien jusqu'à 200 000 km, accès tiers contrôlé et studio de fonds dynamiques.",
   "lang": "fr-FR",
   "dir": "ltr",
   "start_url": "./index.html",
@@ -22,29 +22,9 @@
     { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ],
   "shortcuts": [
-    {
-      "name": "Explorateur de motorisations",
-      "short_name": "Parc",
-      "url": "./index.html#/explorer",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Pannes · TSB · Rappels",
-      "short_name": "Technique",
-      "url": "./index.html#/tech",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Plans d'entretien",
-      "short_name": "Entretien",
-      "url": "./index.html#/entretien",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Studio fond d'écran",
-      "short_name": "Studio",
-      "url": "./index.html#/studio",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
-    }
+    { "name": "Parc 2017-2027", "short_name": "Parc", "url": "./index.html#/explorer", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Pannes · TSB · Rappels", "short_name": "Technique", "url": "./index.html#/tech", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Entretien 200 000 km", "short_name": "Entretien", "url": "./index.html#/entretien", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Studio fond d'écran", "short_name": "Studio", "url": "./index.html#/studio", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }
