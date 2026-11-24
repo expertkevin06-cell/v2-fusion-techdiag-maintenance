@@ -1877,7 +1877,90 @@ function createRequest(name){
   };
 }
 
+function setAccessLocal(id, st){
+  if(!isAdmin()) return;
+
+  regLoad();
+
+  var u = null,
+      i;
+
+  for(i = 0; i < REG.users.length; i++){
+    if(REG.users[i].id === id){
+      u = REG.users[i];
+      break;
+    }
+  }
+
+  if(!u) return;
+
+  u.status = st;
+  u.at = Date.now();
+
+  regLog(
+    (st === "granted" ? "ACCÈS accordé" :
+     (st === "denied" ? "REFUS" : "RÉVOCATION")) + " — " + u.name
+  );
+
+  regSave();
+
+  if(st === "granted" && !STORE.get(PKEY)){
+    publish(true);
+  }
+
+  osNotify(
+    "MECADATA — décision d'accès",
+    u.name + " : " +
+    (st === "granted" ? "accès accordé" :
+     (st === "denied" ? "refusé" : "révoqué"))
+  );
+
+  updateMeta();
+
+  if(S.view === "admin") render();
+
+  toast(
+    st === "granted" ? "ok" : (st === "denied" ? "warn" : "err"),
+    st === "granted" ? "Accès accordé" :
+    (st === "denied" ? "Accès refusé" : "Accès révoqué"),
+    u.name + " — décision appliquée."
+  );
+
+  beep(st === "granted" ? "ok" : "del");
+}
+
 function setAccess(id, st){
+  if(!isAdmin()) return;
+
+  if(REMOTE.ok){
+    remoteDecision(id, st)
+      .then(function(u){
+        osNotify(
+          "MECADATA — décision d'accès",
+          u.name + " : " +
+          (st === "granted" ? "accès accordé" :
+           (st === "denied" ? "refusé" : "révoqué"))
+        );
+
+        toast(
+          st === "granted" ? "ok" : (st === "denied" ? "warn" : "err"),
+          st === "granted" ? "Accès accordé" :
+          (st === "denied" ? "Accès refusé" : "Accès révoqué"),
+          u.name + " — décision envoyée au serveur local."
+        );
+
+        beep(st === "granted" ? "ok" : "del");
+      })
+      .catch(function(){
+        REMOTE.ok = false;
+        remoteStopPoll();
+        setAccessLocal(id, st);
+      });
+    return;
+  }
+
+  setAccessLocal(id, st);
+}
   if(!isAdmin()) return;
 
   regLoad();
@@ -2306,6 +2389,31 @@ function doUndo(){
 }
 
 function publish(auto){
+  if(!isAdmin()) return;
+
+  regLog("Diffusion rév. " + ((+REG.rev || 0) + 1) + (auto ? " (auto)" : ""));
+  regSave();
+
+  var pub = {
+    ts: Date.now(),
+    rev: +REG.rev || 0,
+    db: DB
+  };
+
+  try{ STORE.set(PKEY, JSON.stringify(pub)); }catch(e){}
+  try{ if(STORE.idbSet) STORE.idbSet(PKEY, JSON.stringify(pub)); }catch(e){}
+  try{ STORE.idbCache[PKEY] = JSON.stringify(pub); }catch(e){}
+
+  bcast({ t: "pub", rev: REG.rev });
+
+  if(REMOTE.ok){
+    remotePublishDb();
+  }
+
+  if(!auto){
+    toast("ok", "Diffusé aux tiers", "Révision " + REG.rev + " — " + fmt(META.counts.e) + " motorisations.");
+  }
+}
   if(!isAdmin()) return;
 
   var s = JSON.stringify({
@@ -5420,7 +5528,50 @@ function enterAdmin(){
   }
 }
 
+function finishTierEntry(){
+  recompute();
+  if(WP.apply) WP.apply();
+  runTests();
+
+  S.view = "bord";
+  location.hash = "#/bord";
+  render();
+
+  toast("info", "Consultation tiers", "Lecture seule — rév. " + (REG.rev || 0));
+  beep("ok");
+
+  if(REMOTE.ok){
+    remoteStartTierPoll();
+  }
+}
+
 function enterTier(){
+  var u = tierUser();
+
+  if(!u || u.status !== "granted"){
+    gateShow("tier", { force: true });
+    return;
+  }
+
+  MODE = "tier";
+  GATE_NAME = "";
+  gateHide();
+
+  if(REMOTE.ok){
+    remoteGetPublished().then(function(db){
+      if(db && db.engines && db.engines.length){
+        DB = db;
+      }else if(!applyTierSnapshot()){
+        DB = clone(SEED);
+      }
+      finishTierEntry();
+    });
+    return;
+  }
+
+  if(!applyTierSnapshot()) DB = clone(SEED);
+  finishTierEntry();
+}
   var u = tierUser();
   if(!u || u.status !== "granted"){
     gateShow("tier", { force: true });
@@ -5446,6 +5597,40 @@ function enterTier(){
 }
 
 function tierSync(){
+  if(!isTier()) return;
+
+  var u = tierUser();
+
+  if(!u || u.status !== "granted"){
+    MODE = null;
+    TIER = null;
+    remoteStopPoll();
+    gateShow("tier", { force: true });
+    render();
+    toast("err", "Accès révoqué", "L'administrateur a retiré cet accès.");
+    return;
+  }
+
+  if(REMOTE.ok){
+    remoteGetPublished().then(function(db){
+      if(db && db.engines && db.engines.length){
+        DB = db;
+        recompute();
+        updateMeta();
+        render();
+        toast("info", "Base mise à jour", "Révision " + REG.rev + " diffusée.");
+      }
+    });
+    return;
+  }
+
+  if(applyTierSnapshot()){
+    recompute();
+    updateMeta();
+    render();
+    toast("info", "Base mise à jour", "Révision " + REG.rev + " diffusée.");
+  }
+}
   if(!isTier()) return;
 
   var u = tierUser();
@@ -6155,8 +6340,21 @@ function bind(){
       if(fd.get("pwd") === PWD){
         enterAdmin();
       }else{
-        toast("err", "Mot de passe incorrect");
-        beep("err");
+       toast("ok", "Session administrateur", "Cloche d'accès active.");
+beep("imp");
+          if(REMOTE.ok){
+  remoteStartAdminPoll();
+  toast("info", "Serveur local connecté", "Les demandes Chrome remonteront dans l'APK.");
+}else{
+  remoteProbe().then(function(ok){
+    if(ok){
+      remoteStartAdminPoll();
+      toast("ok", "Serveur local détecté", "Communication Chrome <-> APK active.");
+    }else{
+      toast("warn", "Serveur local absent", "Ouvre le tiers depuis http://127.0.0.1:7777 et vérifie le service Android.");
+    }
+  });
+}
         gateShow("admin", { force: true, focus: true });
       }
       return;
